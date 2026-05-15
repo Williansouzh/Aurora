@@ -1,0 +1,7 @@
+using Aurora.Domain.Enums;
+namespace Aurora.Domain.Entities;
+public abstract class EntityBase { public string Id { get; set; } = Guid.NewGuid().ToString(); public DateTime CreatedAt { get; set; } = DateTime.UtcNow; public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; }
+public class User:EntityBase { public string Name { get; set; }=""; public string Email { get; set; }=""; public string PasswordHash { get; set; }=""; }
+public class Account:EntityBase { public string UserId { get; set; }=""; public string Name { get; set; }=""; public AccountType Type { get; set; }=AccountType.CheckingAccount; public decimal InitialBalance { get; set; } public decimal CurrentBalance { get; set; } public string Color { get; set; }="#6366f1"; public bool IsArchived { get; set; }}
+public class Category:EntityBase { public string UserId { get; set; }=""; public string Name { get; set; }=""; public CategoryType Type { get; set; } public string Color { get; set; }="#94a3b8"; public string Icon { get; set; }="tag"; public bool IsDefault { get; set; }}
+public class Transaction:EntityBase { public string UserId { get; set; }=""; public string AccountId { get; set; }=""; public string CategoryId { get; set; }=""; public string Description { get; set; }=""; public decimal Amount { get; set; } public TransactionType Type { get; set; } public TransactionStatus Status { get; set; }=TransactionStatus.Pending; public DateTime Date { get; set; } public DateTime? DueDate { get; set; } public string? Notes { get; set; }}
