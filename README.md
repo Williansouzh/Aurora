@@ -1,63 +1,82 @@
-# Aurora MVP
+# Aurora Backend MVP
 
-Aurora é um sistema web de finanças pessoais com arquitetura Clean Architecture (modular monolith), CQRS, JWT, MongoDB e cache distribuído.
+Backend do Aurora (controle financeiro pessoal) com .NET 8, MongoDB, CQRS/MediatR, JWT, BCrypt e cache distribuído.
 
 ## Stack
-- Backend: .NET 8 Web API, MediatR, FluentValidation, MongoDB.Driver, JWT, BCrypt, Redis (`IDistributedCache`)
-- Frontend: React + Vite, React Router, Axios
-- Infra: Docker Compose (API, MongoDB, Redis, frontend)
+- .NET 8 Web API
+- MongoDB.Driver
+- MediatR (CQRS)
+- JWT Bearer Auth
+- BCrypt password hash
+- Redis com `IDistributedCache` via `ICacheService`
+- Swagger
+- Docker Compose (backend-only)
 
-## Arquitetura
-- `Aurora.API`: Controllers, middlewares e setup.
-- `Aurora.Application`: CQRS (commands/queries), DTOs, validações e interfaces.
-- `Aurora.Domain`: entidades, enums e exceções.
-- `Aurora.Infrastructure`: MongoDB, repositórios, JWT, cache e seed.
-
-Decisões arquiteturais:
-1. **Clean Architecture + CQRS** para separar domínio, aplicação e infraestrutura.
-2. **MongoDB** com índices por `userId` e filtros de consulta para escala de leitura.
-3. **Cache distribuído** no dashboard para reduzir agregações repetidas.
-4. **Invalidação de cache por usuário** em mutações financeiras.
-
-## Como rodar
+## Rodar
 ```bash
 docker compose up --build
 ```
 
 - API: `http://localhost:8080`
 - Swagger: `http://localhost:8080/swagger`
-- Frontend: `http://localhost:5173`
 
-## Variáveis de ambiente (API)
-- `ConnectionStrings__MongoDb`
-- `ConnectionStrings__Redis`
-- `Jwt__Issuer`
-- `Jwt__Audience`
-- `Jwt__Key`
-- `Cors__FrontendUrl`
+## Endpoints implementados
+### Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
 
-## Endpoints principais
-- Auth: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`
-- Accounts: `GET/POST /api/accounts`, `GET/PUT/DELETE /api/accounts/{id}`, `PATCH /api/accounts/{id}/archive`
-- Categories: `GET/POST /api/categories`, `PUT/DELETE /api/categories/{id}`
-- Transactions: `GET/POST /api/transactions`, `GET/PUT/DELETE /api/transactions/{id}`, `PATCH /api/transactions/{id}/mark-as-paid`, `PATCH /api/transactions/{id}/mark-as-pending`
-- Dashboard: `GET /api/dashboard/monthly-summary`, `GET /api/dashboard/category-expenses`, `GET /api/dashboard/cash-flow`
+### Accounts
+- `GET /api/accounts`
+- `GET /api/accounts/{id}`
+- `POST /api/accounts`
+- `PUT /api/accounts/{id}`
+- `PATCH /api/accounts/{id}/archive`
+- `DELETE /api/accounts/{id}`
 
-## Regras de negócio
-- Pending não altera saldo.
-- Paid altera saldo (Income +, Expense -).
-- Editar/excluir/mudar status de transação reverte/aplica impacto corretamente.
-- Apenas dados do usuário autenticado são acessíveis.
-- Categoria/conta só podem ser removidas sem transações vinculadas.
+### Categories
+- `GET /api/categories`
+- `POST /api/categories`
+- `PUT /api/categories/{id}`
+- `DELETE /api/categories/{id}`
 
-## Índices MongoDB
-- `users`: `email` unique
-- `accounts`: `{userId}`, `{userId,name}`
-- `categories`: `{userId}`, `{userId,type}`
-- `transactions`: `{userId,date}`, `{userId,status}`, `{userId,accountId}`, `{userId,categoryId}`, `{userId,type}`, `{userId,date,type,status}`
+### Transactions
+- `GET /api/transactions`
+- `GET /api/transactions/{id}`
+- `POST /api/transactions`
+- `PUT /api/transactions/{id}`
+- `DELETE /api/transactions/{id}`
+- `PATCH /api/transactions/{id}/mark-as-paid`
+- `PATCH /api/transactions/{id}/mark-as-pending`
 
-## Próximos passos
-- Multi-tenant formal com `TenantId`.
-- Refresh token + revoke list.
-- Observabilidade (OpenTelemetry).
-- Testes automatizados unitários e integração.
+### Dashboard
+- `GET /api/dashboard/monthly-summary?month=5&year=2026`
+- `GET /api/dashboard/category-expenses?month=5&year=2026`
+- `GET /api/dashboard/cash-flow?year=2026`
+
+## Regras
+- `Amount` precisa ser positivo.
+- `Pending` não impacta saldo.
+- `Paid` impacta saldo (`Income` soma, `Expense` subtrai).
+- Editar transação reverte impacto anterior e aplica novo impacto quando necessário.
+- Excluir transação paga reverte saldo.
+- Exclusão de conta/categoria é bloqueada quando há transações vinculadas.
+- Isolamento total por `UserId` do JWT.
+
+## Cache
+- Dashboard mensal com TTL de 5 minutos.
+- Invalidação por prefixo `aurora:dashboard:{userId}` em mutações de transações.
+
+## Observação
+- Neste repositório, o foco atual está no **backend MVP completo**. O frontend será desenvolvido depois.
+
+## Qualidade
+- FluentValidation com pipeline MediatR para validações de entrada.
+- Exceções tipadas de domínio mapeadas para HTTP 400/404/409/500 no middleware global.
+
+## Melhorias de performance e segurança
+- **Performance**: somas/contagens do dashboard usam agregações no MongoDB para evitar materialização de listas grandes em memória da API.
+- **Cache**: invalidação por prefixo implementada com Redis (`StackExchange.Redis`) para remover chaves `aurora:dashboard:{userId}*`.
+- **Segurança HTTP**: cabeçalhos `X-Content-Type-Options`, `X-Frame-Options` e `Referrer-Policy` adicionados.
+- **CORS**: restringido para origem configurada em `Cors:FrontendUrl`.
+- **JWT**: validação de chave mínima de 32 caracteres no startup.

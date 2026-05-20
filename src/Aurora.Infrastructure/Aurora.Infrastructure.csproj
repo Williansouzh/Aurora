@@ -1,7 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><TargetFramework>net8.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Aurora.Application/Aurora.Application.csproj" />
     <ProjectReference Include="../Aurora.Domain/Aurora.Domain.csproj" />
+      <PackageReference Include="StackExchange.Redis" Version="2.8.16" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.28.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.8" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.2" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
   </ItemGroup>
 </Project>
