@@ -1,0 +1,3 @@
+import { Routes, Route, Link } from 'react-router-dom';
+const P=({t})=><div style={{padding:20}}><h2>{t}</h2></div>;
+export default function App(){return <><nav style={{display:'flex',gap:12}}><Link to='/'>Dashboard</Link><Link to='/accounts'>Contas</Link><Link to='/categories'>Categorias</Link><Link to='/transactions'>Transações</Link></nav><Routes><Route path='/' element={<P t='Dashboard'/>}/><Route path='/login' element={<P t='Login'/>}/><Route path='/register' element={<P t='Cadastro'/>}/><Route path='/accounts' element={<P t='Contas'/>}/><Route path='/categories' element={<P t='Categorias'/>}/><Route path='/transactions' element={<P t='Transações'/>}/></Routes></>;}
