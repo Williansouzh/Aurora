@@ -1,10 +1,12 @@
-using Xunit;
-using Aurora.Application.Features.Auth;
-using Aurora.Application.Interfaces;
+using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Abstractions.Security;
+using Aurora.Application.Features.Auth.Common;
+using Aurora.Application.Features.Auth.Refresh;
 using Aurora.Domain.Entities;
 using Aurora.Domain.Exceptions;
 using FluentAssertions;
 using Moq;
+using Xunit;
 
 namespace Aurora.Tests.Handlers;
 
