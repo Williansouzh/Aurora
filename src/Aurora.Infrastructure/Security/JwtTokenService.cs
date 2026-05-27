@@ -15,8 +15,10 @@ public class JwtTokenService(IOptions<JwtSettings> settings) : IJwtTokenService
     public string Generate(User user)
     {
         var st = settings.Value;
+        var activeKey = st.Keys.FirstOrDefault(x => x.KeyId == st.CurrentKeyId) ??
+            new JwtSigningKey { KeyId = st.CurrentKeyId, Key = st.Key };
         var creds = new SigningCredentials(
-            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(st.Key)),
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(activeKey.Key)) { KeyId = activeKey.KeyId },
             SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -32,6 +34,8 @@ public class JwtTokenService(IOptions<JwtSettings> settings) : IJwtTokenService
             claims,
             expires: DateTime.UtcNow.AddMinutes(st.ExpiresMinutes),
             signingCredentials: creds);
+
+        token.Header["kid"] = activeKey.KeyId;
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }

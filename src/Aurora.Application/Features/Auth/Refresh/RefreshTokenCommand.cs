@@ -1,3 +1,4 @@
+using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Abstractions.Security;
 using Aurora.Application.Features.Auth.Common;
@@ -11,7 +12,8 @@ public record RefreshTokenCommand(string RawToken) : IRequest<AuthResult>;
 public class RefreshTokenHandler(
     IRefreshTokenRepository refreshTokens,
     IUserRepository users,
-    IJwtTokenService jwt) : IRequestHandler<RefreshTokenCommand, AuthResult>
+    IJwtTokenService jwt,
+    IDateTimeProvider clock) : IRequestHandler<RefreshTokenCommand, AuthResult>
 {
     public async Task<AuthResult> Handle(RefreshTokenCommand command, CancellationToken ct)
     {
@@ -24,7 +26,7 @@ public class RefreshTokenHandler(
         var token = await refreshTokens.GetByHashAsync(hash)
             ?? throw new UnauthorizedException("Token inválido");
 
-        if (token.IsRevoked || token.ExpiresAt <= DateTime.UtcNow)
+        if (token.IsRevoked || token.ExpiresAt <= clock.UtcNow)
         {
             throw new UnauthorizedException("Token expirado");
         }
@@ -34,6 +36,6 @@ public class RefreshTokenHandler(
 
         await refreshTokens.RevokeAsync(token.Id);
 
-        return await TokenHelper.IssueTokens(user, jwt, refreshTokens);
+        return await TokenHelper.IssueTokens(user, jwt, refreshTokens, clock);
     }
 }

@@ -60,23 +60,24 @@ public class UpdateTransactionHandler(
 
         if (tx.Status == TransactionStatus.Paid && oldAcc.Type != AccountType.CreditCard)
         {
-            oldAcc.CurrentBalance -= TransactionMapper.Impact(tx.Type, tx.Amount);
+            oldAcc.ReverseTransaction(tx.Type, tx.Amount);
             await accRepo.UpdateAsync(oldAcc);
         }
 
-        tx.AccountId = command.AccountId;
-        tx.CategoryId = command.CategoryId;
-        tx.Description = command.Description;
-        tx.Amount = command.Amount;
-        tx.Type = command.Type;
-        tx.Status = command.Status;
-        tx.Date = command.Date;
-        tx.DueDate = command.DueDate;
-        tx.Notes = command.Notes;
+        tx.ReplaceDetails(
+            command.AccountId,
+            command.CategoryId,
+            command.Description,
+            command.Amount,
+            command.Type,
+            command.Status,
+            command.Date,
+            command.DueDate,
+            command.Notes);
 
         if (tx.Status == TransactionStatus.Paid && newAcc.Type != AccountType.CreditCard)
         {
-            newAcc.CurrentBalance += TransactionMapper.Impact(tx.Type, tx.Amount);
+            newAcc.ApplyTransaction(tx.Type, tx.Amount);
             await accRepo.UpdateAsync(newAcc);
         }
 

@@ -26,12 +26,12 @@ public class MarkTransactionAsPendingHandler(
 
             if (account.Type != AccountType.CreditCard)
             {
-                account.CurrentBalance -= TransactionMapper.Impact(tx.Type, tx.Amount);
+                account.ReverseTransaction(tx.Type, tx.Amount);
                 await accRepo.UpdateAsync(account);
             }
         }
 
-        tx.Status = TransactionStatus.Pending;
+        tx.MarkAsPending(DateTime.UtcNow);
         await txRepo.UpdateAsync(tx);
         await cache.RemoveByPrefixAsync($"aurora:dashboard:{command.UserId}", ct);
         return tx.ToDto();

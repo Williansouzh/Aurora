@@ -1,3 +1,8 @@
 namespace Aurora.Application.Features.Auth.Common;
 
-public record MeResponse(string UserId, string Name, string Email);
+public record MeResponse(
+    string UserId,
+    string Name,
+    string Email,
+    bool IsEmailConfirmed = false,
+    bool IsMfaEnabled = false);

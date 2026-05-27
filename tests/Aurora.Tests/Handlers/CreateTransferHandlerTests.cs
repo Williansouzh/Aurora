@@ -19,7 +19,11 @@ public class CreateTransferHandlerTests
 
     private static Account MakeAccount(string id, decimal balance = 1000m) => new()
     {
-        Id = id, UserId = "user1", Name = id, Type = AccountType.CheckingAccount, CurrentBalance = balance,
+        Id = id,
+        UserId = "user1",
+        Name = id,
+        Type = AccountType.CheckingAccount,
+        CurrentBalance = balance,
     };
 
     [Fact]
@@ -34,7 +38,8 @@ public class CreateTransferHandlerTests
         _transferRepo.Setup(r => r.AddAsync(It.IsAny<Transfer>())).Returns(Task.CompletedTask);
 
         await CreateHandler().Handle(
-            new CreateTransferCommand("user1", "from", "to", 300m, DateTime.UtcNow, "Transferência"), default);
+            new CreateTransferCommand("user1", "from", "to", 300m, DateTime.UtcNow, "Transferencia"),
+            default);
 
         from.CurrentBalance.Should().Be(700m);
         to.CurrentBalance.Should().Be(500m);
@@ -45,14 +50,15 @@ public class CreateTransferHandlerTests
     public async Task Deve_falhar_se_origem_igual_destino()
     {
         var act = () => CreateHandler().Handle(
-            new CreateTransferCommand("user1", "acc1", "acc1", 100m, DateTime.UtcNow, "Teste"), default);
+            new CreateTransferCommand("user1", "acc1", "acc1", 100m, DateTime.UtcNow, "Teste"),
+            default);
 
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage("*Conta de origem e destino devem ser diferentes*");
     }
 
     [Fact]
-    public async Task Deve_reverter_origem_se_credito_falhar()
+    public async Task Nao_deve_fazer_compensacao_manual_se_credito_falhar()
     {
         var from = MakeAccount("from", 1000m);
         var to = MakeAccount("to", 200m);
@@ -64,14 +70,20 @@ public class CreateTransferHandlerTests
         _accRepo.Setup(r => r.UpdateAsync(It.IsAny<Account>())).Returns(() =>
         {
             call++;
-            if (call == 2) throw new Exception("Falha simulada no crédito");
+            if (call == 2)
+            {
+                throw new Exception("Falha simulada no credito");
+            }
+
             return Task.CompletedTask;
         });
 
         var act = () => CreateHandler().Handle(
-            new CreateTransferCommand("user1", "from", "to", 300m, DateTime.UtcNow, "Teste"), default);
+            new CreateTransferCommand("user1", "from", "to", 300m, DateTime.UtcNow, "Teste"),
+            default);
 
         await act.Should().ThrowAsync<Exception>();
-        from.CurrentBalance.Should().Be(1000m, "saldo da origem deve ser revertido após falha");
+        from.CurrentBalance.Should().Be(700m, "rollback agora pertence ao UnitOfWork transacional");
+        _accRepo.Verify(r => r.UpdateAsync(It.IsAny<Account>()), Times.Exactly(2));
     }
 }

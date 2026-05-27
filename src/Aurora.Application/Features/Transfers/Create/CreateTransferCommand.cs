@@ -41,45 +41,24 @@ public class CreateTransferHandler(
             throw new ValidationException("Transferencia nao usa cartao de credito");
         }
 
-        var originUpdated = false;
-        var destinationUpdated = false;
-        try
+        from.Debit(command.Amount);
+        await accounts.UpdateAsync(from);
+
+        to.Credit(command.Amount);
+        await accounts.UpdateAsync(to);
+
+        var transfer = new Transfer
         {
-            from.CurrentBalance -= command.Amount;
-            await accounts.UpdateAsync(from);
-            originUpdated = true;
+            UserId = command.UserId,
+            FromAccountId = from.Id,
+            ToAccountId = to.Id,
+            Amount = command.Amount,
+            Date = command.Date,
+            Description = command.Description,
+            Status = TransferStatus.Completed
+        };
 
-            to.CurrentBalance += command.Amount;
-            await accounts.UpdateAsync(to);
-            destinationUpdated = true;
-
-            var transfer = new Transfer
-            {
-                UserId = command.UserId,
-                FromAccountId = from.Id,
-                ToAccountId = to.Id,
-                Amount = command.Amount,
-                Date = command.Date,
-                Description = command.Description,
-                Status = TransferStatus.Completed
-            };
-
-            await transfers.AddAsync(transfer);
-            return transfer.ToDto();
-        }
-        catch
-        {
-            if (destinationUpdated)
-            {
-                to.CurrentBalance -= command.Amount;
-                await accounts.UpdateAsync(to);
-            }
-            if (originUpdated)
-            {
-                from.CurrentBalance += command.Amount;
-                await accounts.UpdateAsync(from);
-            }
-            throw;
-        }
+        await transfers.AddAsync(transfer);
+        return transfer.ToDto();
     }
 }

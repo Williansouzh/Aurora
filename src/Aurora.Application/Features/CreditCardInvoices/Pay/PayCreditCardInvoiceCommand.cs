@@ -15,7 +15,8 @@ public class PayCreditCardInvoiceHandler(
     IAccountRepository accounts,
     ICreditCardInvoiceRepository invoices,
     ITransactionRepository transactions,
-    ICacheService cache) : IRequestHandler<PayCreditCardInvoiceCommand, CreditCardInvoiceDto>
+    ICacheService cache,
+    IDateTimeProvider clock) : IRequestHandler<PayCreditCardInvoiceCommand, CreditCardInvoiceDto>
 {
     public async Task<CreditCardInvoiceDto> Handle(PayCreditCardInvoiceCommand command, CancellationToken ct)
     {
@@ -43,14 +44,13 @@ public class PayCreditCardInvoiceHandler(
             throw new ValidationException("Pagamento de fatura deve sair de uma conta de debito");
         }
 
-        source.CurrentBalance -= command.Amount;
+        source.Debit(command.Amount);
         await accounts.UpdateAsync(source);
 
-        invoice.Status = CreditCardInvoiceStatus.Paid;
-        invoice.PaidAt = DateTime.UtcNow;
+        invoice.MarkAsPaid(clock.UtcNow);
         await invoices.UpdateAsync(invoice);
 
-        card.CurrentBalance = await invoices.SumOpenByAccountAsync(card.Id, command.UserId);
+        card.ReplaceCurrentBalance(await invoices.SumOpenByAccountAsync(card.Id, command.UserId));
         await accounts.UpdateAsync(card);
 
         var tx = new Transaction
@@ -62,7 +62,7 @@ public class PayCreditCardInvoiceHandler(
             Amount = command.Amount,
             Type = TransactionType.Expense,
             Status = TransactionStatus.Paid,
-            Date = DateTime.UtcNow,
+            Date = clock.UtcNow,
             DueDate = invoice.DueDate,
             Notes = "Pagamento de fatura de cartao de credito",
             CreditCardInvoiceId = invoice.Id

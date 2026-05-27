@@ -6,4 +6,6 @@ public record AuthResult(
     string RawRefreshToken,
     string UserId,
     string Name,
-    string Email);
+    string Email,
+    bool MfaRequired = false,
+    string? ChallengeId = null);

@@ -10,6 +10,9 @@ public class UserRepository(MongoContext context) : IUserRepository
     public Task<User?> GetByEmailAsync(string email) =>
         context.Users.Find(x => x.Email == email).FirstOrDefaultAsync()!;
 
+    public Task<User?> GetByEmailHashAsync(string emailHash) =>
+        context.Users.Find(x => x.EmailHash == emailHash).FirstOrDefaultAsync()!;
+
     public Task<User?> GetByIdAsync(string id) =>
         context.Users.Find(x => x.Id == id).FirstOrDefaultAsync()!;
 

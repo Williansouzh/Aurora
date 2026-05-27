@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Abstractions.Security;
 using Aurora.Domain.Entities;
@@ -17,7 +18,8 @@ public static class TokenHelper
     public static async Task<AuthResult> IssueTokens(
         User user,
         IJwtTokenService jwt,
-        IRefreshTokenRepository refreshTokens)
+        IRefreshTokenRepository refreshTokens,
+        IDateTimeProvider clock)
     {
         var accessToken = jwt.Generate(user);
         var rawRefresh = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
@@ -27,7 +29,7 @@ public static class TokenHelper
         {
             TokenHash = hash,
             UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(7)
+            ExpiresAt = clock.UtcNow.AddDays(7)
         });
 
         return new AuthResult(accessToken, jwt.ExpiresInSeconds, rawRefresh, user.Id, user.Name, user.Email);

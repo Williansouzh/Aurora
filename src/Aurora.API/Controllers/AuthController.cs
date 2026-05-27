@@ -1,13 +1,19 @@
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Auth.Common;
+using Aurora.Application.Features.Auth.ConfirmEmail;
+using Aurora.Application.Features.Auth.DeleteMe;
+using Aurora.Application.Features.Auth.ExportMe;
+using Aurora.Application.Features.Auth.ForgotPassword;
 using Aurora.Application.Features.Auth.Login;
 using Aurora.Application.Features.Auth.Logout;
 using Aurora.Application.Features.Auth.Me;
 using Aurora.Application.Features.Auth.Refresh;
 using Aurora.Application.Features.Auth.Register;
+using Aurora.Application.Features.Auth.ResetPassword;
 using Aurora.Application.Features.Auth.UpdatePassword;
 using Aurora.Application.Features.Auth.UpdateProfile;
+using Aurora.Application.Features.Auth.VerifyMfa;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +31,7 @@ public class AuthController(
     public async Task<IActionResult> Register(RegisterUserCommand cmd)
     {
         var result = await sender.Send(cmd);
-        SetRefreshCookie(result.RawRefreshToken);
-        return Ok(new ApiResponse<AuthClientResponse>(true,
-            new(result.AccessToken, result.ExpiresIn, result.UserId, result.Name, result.Email)));
+        return AuthResponse(result);
     }
 
     [HttpPost("login")]
@@ -40,9 +44,35 @@ public class AuthController(
         }
 
         var result = await sender.Send(cmd);
-        SetRefreshCookie(result.RawRefreshToken);
-        return Ok(new ApiResponse<AuthClientResponse>(true,
-            new(result.AccessToken, result.ExpiresIn, result.UserId, result.Name, result.Email)));
+        return AuthResponse(result);
+    }
+
+    [AllowAnonymous, HttpPost("mfa/verify")]
+    public async Task<IActionResult> VerifyMfa(VerifyMfaCommand cmd)
+    {
+        var result = await sender.Send(cmd);
+        return AuthResponse(result);
+    }
+
+    [AllowAnonymous, HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand cmd)
+    {
+        await sender.Send(cmd);
+        return Ok(new ApiResponse<string>(true, "password-reset-requested"));
+    }
+
+    [AllowAnonymous, HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordCommand cmd)
+    {
+        await sender.Send(cmd);
+        return Ok(new ApiResponse<string>(true, "password-reset"));
+    }
+
+    [AllowAnonymous, HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail(ConfirmEmailCommand cmd)
+    {
+        await sender.Send(cmd);
+        return Ok(new ApiResponse<string>(true, "email-confirmed"));
     }
 
     [AllowAnonymous, HttpPost("refresh")]
@@ -64,9 +94,7 @@ public class AuthController(
         try
         {
             var result = await sender.Send(new RefreshTokenCommand(rawToken));
-            SetRefreshCookie(result.RawRefreshToken);
-            return Ok(new ApiResponse<AuthClientResponse>(true,
-                new(result.AccessToken, result.ExpiresIn, result.UserId, result.Name, result.Email)));
+            return AuthResponse(result);
         }
         catch
         {
@@ -103,6 +131,36 @@ public class AuthController(
         return Ok(new ApiResponse<string>(true, "password-updated"));
     }
 
+    [Authorize, HttpGet("me/export")]
+    public async Task<IActionResult> ExportMe() =>
+        Ok(new ApiResponse<ExportMeResponse>(true, await sender.Send(new ExportMeQuery(user.UserId))));
+
+    [Authorize, HttpDelete("me")]
+    public async Task<IActionResult> DeleteMe(DeleteMeRequest req)
+    {
+        await sender.Send(new DeleteMeCommand(user.UserId, req.Reason));
+        ClearRefreshCookie();
+        return NoContent();
+    }
+
+    private IActionResult AuthResponse(AuthResult result)
+    {
+        if (!result.MfaRequired)
+        {
+            SetRefreshCookie(result.RawRefreshToken);
+        }
+
+        return Ok(new ApiResponse<AuthClientResponse>(true,
+            new(
+                result.AccessToken,
+                result.ExpiresIn,
+                result.UserId,
+                result.Name,
+                result.Email,
+                result.MfaRequired,
+                result.ChallengeId)));
+    }
+
     private void SetRefreshCookie(string rawToken)
     {
         var isDev = env.IsDevelopment();
@@ -132,6 +190,14 @@ public class AuthController(
     }
 }
 
-public record AuthClientResponse(string AccessToken, int ExpiresIn, string UserId, string Name, string Email);
+public record AuthClientResponse(
+    string AccessToken,
+    int ExpiresIn,
+    string UserId,
+    string Name,
+    string Email,
+    bool MfaRequired = false,
+    string? ChallengeId = null);
 public record UpdateProfileRequest(string Name, string Email);
 public record UpdatePasswordRequest(string CurrentPassword, string NewPassword, string ConfirmPassword);
+public record DeleteMeRequest(string? Reason);

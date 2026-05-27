@@ -5,8 +5,8 @@ using MongoDB.Driver;
 
 namespace Aurora.Infrastructure.Persistence.Repositories;
 
-public class TransferRepository(MongoContext context)
-    : MongoRepositoryBase<Transfer>(context.Transfers), ITransferRepository
+public class TransferRepository(MongoContext context, UnitOfWork.MongoUnitOfWork unitOfWork)
+    : MongoRepositoryBase<Transfer>(context.Transfers, unitOfWork), ITransferRepository
 {
     public Task<Transfer?> GetByIdAsync(string id, string userId) => base.GetByIdAsync(id, userId);
 

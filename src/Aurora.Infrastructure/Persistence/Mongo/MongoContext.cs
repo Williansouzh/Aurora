@@ -6,12 +6,13 @@ namespace Aurora.Infrastructure.Persistence.Mongo;
 
 public class MongoContext
 {
+    public IMongoClient Client { get; }
     public IMongoDatabase Db { get; }
 
     public MongoContext(IOptions<MongoSettings> options)
     {
-        var client = new MongoClient(options.Value.ConnectionString);
-        Db = client.GetDatabase(options.Value.DatabaseName);
+        Client = new MongoClient(options.Value.ConnectionString);
+        Db = Client.GetDatabase(options.Value.DatabaseName);
     }
 
     public IMongoCollection<User> Users => Db.GetCollection<User>("users");
@@ -23,4 +24,6 @@ public class MongoContext
     public IMongoCollection<Transfer> Transfers => Db.GetCollection<Transfer>("transfers");
     public IMongoCollection<Financing> Financings => Db.GetCollection<Financing>("financings");
     public IMongoCollection<RefreshToken> RefreshTokens => Db.GetCollection<RefreshToken>("refreshTokens");
+    public IMongoCollection<AuthChallenge> AuthChallenges => Db.GetCollection<AuthChallenge>("authChallenges");
+    public IMongoCollection<AuditEntry> AuditEntries => Db.GetCollection<AuditEntry>("auditEntries");
 }

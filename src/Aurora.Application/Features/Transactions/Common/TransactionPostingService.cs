@@ -41,17 +41,17 @@ public static class TransactionPostingService
                 };
                 await invoiceRepo.AddAsync(invoice);
             }
-            invoice.TotalAmount += tx.Amount;
+            invoice.AddCharge(tx.Amount);
             await invoiceRepo.UpdateAsync(invoice);
 
-            tx.Status = TransactionStatus.Pending;
+            tx.MarkAsPending(DateTime.UtcNow);
             tx.CreditCardInvoiceId = invoice.Id;
-            account.CurrentBalance = await invoiceRepo.SumOpenByAccountAsync(account.Id, userId);
+            account.ReplaceCurrentBalance(await invoiceRepo.SumOpenByAccountAsync(account.Id, userId));
             await accRepo.UpdateAsync(account);
         }
         else if (tx.Status == TransactionStatus.Paid)
         {
-            account.CurrentBalance += TransactionMapper.Impact(tx.Type, tx.Amount);
+            account.ApplyTransaction(tx.Type, tx.Amount);
             await accRepo.UpdateAsync(account);
         }
 

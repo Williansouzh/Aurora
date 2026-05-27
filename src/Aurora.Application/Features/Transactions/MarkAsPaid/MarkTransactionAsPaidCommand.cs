@@ -26,11 +26,11 @@ public class MarkTransactionAsPaidHandler(
 
             if (account.Type != AccountType.CreditCard)
             {
-                account.CurrentBalance += TransactionMapper.Impact(tx.Type, tx.Amount);
+                account.ApplyTransaction(tx.Type, tx.Amount);
                 await accRepo.UpdateAsync(account);
             }
 
-            tx.Status = TransactionStatus.Paid;
+            tx.MarkAsPaid(DateTime.UtcNow);
             await txRepo.UpdateAsync(tx);
         }
 

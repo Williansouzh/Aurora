@@ -6,8 +6,8 @@ using MongoDB.Driver;
 
 namespace Aurora.Infrastructure.Persistence.Repositories;
 
-public class CreditCardInvoiceRepository(MongoContext context)
-    : MongoRepositoryBase<CreditCardInvoice>(context.CreditCardInvoices), ICreditCardInvoiceRepository
+public class CreditCardInvoiceRepository(MongoContext context, UnitOfWork.MongoUnitOfWork unitOfWork)
+    : MongoRepositoryBase<CreditCardInvoice>(context.CreditCardInvoices, unitOfWork), ICreditCardInvoiceRepository
 {
     public Task<List<CreditCardInvoice>> GetByAccountAsync(string accountId, string userId) =>
         Collection.Find(x => x.AccountId == accountId && x.UserId == userId)

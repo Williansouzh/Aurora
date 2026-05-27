@@ -1,3 +1,4 @@
+using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Abstractions.Security;
 using Aurora.Application.Features.Auth.Common;
@@ -15,9 +16,10 @@ public class RefreshAccessTokenHandlerTests
     private readonly Mock<IRefreshTokenRepository> _refreshTokenRepo = new();
     private readonly Mock<IUserRepository> _userRepo = new();
     private readonly Mock<IJwtTokenService> _jwt = new();
+    private readonly IDateTimeProvider _clock = new TestDateTimeProvider();
 
     private RefreshTokenHandler CreateHandler() =>
-        new(_refreshTokenRepo.Object, _userRepo.Object, _jwt.Object);
+        new(_refreshTokenRepo.Object, _userRepo.Object, _jwt.Object, _clock);
 
     private static readonly string ValidRawToken = "valid-raw-token-abc123";
     private static readonly string ValidHash = TokenHelper.HashToken(ValidRawToken);
@@ -32,6 +34,11 @@ public class RefreshAccessTokenHandlerTests
         ExpiresAt = expiresAt ?? DateTime.UtcNow.AddDays(7),
         IsRevoked = isRevoked,
     };
+
+    private sealed class TestDateTimeProvider : IDateTimeProvider
+    {
+        public DateTime UtcNow => DateTime.UtcNow;
+    }
 
     private void SetupHappyPath(RefreshToken token)
     {

@@ -9,9 +9,18 @@ using Aurora.Infrastructure.Security;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", "Aurora")
+    .WriteTo.Console());
 
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
@@ -20,14 +29,18 @@ builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly));
 builder.Services.AddValidatorsFromAssembly(typeof(RegisterUserCommand).Assembly);
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var jwt = builder.Configuration.GetSection("Jwt").Get<JwtSettings>() ?? new JwtSettings();
-if (string.IsNullOrWhiteSpace(jwt.Key) || jwt.Key.Length < 32)
+var jwtKeys = jwt.Keys.Count > 0 ? jwt.Keys : [new JwtSigningKey { KeyId = jwt.CurrentKeyId, Key = jwt.Key }];
+if (jwtKeys.Any(x => string.IsNullOrWhiteSpace(x.Key) || x.Key.Length < 32))
 {
-    throw new InvalidOperationException("Jwt:Key must have at least 32 characters.");
+    throw new InvalidOperationException("All JWT signing keys must have at least 32 characters.");
 }
 
 builder.Services
@@ -40,9 +53,22 @@ builder.Services
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwt.Issuer,
         ValidAudience = jwt.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key))
+        IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
+            jwtKeys
+                .Where(x => string.IsNullOrWhiteSpace(kid) || x.KeyId == kid)
+                .Select(x => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(x.Key)) { KeyId = x.KeyId })
     });
 builder.Services.AddAuthorization();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("global", limiter =>
+    {
+        limiter.PermitLimit = 120;
+        limiter.Window = TimeSpan.FromMinutes(1);
+        limiter.QueueLimit = 0;
+    });
+});
 
 var frontUrl = builder.Configuration["Cors:FrontendUrl"] ?? "http://localhost:5173";
 builder.Services.AddCors(o => o.AddPolicy(
@@ -88,14 +114,16 @@ app.Use(async (ctx, next) =>
     await next();
 });
 
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseCors("front");
+app.UseRateLimiter();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapGet("/", () => Results.Redirect("/swagger"));
-app.MapControllers();
+app.MapControllers().RequireRateLimiting("global");
 
 using (var scope = app.Services.CreateScope())
 {

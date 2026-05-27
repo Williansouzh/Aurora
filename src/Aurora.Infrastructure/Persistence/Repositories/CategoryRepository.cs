@@ -6,8 +6,8 @@ using MongoDB.Driver;
 
 namespace Aurora.Infrastructure.Persistence.Repositories;
 
-public class CategoryRepository(MongoContext context)
-    : MongoRepositoryBase<Category>(context.Categories), ICategoryRepository
+public class CategoryRepository(MongoContext context, UnitOfWork.MongoUnitOfWork unitOfWork)
+    : MongoRepositoryBase<Category>(context.Categories, unitOfWork), ICategoryRepository
 {
     private static readonly string[] DefaultIncomeCategories =
         ["Salário", "Freelance", "Investimentos"];

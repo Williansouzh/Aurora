@@ -28,15 +28,15 @@ public class DeleteTransactionHandler(
             var invoice = await invoiceRepo.GetByIdAsync(tx.CreditCardInvoiceId, command.UserId);
             if (invoice is not null && invoice.Status != CreditCardInvoiceStatus.Paid)
             {
-                invoice.TotalAmount = Math.Max(0, invoice.TotalAmount - tx.Amount);
+                invoice.RemoveCharge(tx.Amount);
                 await invoiceRepo.UpdateAsync(invoice);
-                account.CurrentBalance = await invoiceRepo.SumOpenByAccountAsync(account.Id, command.UserId);
+                account.ReplaceCurrentBalance(await invoiceRepo.SumOpenByAccountAsync(account.Id, command.UserId));
                 await accRepo.UpdateAsync(account);
             }
         }
         else if (tx.Status == TransactionStatus.Paid)
         {
-            account.CurrentBalance -= TransactionMapper.Impact(tx.Type, tx.Amount);
+            account.ReverseTransaction(tx.Type, tx.Amount);
             await accRepo.UpdateAsync(account);
         }
 

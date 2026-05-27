@@ -1,4 +1,6 @@
+using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Abstractions.Security;
 using Aurora.Application.Features.Auth.Common;
 using Aurora.Domain.Exceptions;
 using MediatR;
@@ -7,32 +9,40 @@ namespace Aurora.Application.Features.Auth.UpdateProfile;
 
 public record UpdateProfileCommand(string UserId, string Name, string Email) : IRequest<MeResponse>;
 
-public class UpdateProfileHandler(IUserRepository users) : IRequestHandler<UpdateProfileCommand, MeResponse>
+public class UpdateProfileHandler(
+    IUserRepository users,
+    IEncryptionService encryption,
+    IDateTimeProvider clock,
+    IAuditService auditService) : IRequestHandler<UpdateProfileCommand, MeResponse>
 {
     public async Task<MeResponse> Handle(UpdateProfileCommand command, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(command.Name)) throw new ValidationException("Nome é obrigatório");
-        if (string.IsNullOrWhiteSpace(command.Email)) throw new ValidationException("E-mail é obrigatório");
-
         var user = await users.GetByIdAsync(command.UserId)
-            ?? throw new NotFoundException("Usuário não encontrado");
+            ?? throw new NotFoundException("Usuario nao encontrado");
 
-        var normalizedEmail = command.Email.Trim().ToLower();
+        var normalizedEmail = UserSecurityMapper.NormalizeEmail(command.Email);
+        var emailHash = encryption.HashDeterministic(normalizedEmail);
 
-        if (!string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(user.EmailHash, emailHash, StringComparison.Ordinal))
         {
-            var existing = await users.GetByEmailAsync(normalizedEmail);
+            var existing = await users.GetByEmailHashAsync(emailHash) ??
+                await users.GetByEmailAsync(normalizedEmail);
             if (existing is not null && existing.Id != user.Id)
             {
-                throw new ConflictException("E-mail já cadastrado");
+                throw new ConflictException("E-mail ja cadastrado");
             }
+
+            user.IsEmailConfirmed = false;
+            user.EmailConfirmedAt = null;
         }
 
         user.Name = command.Name.Trim();
-        user.Email = normalizedEmail;
-        user.UpdatedAt = DateTime.UtcNow;
+        UserSecurityMapper.SetEmail(user, normalizedEmail, encryption);
+        user.UpdatedAt = clock.UtcNow;
 
         await users.UpdateAsync(user);
-        return new MeResponse(user.Id, user.Name, user.Email);
+        await auditService.RecordAsync(user.Id, "profile-updated", "User", user.Id, null, ct);
+
+        return new MeResponse(user.Id, user.Name, normalizedEmail, user.IsEmailConfirmed, user.IsMfaEnabled);
     }
 }

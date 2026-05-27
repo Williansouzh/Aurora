@@ -5,8 +5,8 @@ using MongoDB.Driver;
 
 namespace Aurora.Infrastructure.Persistence.Repositories;
 
-public class BudgetRepository(MongoContext context)
-    : MongoRepositoryBase<Budget>(context.Budgets), IBudgetRepository
+public class BudgetRepository(MongoContext context, UnitOfWork.MongoUnitOfWork unitOfWork)
+    : MongoRepositoryBase<Budget>(context.Budgets, unitOfWork), IBudgetRepository
 {
     public Task<List<Budget>> GetByMonthAsync(string userId, int month, int year) =>
         Collection.Find(x => x.UserId == userId && x.Month == month && x.Year == year).ToListAsync();

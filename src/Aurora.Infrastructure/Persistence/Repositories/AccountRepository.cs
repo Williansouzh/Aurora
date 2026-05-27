@@ -6,8 +6,8 @@ using MongoDB.Driver;
 
 namespace Aurora.Infrastructure.Persistence.Repositories;
 
-public class AccountRepository(MongoContext context)
-    : MongoRepositoryBase<Account>(context.Accounts), IAccountRepository
+public class AccountRepository(MongoContext context, UnitOfWork.MongoUnitOfWork unitOfWork)
+    : MongoRepositoryBase<Account>(context.Accounts, unitOfWork), IAccountRepository
 {
     public Task<List<Account>> GetByUserAsync(string userId) =>
         base.GetByUserAsync(userId);

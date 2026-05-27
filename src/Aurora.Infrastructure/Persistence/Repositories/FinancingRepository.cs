@@ -5,8 +5,8 @@ using MongoDB.Driver;
 
 namespace Aurora.Infrastructure.Persistence.Repositories;
 
-public class FinancingRepository(MongoContext context)
-    : MongoRepositoryBase<Financing>(context.Financings), IFinancingRepository
+public class FinancingRepository(MongoContext context, UnitOfWork.MongoUnitOfWork unitOfWork)
+    : MongoRepositoryBase<Financing>(context.Financings, unitOfWork), IFinancingRepository
 {
     public Task<List<Financing>> GetByUserAsync(string userId) =>
         Collection.Find(x => x.UserId == userId).SortBy(x => x.Name).ToListAsync();

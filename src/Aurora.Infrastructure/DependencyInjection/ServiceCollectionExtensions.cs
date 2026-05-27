@@ -1,14 +1,19 @@
 using Aurora.Application.Abstractions.Common;
+using Aurora.Application.Abstractions.Messaging;
 using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Abstractions.Security;
 using Aurora.Domain.Entities;
 using Aurora.Infrastructure.Cache;
+using Aurora.Infrastructure.Messaging;
 using Aurora.Infrastructure.Persistence.Mongo;
 using Aurora.Infrastructure.Persistence.Repositories;
+using Aurora.Infrastructure.Persistence.UnitOfWork;
 using Aurora.Infrastructure.RateLimiting;
 using Aurora.Infrastructure.Security;
+using Aurora.Infrastructure.Time;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using StackExchange.Redis;
 
@@ -18,10 +23,19 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        RegisterBsonSerializers();
+
         services.Configure<MongoSettings>(configuration.GetSection("Mongo"));
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+        services.Configure<EncryptionSettings>(configuration.GetSection("Encryption"));
 
         services.AddSingleton<MongoContext>();
+        services.AddScoped<MongoUnitOfWork>();
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<MongoUnitOfWork>());
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+        services.AddScoped<IAuditService, AuditService>();
+        services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -31,11 +45,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<ITransferRepository, TransferRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IAuthChallengeRepository, AuthChallengeRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
         services.AddSingleton<IRateLimiter, RedisRateLimiter>();
 
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IEncryptionService, AesGcmEncryptionService>();
+        services.AddScoped<IMfaCodeGenerator, MfaCodeGenerator>();
+        services.AddScoped<Aurora.Application.Abstractions.Messaging.IEmailSender, LoggingEmailSender>();
         services.AddScoped<ICacheService, RedisCacheService>();
 
         var redisConn = configuration.GetConnectionString("Redis") ?? "redis:6379";
@@ -45,6 +64,18 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    private static void RegisterBsonSerializers()
+    {
+        try
+        {
+            BsonSerializer.RegisterSerializer(new EncryptedStringSerializer());
+        }
+        catch (Exception)
+        {
+            // Serializer may already be registered in test hosts.
+        }
+    }
+
     public static async Task EnsureIndexesAsync(this IServiceProvider sp)
     {
         var ctx = sp.GetRequiredService<MongoContext>();
@@ -52,6 +83,10 @@ public static class ServiceCollectionExtensions
         await ctx.Users.Indexes.CreateOneAsync(new CreateIndexModel<User>(
             Builders<User>.IndexKeys.Ascending(x => x.Email),
             new CreateIndexOptions { Unique = true }));
+
+        await ctx.Users.Indexes.CreateOneAsync(new CreateIndexModel<User>(
+            Builders<User>.IndexKeys.Ascending(x => x.EmailHash),
+            new CreateIndexOptions { Sparse = true }));
 
         await ctx.Accounts.Indexes.CreateManyAsync([
             new CreateIndexModel<Account>(Builders<Account>.IndexKeys.Ascending(x => x.UserId)),
@@ -109,6 +144,19 @@ public static class ServiceCollectionExtensions
             new CreateIndexModel<RefreshToken>(
                 Builders<RefreshToken>.IndexKeys.Ascending(x => x.ExpiresAt),
                 new CreateIndexOptions { ExpireAfter = TimeSpan.Zero })
+        ]);
+
+        await ctx.AuthChallenges.Indexes.CreateManyAsync([
+            new CreateIndexModel<AuthChallenge>(Builders<AuthChallenge>.IndexKeys.Ascending(x => x.UserId)),
+            new CreateIndexModel<AuthChallenge>(Builders<AuthChallenge>.IndexKeys.Ascending(x => x.TokenHash)),
+            new CreateIndexModel<AuthChallenge>(
+                Builders<AuthChallenge>.IndexKeys.Ascending(x => x.ExpiresAt),
+                new CreateIndexOptions { ExpireAfter = TimeSpan.Zero })
+        ]);
+
+        await ctx.AuditEntries.Indexes.CreateManyAsync([
+            new CreateIndexModel<AuditEntry>(Builders<AuditEntry>.IndexKeys.Ascending(x => x.UserId)),
+            new CreateIndexModel<AuditEntry>(Builders<AuditEntry>.IndexKeys.Ascending(x => x.OccurredAt))
         ]);
     }
 }
