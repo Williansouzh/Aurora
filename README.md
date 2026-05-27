@@ -21,6 +21,21 @@ docker compose up --build
 - MongoDB: `localhost:27017`
 - Redis: `localhost:6379`
 
+## Testes
+
+### Backend (xUnit + FluentAssertions + Moq)
+```bash
+dotnet test tests/Aurora.Tests/Aurora.Tests.csproj
+```
+
+### Frontend (Vitest + React Testing Library)
+```bash
+cd client
+npm test            # execução única
+npm run test:watch  # modo watch
+npm run test:coverage # com relatório de cobertura
+```
+
 ## Observações
 - O frontend roda em modo dev (`vite --host 0.0.0.0 --port 5173`) dentro do container.
 - A API usa `Cors__FrontendUrl=http://localhost:5173` no Compose.

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"d:\\\\willian\\\\Aurora\\\\src\" /b)",
+      "Bash(dir \"d:\\\\willian\\\\Aurora\" /b)",
+      "Bash(dotnet test *)",
+      "Bash(npm install *)",
+      "Bash(npm test *)",
+      "Bash(docker cp *)",
+      "Bash(docker exec *)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:8080/api/auth/register\" -Method Post -ContentType \"application/json\" -Body '{\"name\":\"Willian Souza\",\"email\":\"williansouza4041@gmail.com\",\"password\":\"Senha@123\"}')",
+      "PowerShell(docker exec aurora-mongodb-1 mongosh --eval \"db.adminCommand\\('listDatabases'\\).databases.forEach\\(d => print\\(d.name\\)\\)\")",
+      "PowerShell(docker exec aurora-mongodb-1 mongosh aurora --eval \"db.users.findOne\\({email:'williansouza4041@gmail.com'},{email:1,_id:1}\\)\")"
+    ]
+  }
+}

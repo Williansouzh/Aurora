@@ -3,28 +3,42 @@ services:
     image: mongo:7
     ports:
       - "27017:27017"
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.adminCommand({ ping: 1 }).ok\" | grep 1"]
+      interval: 5s
+      timeout: 15s
+      retries: 12
+      start_period: 20s
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   api:
     build: ./src
     environment:
       ASPNETCORE_URLS: http://+:8080
-      Cors__FrontendUrl: http://localhost:5173
+      Cors__FrontendUrl: http://localhost:5174
     ports:
       - "8080:8080"
     depends_on:
-      - mongodb
-      - redis
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   client:
-    build: ./client
-    environment:
-      VITE_API_BASE_URL: http://localhost:8080
+    build:
+      context: ./client
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
     ports:
-      - "5173:5173"
+      - "5174:80"
     depends_on:
       - api

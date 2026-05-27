@@ -21,7 +21,7 @@ if (string.IsNullOrWhiteSpace(jwt.Key) || jwt.Key.Length < 32) throw new Invalid
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o=>o.TokenValidationParameters=new TokenValidationParameters{ValidateIssuer=true,ValidateAudience=true,ValidateLifetime=true,ValidateIssuerSigningKey=true,ValidIssuer=jwt.Issuer,ValidAudience=jwt.Audience,IssuerSigningKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key))});
 builder.Services.AddAuthorization();
 var frontUrl = builder.Configuration["Cors:FrontendUrl"] ?? "http://localhost:5173";
-builder.Services.AddCors(o=>o.AddPolicy("front",p=>p.WithOrigins(frontUrl).AllowAnyHeader().AllowAnyMethod()));
+builder.Services.AddCors(o=>o.AddPolicy("front",p=>p.WithOrigins(frontUrl).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 builder.Services.AddEndpointsApiExplorer(); builder.Services.AddSwaggerGen(c=>{c.AddSecurityDefinition("Bearer",new(){Name="Authorization",Type=Microsoft.OpenApi.Models.SecuritySchemeType.Http,Scheme="bearer",BearerFormat="JWT",In=Microsoft.OpenApi.Models.ParameterLocation.Header}); c.AddSecurityRequirement(new(){ {new(){Reference=new(){Type=Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,Id="Bearer"}},Array.Empty<string>() }});});
 var app = builder.Build();
 
@@ -32,6 +32,8 @@ app.Use(async (ctx,next)=>{
  ctx.Response.Headers.TryAdd("Referrer-Policy","no-referrer");
  await next();
 });
-app.UseMiddleware<GlobalExceptionMiddleware>(); app.UseCors("front"); app.UseSwagger(); app.UseSwaggerUI(); app.UseAuthentication(); app.UseAuthorization(); app.MapControllers();
+app.UseMiddleware<GlobalExceptionMiddleware>(); app.UseCors("front"); app.UseSwagger(); app.UseSwaggerUI(); app.UseAuthentication(); app.UseAuthorization();
+app.MapGet("/", () => Results.Redirect("/swagger"));
+app.MapControllers();
 using(var scope=app.Services.CreateScope()) await scope.ServiceProvider.EnsureIndexesAsync();
 app.Run();

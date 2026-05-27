@@ -8,6 +8,7 @@ public class GlobalExceptionMiddleware(RequestDelegate next){
   catch(ValidationException ex){ context.Response.StatusCode=400; await context.Response.WriteAsJsonAsync(new ErrorResponse(ex.Message,context.TraceIdentifier,ex.Errors)); }
   catch(ConflictException ex){ context.Response.StatusCode=409; await context.Response.WriteAsJsonAsync(new ErrorResponse(ex.Message,context.TraceIdentifier)); }
   catch(NotFoundException ex){ context.Response.StatusCode=404; await context.Response.WriteAsJsonAsync(new ErrorResponse(ex.Message,context.TraceIdentifier)); }
+  catch(UnauthorizedException ex){ context.Response.StatusCode=401; await context.Response.WriteAsJsonAsync(new ErrorResponse(ex.Message,context.TraceIdentifier)); }
   catch(Exception ex){ context.Response.StatusCode=500; await context.Response.WriteAsJsonAsync(new ErrorResponse(ex.Message,context.TraceIdentifier)); }
  }
 }

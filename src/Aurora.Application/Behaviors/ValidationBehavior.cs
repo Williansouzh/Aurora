@@ -1,4 +1,4 @@
-using Aurora.Domain.Exceptions;
+using DomainValidationException = Aurora.Domain.Exceptions.ValidationException;
 using FluentValidation;
 using MediatR;
 
@@ -11,6 +11,6 @@ public class ValidationBehavior<TRequest,TResponse>(IEnumerable<IValidator<TRequ
   var failures=results.SelectMany(r=>r.Errors).Where(e=>e is not null).ToList();
   if(failures.Count==0) return await next();
   var errors=failures.GroupBy(e=>e.PropertyName).ToDictionary(g=>g.Key,g=>g.Select(x=>x.ErrorMessage).Distinct().ToArray());
-  throw new ValidationException("Validation failed",errors);
+  throw new DomainValidationException("Validation failed",errors);
  }
 }

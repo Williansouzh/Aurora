@@ -1,2 +1,21 @@
-import React from 'react';import ReactDOM from 'react-dom/client';import { BrowserRouter } from 'react-router-dom';import App from './App';
-ReactDOM.createRoot(document.getElementById('root')).render(<BrowserRouter><App/></BrowserRouter>);
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ToastContainer } from './components/ui/ToastContainer';
+import { ToastProvider } from './hooks/useToast';
+import './styles.css';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <ToastProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+        <ToastContainer />
+      </ToastProvider>
+    </ErrorBoundary>
+  </React.StrictMode>
+);
