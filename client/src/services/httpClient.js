@@ -21,10 +21,20 @@ async function silentRefresh() {
   }
 }
 
+export function refreshAccessToken() {
+  if (!_refreshPromise) {
+    _refreshPromise = silentRefresh().finally(() => { _refreshPromise = null; });
+  }
+  return _refreshPromise;
+}
+
 async function parseResponse(response) {
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(body.message || 'Nao foi possivel concluir a operacao.');
+    const validationErrors = body.errors
+      ? Object.values(body.errors).flat().filter(Boolean)
+      : [];
+    throw new Error(validationErrors[0] || body.message || 'Nao foi possivel concluir a operacao.');
   }
   const body = await response.json();
   return body.data;
@@ -43,10 +53,7 @@ async function rawRequest(path, options = {}, isRetry = false) {
   });
 
   if (response.status === 401 && !isRetry) {
-    if (!_refreshPromise) {
-      _refreshPromise = silentRefresh().finally(() => { _refreshPromise = null; });
-    }
-    const refreshed = await _refreshPromise;
+    const refreshed = await refreshAccessToken();
     if (refreshed) return rawRequest(path, options, true);
     clearMemoryToken();
     _onUnauthorized?.();
@@ -65,7 +72,10 @@ export function createHttpClient() {
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error(body.message || 'Nao foi possivel concluir a operacao.');
+      const validationErrors = body.errors
+        ? Object.values(body.errors).flat().filter(Boolean)
+        : [];
+      throw new Error(validationErrors[0] || body.message || 'Nao foi possivel concluir a operacao.');
     }
     const disposition = response.headers.get('content-disposition') || '';
     const match = /filename\*?=(?:UTF-8'')?\"?([^\";]+)\"?/i.exec(disposition);

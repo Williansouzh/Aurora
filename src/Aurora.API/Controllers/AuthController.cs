@@ -11,6 +11,7 @@ using Aurora.Application.Features.Auth.Me;
 using Aurora.Application.Features.Auth.Refresh;
 using Aurora.Application.Features.Auth.Register;
 using Aurora.Application.Features.Auth.ResetPassword;
+using Aurora.Application.Features.Auth.ResendMfa;
 using Aurora.Application.Features.Auth.UpdatePassword;
 using Aurora.Application.Features.Auth.UpdateProfile;
 using Aurora.Application.Features.Auth.VerifyMfa;
@@ -54,6 +55,10 @@ public class AuthController(
         return AuthResponse(result);
     }
 
+    [AllowAnonymous, HttpPost("mfa/resend")]
+    public async Task<IActionResult> ResendMfa(ResendMfaCommand cmd) =>
+        Ok(new ApiResponse<ResendMfaResponse>(true, await sender.Send(cmd)));
+
     [AllowAnonymous, HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand cmd)
     {
@@ -79,7 +84,7 @@ public class AuthController(
     public async Task<IActionResult> Refresh()
     {
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        if (!await rateLimiter.IsAllowedAsync($"refresh:{ip}", 10, TimeSpan.FromMinutes(15)))
+        if (!await rateLimiter.IsAllowedAsync($"refresh:{ip}", 60, TimeSpan.FromMinutes(15)))
         {
             return StatusCode(429, new ApiResponse<string>(false, "Muitas tentativas. Tente novamente em 15 minutos."));
         }

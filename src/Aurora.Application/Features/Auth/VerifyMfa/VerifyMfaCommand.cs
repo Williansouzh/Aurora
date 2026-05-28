@@ -26,7 +26,8 @@ public class VerifyMfaHandler(
     IRefreshTokenRepository refreshTokens,
     IDateTimeProvider clock,
     IMfaCodeGenerator codeGenerator,
-    IEncryptionService encryption) : IRequestHandler<VerifyMfaCommand, AuthResult>
+    IEncryptionService encryption,
+    IAuditService auditService) : IRequestHandler<VerifyMfaCommand, AuthResult>
 {
     public async Task<AuthResult> Handle(VerifyMfaCommand command, CancellationToken ct)
     {
@@ -54,7 +55,8 @@ public class VerifyMfaHandler(
         var user = await users.GetByIdAsync(challenge.UserId)
             ?? throw new UnauthorizedException("Usuario nao encontrado");
 
-        var result = await TokenHelper.IssueTokens(user, jwt, refreshTokens, clock);
+        await auditService.RecordAsync(user.Id, "mfa-verified", "AuthChallenge", challenge.Id, null, ct);
+        var result = await TokenHelper.IssueTokens(user, jwt, refreshTokens, clock, encryption);
         return result with { Email = UserSecurityMapper.ReadEmail(user, encryption) };
     }
 }

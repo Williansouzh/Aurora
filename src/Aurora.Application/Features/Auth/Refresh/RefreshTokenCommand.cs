@@ -13,29 +13,44 @@ public class RefreshTokenHandler(
     IRefreshTokenRepository refreshTokens,
     IUserRepository users,
     IJwtTokenService jwt,
-    IDateTimeProvider clock) : IRequestHandler<RefreshTokenCommand, AuthResult>
+    IDateTimeProvider clock,
+    IEncryptionService encryption,
+    IAuditService auditService) : IRequestHandler<RefreshTokenCommand, AuthResult>
 {
     public async Task<AuthResult> Handle(RefreshTokenCommand command, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(command.RawToken))
         {
-            throw new UnauthorizedException("Token inválido");
+            throw new UnauthorizedException("Token invalido");
         }
 
-        var hash = TokenHelper.HashToken(command.RawToken);
-        var token = await refreshTokens.GetByHashAsync(hash)
-            ?? throw new UnauthorizedException("Token inválido");
+        var token = await refreshTokens.GetByHashAsync(TokenHelper.HashToken(command.RawToken, encryption))
+            ?? throw new UnauthorizedException("Token invalido");
 
-        if (token.IsRevoked || token.ExpiresAt <= clock.UtcNow)
+        if (token.IsRevoked)
+        {
+            await refreshTokens.RevokeAllByUserAsync(token.UserId);
+            await auditService.RecordAsync(
+                token.UserId,
+                "refresh-token-reuse-detected",
+                "RefreshToken",
+                token.Id,
+                null,
+                ct);
+            throw new UnauthorizedException("Token revogado");
+        }
+
+        if (token.ExpiresAt <= clock.UtcNow)
         {
             throw new UnauthorizedException("Token expirado");
         }
 
         var user = await users.GetByIdAsync(token.UserId)
-            ?? throw new UnauthorizedException("Usuário não encontrado");
+            ?? throw new UnauthorizedException("Usuario nao encontrado");
 
         await refreshTokens.RevokeAsync(token.Id);
+        await auditService.RecordAsync(user.Id, "refresh-token-rotated", "RefreshToken", token.Id, null, ct);
 
-        return await TokenHelper.IssueTokens(user, jwt, refreshTokens, clock);
+        return await TokenHelper.IssueTokens(user, jwt, refreshTokens, clock, encryption);
     }
 }

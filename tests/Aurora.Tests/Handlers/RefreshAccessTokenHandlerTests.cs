@@ -16,13 +16,15 @@ public class RefreshAccessTokenHandlerTests
     private readonly Mock<IRefreshTokenRepository> _refreshTokenRepo = new();
     private readonly Mock<IUserRepository> _userRepo = new();
     private readonly Mock<IJwtTokenService> _jwt = new();
+    private readonly Mock<IEncryptionService> _encryption = new();
+    private readonly Mock<IAuditService> _audit = new();
     private readonly IDateTimeProvider _clock = new TestDateTimeProvider();
 
     private RefreshTokenHandler CreateHandler() =>
-        new(_refreshTokenRepo.Object, _userRepo.Object, _jwt.Object, _clock);
+        new(_refreshTokenRepo.Object, _userRepo.Object, _jwt.Object, _clock, _encryption.Object, _audit.Object);
 
     private static readonly string ValidRawToken = "valid-raw-token-abc123";
-    private static readonly string ValidHash = TokenHelper.HashToken(ValidRawToken);
+    private static readonly string ValidHash = "hashed-refresh-token";
 
     private static User MakeUser() => new() { Id = "user1", Name = "Test", Email = "test@test.com" };
 
@@ -42,6 +44,16 @@ public class RefreshAccessTokenHandlerTests
 
     private void SetupHappyPath(RefreshToken token)
     {
+        _encryption.Setup(x => x.HashDeterministic(ValidRawToken)).Returns(ValidHash);
+        _encryption.Setup(x => x.HashDeterministic(It.Is<string>(v => v != ValidRawToken))).Returns("new-refresh-hash");
+        _audit.Setup(x => x.RecordAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         _refreshTokenRepo.Setup(r => r.GetByHashAsync(ValidHash)).ReturnsAsync(token);
         _userRepo.Setup(r => r.GetByIdAsync("user1")).ReturnsAsync(MakeUser());
         _refreshTokenRepo.Setup(r => r.RevokeAsync("tok1")).Returns(Task.CompletedTask);
@@ -79,6 +91,7 @@ public class RefreshAccessTokenHandlerTests
     public async Task Deve_retornar_erro_para_refresh_token_expirado()
     {
         var expiredToken = MakeToken(expiresAt: DateTime.UtcNow.AddSeconds(-1));
+        _encryption.Setup(x => x.HashDeterministic(ValidRawToken)).Returns(ValidHash);
         _refreshTokenRepo.Setup(r => r.GetByHashAsync(ValidHash)).ReturnsAsync(expiredToken);
 
         var act = () => CreateHandler().Handle(new RefreshTokenCommand(ValidRawToken), default);
@@ -90,11 +103,20 @@ public class RefreshAccessTokenHandlerTests
     public async Task Deve_retornar_erro_para_refresh_token_revogado()
     {
         var revokedToken = MakeToken(isRevoked: true);
+        _encryption.Setup(x => x.HashDeterministic(ValidRawToken)).Returns(ValidHash);
+        _audit.Setup(x => x.RecordAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         _refreshTokenRepo.Setup(r => r.GetByHashAsync(ValidHash)).ReturnsAsync(revokedToken);
 
         var act = () => CreateHandler().Handle(new RefreshTokenCommand(ValidRawToken), default);
 
-        await act.Should().ThrowAsync<UnauthorizedException>().WithMessage("*expirado*");
+        await act.Should().ThrowAsync<UnauthorizedException>().WithMessage("*revogado*");
     }
 
     [Fact]
@@ -105,6 +127,6 @@ public class RefreshAccessTokenHandlerTests
 
         var act = () => CreateHandler().Handle(new RefreshTokenCommand("token-falso"), default);
 
-        await act.Should().ThrowAsync<UnauthorizedException>().WithMessage("*inválido*");
+        await act.Should().ThrowAsync<UnauthorizedException>().WithMessage("*invalido*");
     }
 }

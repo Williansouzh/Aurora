@@ -26,7 +26,8 @@ public class ResetPasswordHandler(
     IPasswordHasher passwordHasher,
     IMfaCodeGenerator codeGenerator,
     IDateTimeProvider clock,
-    IRefreshTokenRepository refreshTokens) : IRequestHandler<ResetPasswordCommand>
+    IRefreshTokenRepository refreshTokens,
+    IAuditService auditService) : IRequestHandler<ResetPasswordCommand>
 {
     public async Task Handle(ResetPasswordCommand command, CancellationToken ct)
     {
@@ -51,5 +52,6 @@ public class ResetPasswordHandler(
         await users.UpdateAsync(user);
         await challenges.UpdateAsync(challenge, ct);
         await refreshTokens.RevokeAllByUserAsync(user.Id);
+        await auditService.RecordAsync(user.Id, "password-reset", "User", user.Id, null, ct);
     }
 }

@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Abstractions.Security;
@@ -9,25 +8,22 @@ namespace Aurora.Application.Features.Auth.Common;
 
 public static class TokenHelper
 {
-    public static string HashToken(string raw)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(raw));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
-    }
+    public static string HashToken(string raw, IEncryptionService encryption) =>
+        encryption.HashDeterministic(raw);
 
     public static async Task<AuthResult> IssueTokens(
         User user,
         IJwtTokenService jwt,
         IRefreshTokenRepository refreshTokens,
-        IDateTimeProvider clock)
+        IDateTimeProvider clock,
+        IEncryptionService encryption)
     {
         var accessToken = jwt.Generate(user);
         var rawRefresh = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-        var hash = HashToken(rawRefresh);
 
         await refreshTokens.AddAsync(new RefreshToken
         {
-            TokenHash = hash,
+            TokenHash = HashToken(rawRefresh, encryption),
             UserId = user.Id,
             ExpiresAt = clock.UtcNow.AddDays(7)
         });

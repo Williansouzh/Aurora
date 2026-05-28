@@ -22,7 +22,8 @@ public class ForgotPasswordHandler(
     IEmailSender emailSender,
     IDateTimeProvider clock,
     IEncryptionService encryption,
-    IMfaCodeGenerator codeGenerator) : IRequestHandler<ForgotPasswordCommand>
+    IMfaCodeGenerator codeGenerator,
+    IAuditService auditService) : IRequestHandler<ForgotPasswordCommand>
 {
     public async Task Handle(ForgotPasswordCommand command, CancellationToken ct)
     {
@@ -51,5 +52,6 @@ public class ForgotPasswordHandler(
             "Redefinicao de senha Aurora",
             $"Use este token para redefinir sua senha: {token}",
             ct);
+        await auditService.RecordAsync(user.Id, "password-reset-requested", "User", user.Id, null, ct);
     }
 }

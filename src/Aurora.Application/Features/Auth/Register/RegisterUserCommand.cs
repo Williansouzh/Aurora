@@ -56,7 +56,7 @@ public class RegisterUserHandler(
         await categories.SeedDefaultsAsync(user.Id);
         await SendEmailConfirmationAsync(user, normalizedEmail, ct);
 
-        return await TokenHelper.IssueTokens(user, jwt, refreshTokens, clock);
+        return await TokenHelper.IssueTokens(user, jwt, refreshTokens, clock, encryption);
     }
 
     private async Task SendEmailConfirmationAsync(User user, string email, CancellationToken ct)

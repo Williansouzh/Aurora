@@ -6,6 +6,7 @@ using Aurora.Domain.Entities;
 using Aurora.Infrastructure.Cache;
 using Aurora.Infrastructure.Messaging;
 using Aurora.Infrastructure.Persistence.Mongo;
+using Aurora.Infrastructure.Persistence;
 using Aurora.Infrastructure.Persistence.Repositories;
 using Aurora.Infrastructure.Persistence.UnitOfWork;
 using Aurora.Infrastructure.RateLimiting;
@@ -28,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.Configure<MongoSettings>(configuration.GetSection("Mongo"));
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.Configure<EncryptionSettings>(configuration.GetSection("Encryption"));
+        services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
 
         services.AddSingleton<MongoContext>();
         services.AddScoped<MongoUnitOfWork>();
@@ -54,8 +56,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IEncryptionService, AesGcmEncryptionService>();
         services.AddScoped<IMfaCodeGenerator, MfaCodeGenerator>();
-        services.AddScoped<Aurora.Application.Abstractions.Messaging.IEmailSender, LoggingEmailSender>();
+        services.AddScoped<Aurora.Application.Abstractions.Messaging.IEmailSender, SmtpEmailSender>();
         services.AddScoped<ICacheService, RedisCacheService>();
+        services.AddHostedService<PiiMigrationHostedService>();
 
         var redisConn = configuration.GetConnectionString("Redis") ?? "redis:6379";
         services.AddStackExchangeRedisCache(o => o.Configuration = redisConn);

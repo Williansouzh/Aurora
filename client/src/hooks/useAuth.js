@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { clearAuth, getStoredUser, storeUser } from '../services/authStorage';
 import { clearMemoryToken, setMemoryToken } from '../services/authMemory';
-import { createHttpClient, setUnauthorizedCallback } from '../services/httpClient';
-import { API_BASE_URL } from '../config/api';
+import { createHttpClient, refreshAccessToken, setUnauthorizedCallback } from '../services/httpClient';
 
 const api = createHttpClient();
 
@@ -29,14 +28,9 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-    })
-      .then(async (response) => {
-        if (!response.ok) { clearAuth(); setUser(null); return; }
-        const body = await response.json();
-        setMemoryToken(body.data?.accessToken);
+    refreshAccessToken()
+      .then(async (refreshed) => {
+        if (!refreshed) { clearAuth(); setUser(null); return; }
         return api.get('/api/auth/me').then((me) => {
           const nextUser = { ...(getStoredUser() || {}), ...me };
           storeUser(nextUser);

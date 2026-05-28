@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Select } from '../ui/Select';
 
 const transactionTypes = [
   ['Expense', 'Despesa'],
@@ -66,7 +65,8 @@ export function TransactionForm({ accounts = [], categories = [], onSubmit, edit
     <form className="panel form-grid" onSubmit={submit} aria-label="Formulário de transação">
       <label>
         Conta
-        <Select
+        <NativeSelect
+          aria-label="Conta"
           value={form.accountId}
           options={accounts.map((a) => [a.id, a.name])}
           onChange={(accountId) => setForm({ ...form, accountId })}
@@ -79,7 +79,8 @@ export function TransactionForm({ accounts = [], categories = [], onSubmit, edit
 
       <label>
         Categoria
-        <Select
+        <NativeSelect
+          aria-label="Categoria"
           value={form.categoryId}
           options={categories.map((c) => [c.id, c.name])}
           onChange={(categoryId) => setForm({ ...form, categoryId })}
@@ -112,12 +113,12 @@ export function TransactionForm({ accounts = [], categories = [], onSubmit, edit
 
       <label>
         Tipo
-        <Select value={form.type} options={transactionTypes} onChange={(type) => setForm({ ...form, type })} />
+        <NativeSelect aria-label="Tipo" value={form.type} options={transactionTypes} onChange={(type) => setForm({ ...form, type })} />
       </label>
 
       <label>
         Status
-        <Select value={form.status} options={transactionStatuses} onChange={(status) => setForm({ ...form, status })} />
+        <NativeSelect aria-label="Status" value={form.status} options={transactionStatuses} onChange={(status) => setForm({ ...form, status })} />
       </label>
 
       <label>
@@ -148,7 +149,8 @@ export function TransactionForm({ accounts = [], categories = [], onSubmit, edit
             <div className="repeat-grid">
               <label>
                 Tipo de recorrência
-                <Select
+                <NativeSelect
+                  aria-label="Tipo de recorrência"
                   value={form.recurrenceType}
                   options={recurrenceTypes}
                   onChange={(recurrenceType) => setForm({ ...form, recurrenceType })}
@@ -167,5 +169,15 @@ export function TransactionForm({ accounts = [], categories = [], onSubmit, edit
         </button>
       </div>
     </form>
+  );
+}
+
+function NativeSelect({ options, onChange, ...props }) {
+  return (
+    <select {...props} onChange={(event) => onChange(event.target.value)}>
+      {options.map(([value, label]) => (
+        <option key={value} value={value}>{label}</option>
+      ))}
+    </select>
   );
 }

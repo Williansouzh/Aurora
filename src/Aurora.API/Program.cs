@@ -1,5 +1,6 @@
 using System.Text;
 using Aurora.API.Extensions;
+using Aurora.API.Health;
 using Aurora.API.Middlewares;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Behaviors;
@@ -59,6 +60,9 @@ builder.Services
                 .Select(x => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(x.Key)) { KeyId = x.KeyId })
     });
 builder.Services.AddAuthorization();
+builder.Services.AddHealthChecks()
+    .AddCheck<MongoHealthCheck>("mongo")
+    .AddCheck<RedisHealthCheck>("redis");
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -104,6 +108,16 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("CorrelationId", httpContext.Response.Headers[CorrelationIdMiddleware.HeaderName].ToString());
+        diagnosticContext.Set("UserId", httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+    };
+});
+
 if (app.Environment.IsProduction()) app.UseHsts();
 
 app.Use(async (ctx, next) =>
@@ -123,6 +137,8 @@ app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapGet("/", () => Results.Redirect("/swagger"));
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready");
 app.MapControllers().RequireRateLimiting("global");
 
 using (var scope = app.Services.CreateScope())

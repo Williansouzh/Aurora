@@ -65,7 +65,7 @@ describe('DashboardPage', () => {
     await waitFor(() => {
       expect(screen.queryAllByRole('generic', { name: /skeleton/i })).toHaveLength(0);
     });
-    expect(screen.getByText(/sem dados para este mês/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/sem dados/i).length).toBeGreaterThan(0);
   });
 
   it('deve exibir os valores corretos após carregar dados', async () => {

@@ -31,7 +31,8 @@ public class LoginHandler(
     IAuthChallengeRepository challenges,
     IEmailSender emailSender,
     IMfaCodeGenerator codeGenerator,
-    IRateLimiter rateLimiter) : IRequestHandler<LoginCommand, AuthResult>
+    IRateLimiter rateLimiter,
+    IAuditService auditService) : IRequestHandler<LoginCommand, AuthResult>
 {
     public async Task<AuthResult> Handle(LoginCommand command, CancellationToken ct)
     {
@@ -49,6 +50,7 @@ public class LoginHandler(
 
         if (!hasher.Verify(command.Password, user.PasswordHash))
         {
+            await auditService.RecordAsync(user.Id, "login-failed", "User", user.Id, null, ct);
             throw new ValidationException("Credenciais invalidas");
         }
 
@@ -61,6 +63,7 @@ public class LoginHandler(
         if (user.IsMfaEnabled)
         {
             var challenge = await CreateMfaChallengeAsync(user, normalizedEmail, ct);
+            await auditService.RecordAsync(user.Id, "mfa-challenge-created", "AuthChallenge", challenge.Id, null, ct);
             return new AuthResult(
                 string.Empty,
                 0,
@@ -72,7 +75,8 @@ public class LoginHandler(
                 challenge.Id);
         }
 
-        return await TokenHelper.IssueTokens(user, jwt, refreshTokens, clock);
+        await auditService.RecordAsync(user.Id, "login-success", "User", user.Id, null, ct);
+        return await TokenHelper.IssueTokens(user, jwt, refreshTokens, clock, encryption);
     }
 
     private async Task<AuthChallenge> CreateMfaChallengeAsync(User user, string email, CancellationToken ct)

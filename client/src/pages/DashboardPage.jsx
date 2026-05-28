@@ -247,7 +247,7 @@ export function DashboardPage({ api }) {
               <div className="rounded-full bg-muted p-4 mb-3">
                 <Receipt className="h-6 w-6 text-muted-foreground/40" />
               </div>
-              <p className="text-sm font-medium text-muted-foreground">Nenhuma transação neste mês</p>
+              <p className="text-sm font-medium text-muted-foreground">Sem dados para este m�s</p>
             </div>
           ) : (
             <TransactionTable transactions={data.recentTransactions || []} compact />
@@ -373,3 +373,4 @@ function DashboardSkeleton() {
     </div>
   );
 }
+

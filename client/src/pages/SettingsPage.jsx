@@ -1,4 +1,4 @@
-import { KeyRound, LogOut, Settings, Shield, SlidersHorizontal, User } from 'lucide-react';
+import { Download, KeyRound, LogOut, Settings, Shield, SlidersHorizontal, Trash2, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
@@ -42,7 +42,7 @@ export function SettingsPage({ api, user, onProfileUpdated, onSignOut }) {
         </TabsContent>
 
         <TabsContent value="security">
-          <SecurityTab updatePassword={updatePassword} toast={toast} onSignOut={onSignOut} />
+          <SecurityTab api={api} updatePassword={updatePassword} toast={toast} onSignOut={onSignOut} />
         </TabsContent>
 
         <TabsContent value="preferences">
@@ -110,7 +110,7 @@ function ProfileTab({ profile, loading, updateProfile, onSuccess, onError }) {
   );
 }
 
-function SecurityTab({ updatePassword, toast, onSignOut }) {
+function SecurityTab({ api, updatePassword, toast, onSignOut }) {
   const [form, setForm] = useState({ current: '', next: '', confirm: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -120,7 +120,7 @@ function SecurityTab({ updatePassword, toast, onSignOut }) {
   const submit = async (e) => {
     e.preventDefault();
     setError('');
-    if (form.next.length < 8) { setError('Nova senha deve ter ao menos 8 caracteres.'); return; }
+    if (form.next.length < 10) { setError('Nova senha deve ter ao menos 10 caracteres.'); return; }
     if (form.next !== form.confirm) { setError('As senhas não conferem.'); return; }
     setSaving(true);
     try {
@@ -152,15 +152,45 @@ function SecurityTab({ updatePassword, toast, onSignOut }) {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="pw-new">Nova senha</Label>
-              <Input id="pw-new" type="password" value={form.next} onChange={set('next')} required minLength={8} autoComplete="new-password" />
+              <Input id="pw-new" type="password" value={form.next} onChange={set('next')} required minLength={10} autoComplete="new-password" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="pw-confirm">Confirmar nova senha</Label>
-              <Input id="pw-confirm" type="password" value={form.confirm} onChange={set('confirm')} required minLength={8} autoComplete="new-password" />
+              <Input id="pw-confirm" type="password" value={form.confirm} onChange={set('confirm')} required minLength={10} autoComplete="new-password" />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" disabled={saving}>{saving ? 'Alterando...' : 'Alterar senha'}</Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Download className="h-4 w-4" /> Exportar dados
+          </CardTitle>
+          <CardDescription>Baixe uma copia dos dados pessoais e eventos de auditoria.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                const data = await api.get('/api/auth/me/export');
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'aurora-meus-dados.json';
+                link.click();
+                URL.revokeObjectURL(url);
+              } catch (err) {
+                toast.error(err.message || 'Falha ao exportar dados.');
+              }
+            }}
+          >
+            Exportar JSON
+          </Button>
         </CardContent>
       </Card>
 
@@ -173,6 +203,31 @@ function SecurityTab({ updatePassword, toast, onSignOut }) {
         </CardHeader>
         <CardContent>
           <Button variant="destructive" onClick={onSignOut}>Sair agora</Button>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base text-destructive">
+            <Trash2 className="h-4 w-4" /> Excluir meus dados
+          </CardTitle>
+          <CardDescription>Anonimiza seus dados pessoais e revoga suas sessoes.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant="destructive"
+            onClick={async () => {
+              if (!window.confirm('Anonimizar sua conta? Esta acao nao pode ser desfeita.')) return;
+              try {
+                await api.delete('/api/auth/me', { reason: 'user-request' });
+                await onSignOut?.();
+              } catch (err) {
+                toast.error(err.message || 'Falha ao excluir dados.');
+              }
+            }}
+          >
+            Anonimizar conta
+          </Button>
         </CardContent>
       </Card>
     </div>

@@ -25,7 +25,9 @@ services:
     build: ./src
     environment:
       ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
       Cors__FrontendUrl: http://localhost:5174
+      Smtp__Enabled: "false"
     ports:
       - "8080:8080"
     depends_on:

@@ -9,6 +9,7 @@ import { AuthPage } from './pages/AuthPage';
 import { BudgetsPage } from './pages/BudgetsPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { ConfirmEmailPage, ForgotPasswordPage, ResetPasswordPage } from './pages/ForgotPasswordPage';
 import { FinancingDetailPage } from './pages/FinancingDetailPage';
 import { FinancingsPage } from './pages/FinancingsPage';
 import { InvoicePage } from './pages/InvoicePage';
@@ -33,6 +34,9 @@ function App() {
       <Routes>
         <Route path="/login" element={<AuthPage mode="login" api={api} onAuth={signIn} />} />
         <Route path="/register" element={<AuthPage mode="register" api={api} onAuth={signIn} />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage api={api} />} />
+        <Route path="/reset-password" element={<ResetPasswordPage api={api} />} />
+        <Route path="/confirm-email" element={<ConfirmEmailPage api={api} />} />
         <Route
           path="/*"
           element={
