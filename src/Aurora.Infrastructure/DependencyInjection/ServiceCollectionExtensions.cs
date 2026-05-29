@@ -2,6 +2,7 @@ using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Messaging;
 using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Abstractions.Security;
+using Aurora.Application.Features.Auth.Common;
 using Aurora.Domain.Entities;
 using Aurora.Infrastructure.Cache;
 using Aurora.Infrastructure.Messaging;
@@ -30,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.Configure<EncryptionSettings>(configuration.GetSection("Encryption"));
         services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
+        services.Configure<AuthOptions>(configuration.GetSection("Auth"));
 
         services.AddSingleton<MongoContext>();
         services.AddScoped<MongoUnitOfWork>();

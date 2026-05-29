@@ -6,6 +6,7 @@ using Aurora.Application.Features.Auth.Common;
 using Aurora.Domain.Entities;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Options;
 using ValidationException = Aurora.Domain.Exceptions.ValidationException;
 
 namespace Aurora.Application.Features.Auth.Login;
@@ -32,7 +33,8 @@ public class LoginHandler(
     IEmailSender emailSender,
     IMfaCodeGenerator codeGenerator,
     IRateLimiter rateLimiter,
-    IAuditService auditService) : IRequestHandler<LoginCommand, AuthResult>
+    IAuditService auditService,
+    IOptions<AuthOptions> authOptions) : IRequestHandler<LoginCommand, AuthResult>
 {
     public async Task<AuthResult> Handle(LoginCommand command, CancellationToken ct)
     {
@@ -60,7 +62,7 @@ public class LoginHandler(
             await users.UpdateAsync(user);
         }
 
-        if (user.IsMfaEnabled)
+        if (authOptions.Value.MfaEnabled && user.IsMfaEnabled)
         {
             var challenge = await CreateMfaChallengeAsync(user, normalizedEmail, ct);
             await auditService.RecordAsync(user.Id, "mfa-challenge-created", "AuthChallenge", challenge.Id, null, ct);

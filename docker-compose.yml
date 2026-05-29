@@ -28,6 +28,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       Cors__FrontendUrl: http://localhost:5174
       Smtp__Enabled: "false"
+      Auth__MfaEnabled: "true"
     ports:
       - "8080:8080"
     depends_on:
