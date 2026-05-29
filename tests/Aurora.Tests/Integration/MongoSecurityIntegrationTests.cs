@@ -10,20 +10,23 @@ using Xunit;
 
 namespace Aurora.Tests.Integration;
 
-public class MongoSecurityIntegrationTests : IAsyncLifetime
+public class MongoSecurityIntegrationTests
 {
-    private readonly MongoDbContainer _mongo = new MongoDbBuilder("mongo:7").Build();
-
-    public Task InitializeAsync() => _mongo.StartAsync();
-
-    public Task DisposeAsync() => _mongo.DisposeAsync().AsTask();
-
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Deve_persistir_email_com_hash_e_valor_criptografado()
     {
+        if (!IntegrationTestEnvironment.ShouldRunDockerTests())
+        {
+            return;
+        }
+
+        await using var mongo = new MongoDbBuilder("mongo:7").Build();
+        await mongo.StartAsync();
+
         var context = new MongoContext(Options.Create(new MongoSettings
         {
-            ConnectionString = _mongo.GetConnectionString(),
+            ConnectionString = mongo.GetConnectionString(),
             DatabaseName = "aurora_security_tests"
         }));
         var encryption = new AesGcmEncryptionService(Options.Create(new EncryptionSettings

@@ -1,4 +1,6 @@
+using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Common;
 using Aurora.Application.Features.Financings.Common;
 using Aurora.Domain.Enums;
 using MediatR;
@@ -7,11 +9,15 @@ namespace Aurora.Application.Features.Financings.Summary;
 
 public record GetFinancingSummaryQuery(string UserId) : IRequest<FinancingSummaryDto>;
 
-public class GetFinancingSummaryHandler(IFinancingRepository financings)
+public class GetFinancingSummaryHandler(IFinancingRepository financings, ICacheService cache)
     : IRequestHandler<GetFinancingSummaryQuery, FinancingSummaryDto>
 {
     public async Task<FinancingSummaryDto> Handle(GetFinancingSummaryQuery query, CancellationToken ct)
     {
+        var key = CacheKeys.FinancingSummary(query.UserId);
+        var cached = await cache.GetAsync<FinancingSummaryDto>(key, ct);
+        if (cached is not null) return cached;
+
         var active = (await financings.GetByUserAsync(query.UserId))
             .Where(f => f.Status == FinancingStatus.Active)
             .ToList();
@@ -46,6 +52,15 @@ public class GetFinancingSummaryHandler(IFinancingRepository financings)
             .Take(5)
             .ToList();
 
-        return new FinancingSummaryDto(active.Count, totalRemaining, totalMonthly, totalInterestRemaining, progress, upcoming);
+        var result = new FinancingSummaryDto(
+            active.Count,
+            totalRemaining,
+            totalMonthly,
+            totalInterestRemaining,
+            progress,
+            upcoming);
+
+        await cache.SetAsync(key, result, TimeSpan.FromMinutes(5), ct);
+        return result;
     }
 }

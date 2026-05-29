@@ -23,8 +23,13 @@ jobs:
       - name: Build
         run: dotnet build src/Aurora.API/Aurora.API.csproj --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test tests/Aurora.Tests/Aurora.Tests.csproj --no-restore --logger "github;verbosity=summary"
+      - name: Unit and architecture tests
+        run: dotnet test tests/Aurora.Tests/Aurora.Tests.csproj --no-restore --filter "Category!=Integration" --logger "github;verbosity=summary"
+
+      - name: Integration tests
+        run: dotnet test tests/Aurora.Tests/Aurora.Tests.csproj --no-restore --filter "Category=Integration" --logger "github;verbosity=summary"
+        env:
+          RUN_INTEGRATION_TESTS: "true"
 
   frontend:
     name: Frontend — Lint & Test
@@ -80,6 +85,16 @@ jobs:
       - name: Start stack
         working-directory: .
         run: docker compose up -d --build
+
+      - name: Wait for API
+        working-directory: .
+        run: |
+          for i in {1..60}; do
+            curl -fsS http://localhost:8080/health && exit 0
+            sleep 2
+          done
+          docker compose logs api
+          exit 1
 
       - name: Run E2E
         run: npm run e2e

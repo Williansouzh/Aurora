@@ -1,4 +1,6 @@
+using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Common;
 using Aurora.Application.Features.Financings.Common;
 using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
@@ -14,7 +16,7 @@ public record MarkFinancingInstallmentAsPaidCommand(
     DateTime? PaidAt = null,
     string? LinkedTransactionId = null) : IRequest<FinancingDto>;
 
-public class MarkFinancingInstallmentAsPaidHandler(IFinancingRepository financings)
+public class MarkFinancingInstallmentAsPaidHandler(IFinancingRepository financings, ICacheService cache)
     : IRequestHandler<MarkFinancingInstallmentAsPaidCommand, FinancingDto>
 {
     public async Task<FinancingDto> Handle(MarkFinancingInstallmentAsPaidCommand command, CancellationToken ct)
@@ -39,6 +41,7 @@ public class MarkFinancingInstallmentAsPaidHandler(IFinancingRepository financin
         }
 
         await financings.UpdateAsync(f);
+        await cache.RemoveByPrefixAsync(CacheKeys.DashboardPrefix(command.UserId), ct);
         return f.ToDto();
     }
 }

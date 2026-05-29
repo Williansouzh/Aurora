@@ -1,4 +1,6 @@
+using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Common;
 using Aurora.Application.Features.Budgets.Common;
 using Aurora.Domain.Entities;
 using Aurora.Domain.Enums;
@@ -17,7 +19,8 @@ public record UpsertBudgetCommand(
 public class UpsertBudgetHandler(
     IBudgetRepository budgets,
     ICategoryRepository categories,
-    ITransactionRepository transactions) : IRequestHandler<UpsertBudgetCommand, BudgetDto>
+    ITransactionRepository transactions,
+    ICacheService cache) : IRequestHandler<UpsertBudgetCommand, BudgetDto>
 {
     public async Task<BudgetDto> Handle(UpsertBudgetCommand command, CancellationToken ct)
     {
@@ -56,6 +59,8 @@ public class UpsertBudgetHandler(
 
         var spent = (await transactions.CategoryExpenseAsync(command.UserId, command.Month, command.Year))
             .FirstOrDefault(x => x.CategoryId == command.CategoryId).Total;
+
+        await cache.RemoveByPrefixAsync(CacheKeys.DashboardPrefix(command.UserId), ct);
 
         return BudgetMapper.ToBudgetDto(category, budget, spent, command.Month, command.Year);
     }

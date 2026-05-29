@@ -41,7 +41,12 @@ describe('useToast', () => {
   });
 
   it('deve lançar erro fora do ToastProvider', () => {
-    // renderHook without wrapper = no provider
-    expect(() => renderHook(() => useToast())).toThrow('useToast must be used inside ToastProvider');
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      expect(() => renderHook(() => useToast())).toThrow('useToast must be used inside ToastProvider');
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 });

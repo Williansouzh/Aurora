@@ -1,5 +1,6 @@
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Common;
 using Aurora.Application.Features.Transactions.Common;
 using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
@@ -82,7 +83,7 @@ public class UpdateTransactionHandler(
         }
 
         await txRepo.UpdateAsync(tx);
-        await cache.RemoveByPrefixAsync($"aurora:dashboard:{command.UserId}", ct);
+        await cache.RemoveByPrefixAsync(CacheKeys.DashboardPrefix(command.UserId), ct);
         return tx.ToDto();
     }
 }

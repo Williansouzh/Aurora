@@ -1,4 +1,6 @@
+using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Common;
 using Aurora.Application.Features.Dashboard.Common;
 using MediatR;
 
@@ -8,15 +10,20 @@ public record GetCategoryExpensesQuery(string UserId, int Month, int Year) : IRe
 
 public class GetCategoryExpensesHandler(
     ITransactionRepository transactions,
-    ICategoryRepository categories) : IRequestHandler<GetCategoryExpensesQuery, List<CategoryExpenseDto>>
+    ICategoryRepository categories,
+    ICacheService cache) : IRequestHandler<GetCategoryExpensesQuery, List<CategoryExpenseDto>>
 {
     public async Task<List<CategoryExpenseDto>> Handle(GetCategoryExpensesQuery query, CancellationToken ct)
     {
+        var key = CacheKeys.CategoryExpenses(query.UserId, query.Month, query.Year);
+        var cached = await cache.GetAsync<List<CategoryExpenseDto>>(key, ct);
+        if (cached is not null) return cached;
+
         var grouped = await transactions.CategoryExpenseAsync(query.UserId, query.Month, query.Year);
         var lookup = (await categories.GetByUserAsync(query.UserId)).ToDictionary(x => x.Id, x => x);
         var total = grouped.Sum(x => x.Total);
 
-        return grouped
+        var result = grouped
             .Select(x =>
             {
                 lookup.TryGetValue(x.CategoryId, out var category);
@@ -30,5 +37,8 @@ public class GetCategoryExpensesHandler(
             })
             .OrderByDescending(x => x.Total)
             .ToList();
+
+        await cache.SetAsync(key, result, TimeSpan.FromMinutes(5), ct);
+        return result;
     }
 }

@@ -1,5 +1,6 @@
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Common;
 using Aurora.Application.Features.Dashboard.Common;
 using Aurora.Application.Features.Transactions.Common;
 using Aurora.Domain.Enums;
@@ -16,7 +17,7 @@ public class GetMonthlySummaryHandler(
 {
     public async Task<MonthlySummaryDto> Handle(GetMonthlySummaryQuery query, CancellationToken ct)
     {
-        var key = $"aurora:dashboard:{query.UserId}:{query.Month}:{query.Year}:v3";
+        var key = CacheKeys.MonthlySummary(query.UserId, query.Month, query.Year);
         var cached = await cache.GetAsync<MonthlySummaryDto>(key, ct);
         if (cached is not null) return cached;
 

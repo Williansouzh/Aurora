@@ -1,4 +1,6 @@
+using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Common;
 using Aurora.Application.Features.Financings.Common;
 using Aurora.Domain.Entities;
 using Aurora.Domain.Enums;
@@ -29,7 +31,8 @@ public record CreateFinancingCommand(
     int? VehicleYear = null,
     string? VehiclePlate = null) : IRequest<FinancingDto>;
 
-public class CreateFinancingHandler(IFinancingRepository financings) : IRequestHandler<CreateFinancingCommand, FinancingDto>
+public class CreateFinancingHandler(IFinancingRepository financings, ICacheService cache)
+    : IRequestHandler<CreateFinancingCommand, FinancingDto>
 {
     public async Task<FinancingDto> Handle(CreateFinancingCommand command, CancellationToken ct)
     {
@@ -70,6 +73,7 @@ public class CreateFinancingHandler(IFinancingRepository financings) : IRequestH
         };
 
         await financings.AddAsync(f);
+        await cache.RemoveByPrefixAsync(CacheKeys.DashboardPrefix(command.UserId), ct);
         return f.ToDto();
     }
 }

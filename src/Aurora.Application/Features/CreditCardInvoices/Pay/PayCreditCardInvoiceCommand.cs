@@ -1,5 +1,6 @@
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Common;
 using Aurora.Application.Features.CreditCardInvoices.Common;
 using Aurora.Domain.Entities;
 using Aurora.Domain.Enums;
@@ -69,7 +70,7 @@ public class PayCreditCardInvoiceHandler(
         };
 
         await transactions.AddAsync(tx);
-        await cache.RemoveByPrefixAsync($"aurora:dashboard:{command.UserId}", ct);
+        await cache.RemoveByPrefixAsync(CacheKeys.DashboardPrefix(command.UserId), ct);
 
         return invoice.ToDto(await transactions.GetByInvoiceIdAsync(invoice.Id, command.UserId));
     }

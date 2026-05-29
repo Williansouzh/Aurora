@@ -1,4 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+
 namespace Aurora.API.Controllers;
+
 [ApiController, Route("api/[controller]")]
-public class HealthController:ControllerBase{[HttpGet] public IActionResult Get()=>Ok(new{status="ok",app="aurora"});}
+public class HealthController : ControllerBase
+{
+    [HttpGet]
+    public IActionResult Get() => Ok(new { status = "ok", app = "aurora" });
+}
