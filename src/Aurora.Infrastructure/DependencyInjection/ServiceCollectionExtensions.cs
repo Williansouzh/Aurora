@@ -12,6 +12,7 @@ using Aurora.Infrastructure.Persistence.Repositories;
 using Aurora.Infrastructure.Persistence.UnitOfWork;
 using Aurora.Infrastructure.RateLimiting;
 using Aurora.Infrastructure.Security;
+using Aurora.Infrastructure.Storage;
 using Aurora.Infrastructure.Time;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,8 @@ public static class ServiceCollectionExtensions
         RegisterBsonSerializers();
 
         services.Configure<MongoSettings>(configuration.GetSection("Mongo"));
+        services.Configure<StorageSettings>(configuration.GetSection("Storage"));
+        services.AddScoped<IStorageService, MinioStorageService>();
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.Configure<EncryptionSettings>(configuration.GetSection("Encryption"));
         services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
@@ -52,7 +55,26 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthChallengeRepository, AuthChallengeRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
+        // Life OS — Fase 2-3
+        services.AddScoped<IDailyTaskRepository, DailyTaskRepository>();
+        services.AddScoped<IHabitRepository, HabitRepository>();
+        services.AddScoped<IHabitCheckInRepository, HabitCheckInRepository>();
+        services.AddScoped<ITimelineEventRepository, TimelineEventRepository>();
+
+        // Gamification
+        services.AddScoped<IXpRepository, XpRepository>();
+        services.AddScoped<IXpService, Aurora.Application.Services.XpService>();
+
+        // Life OS — Fase 4-7
+        services.AddScoped<IGoalRepository, GoalRepository>();
+        services.AddScoped<IWeeklyPlanRepository, WeeklyPlanRepository>();
+        services.AddScoped<IDiaryEntryRepository, DiaryEntryRepository>();
+        services.AddScoped<IEvolutionAlbumRepository, EvolutionAlbumRepository>();
+        services.AddScoped<IEvolutionPhotoRepository, EvolutionPhotoRepository>();
+
         services.AddSingleton<IRateLimiter, RedisRateLimiter>();
+        services.AddHostedService<Aurora.Infrastructure.Notifications.HabitReminderService>();
+        services.AddHostedService<Aurora.Infrastructure.Notifications.WeeklyPlanningReminderService>();
 
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -162,6 +184,64 @@ public static class ServiceCollectionExtensions
         await ctx.AuditEntries.Indexes.CreateManyAsync([
             new CreateIndexModel<AuditEntry>(Builders<AuditEntry>.IndexKeys.Ascending(x => x.UserId)),
             new CreateIndexModel<AuditEntry>(Builders<AuditEntry>.IndexKeys.Ascending(x => x.OccurredAt))
+        ]);
+
+        // Life OS indexes
+        await ctx.DailyTasks.Indexes.CreateManyAsync([
+            new CreateIndexModel<DailyTask>(Builders<DailyTask>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Date)),
+            new CreateIndexModel<DailyTask>(Builders<DailyTask>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Status))
+        ]);
+
+        await ctx.Habits.Indexes.CreateManyAsync([
+            new CreateIndexModel<Habit>(Builders<Habit>.IndexKeys.Ascending(x => x.UserId)),
+            new CreateIndexModel<Habit>(Builders<Habit>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.IsActive))
+        ]);
+
+        await ctx.HabitCheckIns.Indexes.CreateManyAsync([
+            new CreateIndexModel<HabitCheckIn>(Builders<HabitCheckIn>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Date)),
+            new CreateIndexModel<HabitCheckIn>(Builders<HabitCheckIn>.IndexKeys.Ascending(x => x.HabitId).Ascending(x => x.Date)),
+            new CreateIndexModel<HabitCheckIn>(
+                Builders<HabitCheckIn>.IndexKeys.Ascending(x => x.HabitId).Ascending(x => x.UserId).Ascending(x => x.Date),
+                new CreateIndexOptions { Unique = true })
+        ]);
+
+        await ctx.TimelineEvents.Indexes.CreateManyAsync([
+            new CreateIndexModel<TimelineEvent>(Builders<TimelineEvent>.IndexKeys.Ascending(x => x.UserId).Descending(x => x.OccurredAt)),
+            new CreateIndexModel<TimelineEvent>(Builders<TimelineEvent>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Type)),
+            new CreateIndexModel<TimelineEvent>(Builders<TimelineEvent>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.IsFavorite))
+        ]);
+
+        await ctx.Goals.Indexes.CreateManyAsync([
+            new CreateIndexModel<Goal>(Builders<Goal>.IndexKeys.Ascending(x => x.UserId)),
+            new CreateIndexModel<Goal>(Builders<Goal>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Status))
+        ]);
+
+        await ctx.WeeklyPlans.Indexes.CreateManyAsync([
+            new CreateIndexModel<WeeklyPlan>(Builders<WeeklyPlan>.IndexKeys.Ascending(x => x.UserId).Descending(x => x.WeekStart)),
+            new CreateIndexModel<WeeklyPlan>(
+                Builders<WeeklyPlan>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.WeekStart),
+                new CreateIndexOptions { Unique = true })
+        ]);
+
+        await ctx.DiaryEntries.Indexes.CreateManyAsync([
+            new CreateIndexModel<DiaryEntry>(Builders<DiaryEntry>.IndexKeys.Ascending(x => x.UserId).Descending(x => x.Date)),
+            new CreateIndexModel<DiaryEntry>(
+                Builders<DiaryEntry>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Date),
+                new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<DiaryEntry>(Builders<DiaryEntry>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Mood))
+        ]);
+
+        await ctx.EvolutionAlbums.Indexes.CreateOneAsync(
+            new CreateIndexModel<EvolutionAlbum>(Builders<EvolutionAlbum>.IndexKeys.Ascending(x => x.UserId)));
+
+        await ctx.EvolutionPhotos.Indexes.CreateManyAsync([
+            new CreateIndexModel<EvolutionPhoto>(Builders<EvolutionPhoto>.IndexKeys.Ascending(x => x.UserId).Descending(x => x.Date)),
+            new CreateIndexModel<EvolutionPhoto>(Builders<EvolutionPhoto>.IndexKeys.Ascending(x => x.AlbumId).Ascending(x => x.UserId))
+        ]);
+
+        await ctx.XpEntries.Indexes.CreateManyAsync([
+            new CreateIndexModel<XpEntry>(Builders<XpEntry>.IndexKeys.Ascending(x => x.UserId).Descending(x => x.OccurredAt)),
+            new CreateIndexModel<XpEntry>(Builders<XpEntry>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Source).Ascending(x => x.OccurredAt))
         ]);
     }
 }

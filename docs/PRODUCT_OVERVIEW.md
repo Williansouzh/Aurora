@@ -1,5 +1,7 @@
 # Aurora - Product Overview
 
+> Nota de direcao: este documento descreve o estado financeiro atual do Aurora. A visao estrategica para transformar o produto em um Life OS esta em [LIFE_OS_STRATEGY.md](./LIFE_OS_STRATEGY.md).
+
 ## 1. Resumo Executivo
 
 Aurora e uma aplicacao web de controle financeiro pessoal. O produto permite que uma pessoa cadastre contas, categorias e transacoes, acompanhe saldo total, entradas, saidas, resultado mensal, gastos por categoria e fluxo anual.

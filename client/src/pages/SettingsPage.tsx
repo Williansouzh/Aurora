@@ -1,4 +1,4 @@
-import { Download, KeyRound, LogOut, Settings, Shield, SlidersHorizontal, Trash2, User } from 'lucide-react';
+import { Bell, Download, KeyRound, LogOut, Settings, Shield, SlidersHorizontal, Trash2, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
@@ -29,6 +29,9 @@ export function SettingsPage({ api, user, onProfileUpdated, onSignOut }) {
           <TabsTrigger value="preferences" className="gap-2">
             <SlidersHorizontal className="h-3.5 w-3.5" />Preferências
           </TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-2">
+            <Bell className="h-3.5 w-3.5" />Notificações
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
@@ -48,8 +51,107 @@ export function SettingsPage({ api, user, onProfileUpdated, onSignOut }) {
         <TabsContent value="preferences">
           <PreferencesTab toast={toast} />
         </TabsContent>
+
+        <TabsContent value="notifications">
+          <NotificationsTab api={api} toast={toast} />
+        </TabsContent>
       </Tabs>
     </Screen>
+  );
+}
+
+function NotificationsTab({ api, toast }) {
+  const [form, setForm] = useState({
+    habitReminderEnabled: false,
+    habitReminderHour: 20,
+    weeklyPlanningReminderEnabled: false,
+    weeklyPlanningReminderHour: 8,
+  });
+  const [saving, setSaving] = useState(false);
+
+  const toggle = (k) => setForm((f) => ({ ...f, [k]: !f[k] }));
+  const setHour = (k, v) => setForm((f) => ({ ...f, [k]: parseInt(v) || 0 }));
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await api.put('/api/auth/notifications', form);
+      toast.success('Preferências de notificação salvas.');
+    } catch (err) {
+      toast.error(err.message);
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Bell className="h-4 w-4" /> Notificações por email
+        </CardTitle>
+        <CardDescription>Configure lembretes automáticos. Requer SMTP ativo.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Lembrete de hábitos</p>
+              <p className="text-xs text-muted-foreground">Receba um email quando houver hábitos pendentes no dia.</p>
+            </div>
+            <button
+              onClick={() => toggle('habitReminderEnabled')}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${form.habitReminderEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+            >
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${form.habitReminderEnabled ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+          {form.habitReminderEnabled && (
+            <div className="flex items-center gap-2 pl-1">
+              <label className="text-xs text-muted-foreground">Horário (UTC):</label>
+              <input
+                type="number"
+                min="0" max="23"
+                value={form.habitReminderHour}
+                onChange={(e) => setHour('habitReminderHour', e.target.value)}
+                className="w-16 h-7 rounded-md border border-input bg-background px-2 text-sm"
+              />
+              <span className="text-xs text-muted-foreground">h</span>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Lembrete de planejamento semanal</p>
+              <p className="text-xs text-muted-foreground">Receba um email toda segunda sem plano da semana.</p>
+            </div>
+            <button
+              onClick={() => toggle('weeklyPlanningReminderEnabled')}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${form.weeklyPlanningReminderEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+            >
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${form.weeklyPlanningReminderEnabled ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+          {form.weeklyPlanningReminderEnabled && (
+            <div className="flex items-center gap-2 pl-1">
+              <label className="text-xs text-muted-foreground">Horário (UTC):</label>
+              <input
+                type="number"
+                min="0" max="23"
+                value={form.weeklyPlanningReminderHour}
+                onChange={(e) => setHour('weeklyPlanningReminderHour', e.target.value)}
+                className="w-16 h-7 rounded-md border border-input bg-background px-2 text-sm"
+              />
+              <span className="text-xs text-muted-foreground">h</span>
+            </div>
+          )}
+        </div>
+
+        <Button onClick={save} disabled={saving} className="w-full sm:w-auto">
+          {saving ? 'Salvando...' : 'Salvar preferências'}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 

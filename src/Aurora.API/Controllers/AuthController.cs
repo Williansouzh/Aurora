@@ -14,7 +14,9 @@ using Aurora.Application.Features.Auth.ResetPassword;
 using Aurora.Application.Features.Auth.ResendMfa;
 using Aurora.Application.Features.Auth.UpdatePassword;
 using Aurora.Application.Features.Auth.UpdateProfile;
+using Aurora.Application.Features.Auth.UpdateNotifications;
 using Aurora.Application.Features.Auth.VerifyMfa;
+using Aurora.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -140,6 +142,16 @@ public class AuthController(
     public async Task<IActionResult> ExportMe() =>
         Ok(new ApiResponse<ExportMeResponse>(true, await sender.Send(new ExportMeQuery(user.UserId))));
 
+    [Authorize, HttpPut("notifications")]
+    public async Task<IActionResult> UpdateNotifications(UpdateNotificationsRequest req) =>
+        Ok(new ApiResponse<NotificationPreferences>(true,
+            await sender.Send(new UpdateNotificationsCommand(
+                user.UserId,
+                req.HabitReminderEnabled,
+                req.HabitReminderHour,
+                req.WeeklyPlanningReminderEnabled,
+                req.WeeklyPlanningReminderHour))));
+
     [Authorize, HttpDelete("me")]
     public async Task<IActionResult> DeleteMe(DeleteMeRequest req)
     {
@@ -206,3 +218,8 @@ public record AuthClientResponse(
 public record UpdateProfileRequest(string Name, string Email);
 public record UpdatePasswordRequest(string CurrentPassword, string NewPassword, string ConfirmPassword);
 public record DeleteMeRequest(string? Reason);
+public record UpdateNotificationsRequest(
+    bool HabitReminderEnabled,
+    int HabitReminderHour,
+    bool WeeklyPlanningReminderEnabled,
+    int WeeklyPlanningReminderHour);

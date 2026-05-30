@@ -10,7 +10,17 @@
       "Bash(docker exec *)",
       "PowerShell(Invoke-RestMethod -Uri \"http://localhost:8080/api/auth/register\" -Method Post -ContentType \"application/json\" -Body '{\"name\":\"Willian Souza\",\"email\":\"williansouza4041@gmail.com\",\"password\":\"Senha@123\"}')",
       "PowerShell(docker exec aurora-mongodb-1 mongosh --eval \"db.adminCommand\\('listDatabases'\\).databases.forEach\\(d => print\\(d.name\\)\\)\")",
-      "PowerShell(docker exec aurora-mongodb-1 mongosh aurora --eval \"db.users.findOne\\({email:'williansouza4041@gmail.com'},{email:1,_id:1}\\)\")"
+      "PowerShell(docker exec aurora-mongodb-1 mongosh aurora --eval \"db.users.findOne\\({email:'williansouza4041@gmail.com'},{email:1,_id:1}\\)\")",
+      "Bash(find \"d:\\\\\\\\willian\\\\\\\\Aurora\" -type f \\\\\\( -name \"*seed*\" -o -name \"*migration*\" -o -name \"*Seed*\" -o -name \"*Migration*\" \\\\\\))",
+      "Bash(find \"d:\\\\\\\\willian\\\\\\\\Aurora\\\\\\\\tests\" -type f -name \"*.cs\")",
+      "Bash(find \"d:\\\\\\\\willian\\\\\\\\Aurora\\\\\\\\src\\\\\\\\Aurora.Application\\\\\\\\Abstractions\" -type f -name \"*.cs\")",
+      "Bash(find \"d:\\\\\\\\willian\\\\\\\\Aurora\\\\\\\\src\\\\\\\\Aurora.API\" -maxdepth 2 -type f -name \"*.cs\")",
+      "Bash(find \"d:\\\\\\\\willian\\\\\\\\Aurora\\\\\\\\src\\\\\\\\Aurora.Infrastructure\\\\\\\\DependencyInjection\" -type f -name \"*.cs\")",
+      "Bash(find \"d:\\\\\\\\willian\\\\\\\\Aurora\\\\\\\\docs\" -type f)",
+      "Bash(find \"d:\\\\\\\\willian\\\\\\\\Aurora\\\\\\\\client\\\\\\\\src\" -maxdepth 2 -type d)",
+      "Bash(find \"d:\\\\\\\\willian\\\\\\\\Aurora\\\\\\\\src\\\\\\\\Aurora.Domain\" -type f -name \"*.cs\")",
+      "Bash(docker build *)",
+      "Bash(Start-Sleep -Seconds 5)"
     ]
   }
 }

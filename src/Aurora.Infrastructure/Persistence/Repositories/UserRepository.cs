@@ -23,4 +23,7 @@ public class UserRepository(MongoContext context) : IUserRepository
         user.UpdatedAt = DateTime.UtcNow;
         return context.Users.ReplaceOneAsync(x => x.Id == user.Id, user);
     }
+
+    public Task<List<User>> GetAllAsync() =>
+        context.Users.Find(x => x.DeletedAt == null).ToListAsync();
 }

@@ -1,14 +1,22 @@
 import {
   ArrowLeftRight,
+  BookOpen,
   Building2,
+  CalendarCheck,
+  CalendarDays,
+  Camera,
+  Flame,
+  Inbox,
   LayoutDashboard,
   LogOut,
   Menu,
   Moon,
+  Scroll,
   Settings,
   Sun,
   Tag,
   Target,
+  TrendingUp,
   Wallet,
   X,
   Zap,
@@ -23,6 +31,15 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 const navItems = [
   { to: '/', end: true, icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/today', icon: CalendarCheck, label: 'Meu Dia' },
+  { to: '/backlog', icon: Inbox, label: 'Backlog' },
+  { to: '/habits', icon: Flame, label: 'Rituais' },
+  { to: '/goals', icon: Target, label: 'Minha Jornada' },
+  { to: '/timeline', icon: Scroll, label: 'Linha da Vida' },
+  { to: '/weekly', icon: CalendarDays, label: 'Minha Semana' },
+  { to: '/diary', icon: BookOpen, label: 'Diário' },
+  { to: '/evolution', icon: Camera, label: 'Evolução' },
+  { to: '/retrospectives', icon: TrendingUp, label: 'Retrospectiva' },
   { to: '/transactions', icon: ArrowLeftRight, label: 'Transações' },
   { to: '/accounts', icon: Wallet, label: 'Contas' },
   { to: '/categories', icon: Tag, label: 'Categorias' },
@@ -85,7 +102,7 @@ export function Shell({ children, user, onSignOut, api }) {
         </div>
         <div className="flex flex-col leading-none">
           <span className="text-base font-bold text-foreground">Aurora</span>
-          <span className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">Finanças</span>
+          <span className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">Life OS</span>
         </div>
         {isMobile && (
           <Button variant="ghost" size="icon" className="ml-auto h-7 w-7" onClick={() => setMobileOpen(false)}>

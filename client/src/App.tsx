@@ -12,9 +12,18 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ConfirmEmailPage, ForgotPasswordPage, ResetPasswordPage } from './pages/ForgotPasswordPage';
 import { FinancingDetailPage } from './pages/FinancingDetailPage';
 import { FinancingsPage } from './pages/FinancingsPage';
+import { BacklogPage } from './pages/BacklogPage';
+import { DiaryPage } from './pages/DiaryPage';
+import { EvolutionPage } from './pages/EvolutionPage';
+import { GoalsPage } from './pages/GoalsPage';
+import { HabitsPage } from './pages/HabitsPage';
 import { InvoicePage } from './pages/InvoicePage';
 import { SettingsPage } from './pages/SettingsPage';
+import { TimelinePage } from './pages/TimelinePage';
+import { TodayPage } from './pages/TodayPage';
+import { RetrospectivesPage } from './pages/RetrospectivesPage';
 import { TransactionsPage } from './pages/TransactionsPage';
+import { WeeklyPlanningPage } from './pages/WeeklyPlanningPage';
 
 function App() {
   const { api, ready, user, signIn, signOut, updateUser } = useAuth();
@@ -44,6 +53,15 @@ function App() {
               <Shell user={user} onSignOut={signOut} api={api}>
                 <Routes>
                   <Route path="/" element={<DashboardPage api={api} />} />
+                  <Route path="/today" element={<TodayPage api={api} />} />
+                  <Route path="/backlog" element={<BacklogPage api={api} />} />
+                  <Route path="/habits" element={<HabitsPage api={api} />} />
+                  <Route path="/goals" element={<GoalsPage api={api} />} />
+                  <Route path="/timeline" element={<TimelinePage api={api} />} />
+                  <Route path="/weekly" element={<WeeklyPlanningPage api={api} />} />
+                  <Route path="/diary" element={<DiaryPage api={api} />} />
+                  <Route path="/evolution" element={<EvolutionPage api={api} />} />
+                  <Route path="/retrospectives" element={<RetrospectivesPage api={api} />} />
                   <Route path="/accounts" element={<AccountsPage api={api} />} />
                   <Route path="/accounts/:accountId/invoices" element={<InvoicePage api={api} />} />
                   <Route path="/categories" element={<CategoriesPage api={api} />} />
