@@ -26,6 +26,12 @@ public class MongoContext
     public IMongoCollection<RefreshToken> RefreshTokens => Db.GetCollection<RefreshToken>("refreshTokens");
     public IMongoCollection<AuthChallenge> AuthChallenges => Db.GetCollection<AuthChallenge>("authChallenges");
     public IMongoCollection<AuditEntry> AuditEntries => Db.GetCollection<AuditEntry>("auditEntries");
+    public IMongoCollection<Plan> Plans => Db.GetCollection<Plan>("plans");
+    public IMongoCollection<ModuleCatalogItem> ModuleCatalog => Db.GetCollection<ModuleCatalogItem>("moduleCatalog");
+    public IMongoCollection<UserSubscription> UserSubscriptions => Db.GetCollection<UserSubscription>("userSubscriptions");
+    public IMongoCollection<UserModuleOverride> UserModuleOverrides => Db.GetCollection<UserModuleOverride>("userModuleOverrides");
+    public IMongoCollection<LifeAreaCatalogItem> LifeAreaCatalog => Db.GetCollection<LifeAreaCatalogItem>("lifeAreaCatalog");
+    public IMongoCollection<AdminAuditLog> AdminAuditLogs => Db.GetCollection<AdminAuditLog>("adminAuditLogs");
 
     // Life OS — Fase 2-3
     public IMongoCollection<DailyTask> DailyTasks => Db.GetCollection<DailyTask>("dailyTasks");
@@ -39,6 +45,13 @@ public class MongoContext
     public IMongoCollection<DiaryEntry> DiaryEntries => Db.GetCollection<DiaryEntry>("diaryEntries");
     public IMongoCollection<EvolutionAlbum> EvolutionAlbums => Db.GetCollection<EvolutionAlbum>("evolutionAlbums");
     public IMongoCollection<EvolutionPhoto> EvolutionPhotos => Db.GetCollection<EvolutionPhoto>("evolutionPhotos");
+    public IMongoCollection<StudySkill> StudySkills => Db.GetCollection<StudySkill>("studySkills");
+    public IMongoCollection<StudyPriorityAssessment> StudyPriorityAssessments => Db.GetCollection<StudyPriorityAssessment>("studyPriorityAssessments");
+    public IMongoCollection<StudySession> StudySessions => Db.GetCollection<StudySession>("studySessions");
+    public IMongoCollection<StudyReview> StudyReviews => Db.GetCollection<StudyReview>("studyReviews");
+    public IMongoCollection<StudyTopic> StudyTopics => Db.GetCollection<StudyTopic>("studyTopics");
+    public IMongoCollection<StudyResource> StudyResources => Db.GetCollection<StudyResource>("studyResources");
+    public IMongoCollection<StudyPracticeTask> StudyPracticeTasks => Db.GetCollection<StudyPracticeTask>("studyPracticeTasks");
 
     // Gamification
     public IMongoCollection<XpEntry> XpEntries => Db.GetCollection<XpEntry>("xpEntries");

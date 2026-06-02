@@ -3,6 +3,7 @@
 > Documento guia para evoluir o Aurora, aos poucos e um modulo por vez, de um app financeiro pessoal para um Life OS: uma rede social privada da propria evolucao.
 > Ultima atualizacao: 2026-05-29.
 > Controle de acesso, planos e Super Admin: ver [ACCESS_CONTROL_PLAN.md](./ACCESS_CONTROL_PLAN.md).
+> Modulo de Estudos: ver [STUDY_MODULE_STRATEGY.md](./STUDY_MODULE_STRATEGY.md).
 
 ---
 
@@ -96,6 +97,7 @@ Cada modulo novo deve entregar uma fatia completa:
 | WeeklyPlanning | Minha Semana | Planejamento e revisao semanal | Media |
 | Diary | Diario | Reflexoes, humor, tags e fotos | Media |
 | EvolutionPhotos | Evolucao | Albuns, antes/depois e progresso visual | Media |
+| Studies | Estudos | Prioridades de aprendizado, sessoes, revisoes e aplicacao | Media |
 | Finances | Dinheiro | Orcamento, transacoes e fechamento mensal | Ja existe / evoluir |
 | Retrospectives | Retrospectiva | Resumos semanais, mensais e anuais | Media |
 | Gamification | Progresso | XP, niveis, conquistas e streaks globais | Transversal |

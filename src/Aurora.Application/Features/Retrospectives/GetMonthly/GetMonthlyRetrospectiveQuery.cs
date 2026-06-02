@@ -20,6 +20,10 @@ public record MonthlyRetrospectiveDto(
     decimal MonthlyExpense,
     decimal MonthlySavings,
     int XpEarned,
+    int StudyMinutes,
+    int StudySessionsCompleted,
+    int StudyReviewsCompleted,
+    int StudyPracticesCompleted,
     List<string> UnlockedAchievements);
 
 public class GetMonthlyRetrospectiveHandler(
@@ -28,7 +32,10 @@ public class GetMonthlyRetrospectiveHandler(
     IGoalRepository goalRepo,
     IDiaryEntryRepository diaryRepo,
     ITransactionRepository txRepo,
-    IXpRepository xpRepo)
+    IXpRepository xpRepo,
+    IStudySessionRepository studySessions,
+    IStudyReviewRepository studyReviews,
+    IStudyPracticeTaskRepository studyPractices)
     : IRequestHandler<GetMonthlyRetrospectiveQuery, MonthlyRetrospectiveDto>
 {
     public async Task<MonthlyRetrospectiveDto> Handle(GetMonthlyRetrospectiveQuery q, CancellationToken ct)
@@ -42,8 +49,12 @@ public class GetMonthlyRetrospectiveHandler(
         var tIncome  = txRepo.SumAsync(q.UserId, q.Month, q.Year, TransactionType.Income, TransactionStatus.Paid);
         var tExpense = txRepo.SumAsync(q.UserId, q.Month, q.Year, TransactionType.Expense, TransactionStatus.Paid);
         var tXp      = xpRepo.GetTotalForPeriodAsync(q.UserId, from, to.AddDays(1));
+        var tStudyMinutes = studySessions.SumCompletedMinutesThisWeekAsync(q.UserId, from, to.AddDays(1), ct);
+        var tStudySessions = studySessions.CountCompletedAsync(q.UserId, from, to.AddDays(1), ct);
+        var tStudyReviews = studyReviews.CountCompletedThisWeekAsync(q.UserId, from, to.AddDays(1), ct);
+        var tStudyPractices = studyPractices.CountCompletedThisWeekAsync(q.UserId, from, to.AddDays(1), ct);
 
-        await Task.WhenAll(tHabits, tGoals, tDiary, tIncome, tExpense, tXp);
+        await Task.WhenAll(tHabits, tGoals, tDiary, tIncome, tExpense, tXp, tStudyMinutes, tStudySessions, tStudyReviews, tStudyPractices);
 
         var habits = tHabits.Result;
         var checkInTasks = habits.Select(h => checkInRepo.GetByHabitAsync(h.Id, q.UserId, from, to));
@@ -73,6 +84,10 @@ public class GetMonthlyRetrospectiveHandler(
             income, expense,
             income - expense,
             tXp.Result,
+            tStudyMinutes.Result,
+            tStudySessions.Result,
+            tStudyReviews.Result,
+            tStudyPractices.Result,
             []);
     }
 }

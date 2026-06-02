@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Budgets.Common;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/budgets")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Finances), Route("api/budgets")]
 public class BudgetsController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet]

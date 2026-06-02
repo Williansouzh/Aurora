@@ -11,10 +11,12 @@ public record DailyTaskDto(
     DailyTaskStatus Status,
     DateTime Date,
     DateTime? CompletedAt,
+    string? SourceModule,
+    string? SourceId,
     DateTime CreatedAt);
 
 public static class DailyTaskMappingExtensions
 {
     public static DailyTaskDto ToDto(this DailyTask t) => new(
-        t.Id, t.Title, t.Notes, t.Priority, t.Status, t.Date, t.CompletedAt, t.CreatedAt);
+        t.Id, t.Title, t.Notes, t.Priority, t.Status, t.Date, t.CompletedAt, t.SourceModule, t.SourceId, t.CreatedAt);
 }

@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Timeline.Common;
@@ -12,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/timeline")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Timeline), Route("api/timeline")]
 public class TimelineController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet]

@@ -10,4 +10,7 @@ public enum XpSource
     DiaryEntry = 6,
     TaskCompleted = 7,
     AchievementUnlocked = 8,
+    StudySession = 9,
+    StudyPractice = 10,
+    StudyReview = 11,
 }

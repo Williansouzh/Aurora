@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.CreditCardInvoices.Common;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/invoices")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Finances), Route("api/invoices")]
 public class InvoicesController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpPost("{id}/pay")]

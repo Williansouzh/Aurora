@@ -12,4 +12,7 @@ public enum TimelineEventType
     MonthlyBudgetClosed = 8,
     AchievementUnlocked = 9,
     ManualPost = 10,
+    StudySessionCompleted = 11,
+    StudyPracticeCompleted = 12,
+    StudyReviewCompleted = 13,
 }

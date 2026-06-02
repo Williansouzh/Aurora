@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Today.Backlog;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/today")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Today), Route("api/today")]
 public class TodayController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet]

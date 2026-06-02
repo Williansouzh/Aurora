@@ -14,6 +14,8 @@ public class DailyTask : EntityBase, IUserOwned
     public DateTime Date { get; set; }
     public DateTime? CompletedAt { get; set; }
     public bool IsBacklog { get; set; }
+    public string? SourceModule { get; set; }
+    public string? SourceId { get; set; }
 
     public void Complete()
     {

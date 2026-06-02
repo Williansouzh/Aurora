@@ -43,6 +43,6 @@ public class UpdateProfileHandler(
         await users.UpdateAsync(user);
         await auditService.RecordAsync(user.Id, "profile-updated", "User", user.Id, null, ct);
 
-        return new MeResponse(user.Id, user.Name, normalizedEmail, user.IsEmailConfirmed, user.IsMfaEnabled);
+        return new MeResponse(user.Id, user.Name, normalizedEmail, user.IsEmailConfirmed, user.IsMfaEnabled, user.Role, user.Status);
     }
 }

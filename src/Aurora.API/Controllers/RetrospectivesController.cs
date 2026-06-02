@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Retrospectives.GetMonthly;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/retrospectives")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Retrospectives), Route("api/retrospectives")]
 public class RetrospectivesController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet("weekly")]

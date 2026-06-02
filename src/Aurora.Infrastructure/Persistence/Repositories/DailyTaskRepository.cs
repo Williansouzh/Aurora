@@ -34,4 +34,8 @@ public class DailyTaskRepository(MongoContext context, MongoUnitOfWork unitOfWor
         Collection.Find(x => x.UserId == userId && x.IsBacklog && x.Status == DailyTaskStatus.Pending)
             .SortBy(x => x.Priority)
             .ToListAsync();
+
+    public async Task<DailyTask?> GetBySourceAsync(string userId, string sourceModule, string sourceId, CancellationToken ct = default) =>
+        await Collection.Find(x => x.UserId == userId && x.SourceModule == sourceModule && x.SourceId == sourceId)
+            .FirstOrDefaultAsync(ct);
 }

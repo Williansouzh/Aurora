@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Goals.ChangeStatus;
@@ -16,7 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/goals")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Goals), Route("api/goals")]
 public class GoalsController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet]

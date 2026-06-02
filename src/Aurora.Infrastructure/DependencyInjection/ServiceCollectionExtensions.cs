@@ -54,6 +54,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IAuthChallengeRepository, AuthChallengeRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IModuleCatalogRepository, ModuleCatalogRepository>();
+        services.AddScoped<IPlanRepository, PlanRepository>();
+        services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
+        services.AddScoped<IUserModuleOverrideRepository, UserModuleOverrideRepository>();
+        services.AddScoped<ILifeAreaCatalogRepository, LifeAreaCatalogRepository>();
+        services.AddScoped<IAdminAuditLogRepository, AdminAuditLogRepository>();
+        services.AddScoped<IAccessControlService, Aurora.Application.Services.AccessControlService>();
 
         // Life OS — Fase 2-3
         services.AddScoped<IDailyTaskRepository, DailyTaskRepository>();
@@ -71,6 +78,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDiaryEntryRepository, DiaryEntryRepository>();
         services.AddScoped<IEvolutionAlbumRepository, EvolutionAlbumRepository>();
         services.AddScoped<IEvolutionPhotoRepository, EvolutionPhotoRepository>();
+        services.AddScoped<IStudySkillRepository, StudySkillRepository>();
+        services.AddScoped<IStudyPriorityAssessmentRepository, StudyPriorityAssessmentRepository>();
+        services.AddScoped<IStudySessionRepository, StudySessionRepository>();
+        services.AddScoped<IStudyReviewRepository, StudyReviewRepository>();
+        services.AddScoped<IStudyTopicRepository, StudyTopicRepository>();
+        services.AddScoped<IStudyResourceRepository, StudyResourceRepository>();
+        services.AddScoped<IStudyPracticeTaskRepository, StudyPracticeTaskRepository>();
 
         services.AddSingleton<IRateLimiter, RedisRateLimiter>();
         services.AddHostedService<Aurora.Infrastructure.Notifications.HabitReminderService>();
@@ -186,10 +200,42 @@ public static class ServiceCollectionExtensions
             new CreateIndexModel<AuditEntry>(Builders<AuditEntry>.IndexKeys.Ascending(x => x.OccurredAt))
         ]);
 
+        await ctx.Plans.Indexes.CreateOneAsync(new CreateIndexModel<Plan>(
+            Builders<Plan>.IndexKeys.Ascending(x => x.Key),
+            new CreateIndexOptions { Unique = true }));
+
+        await ctx.ModuleCatalog.Indexes.CreateOneAsync(new CreateIndexModel<ModuleCatalogItem>(
+            Builders<ModuleCatalogItem>.IndexKeys.Ascending(x => x.Key),
+            new CreateIndexOptions { Unique = true }));
+
+        await ctx.UserSubscriptions.Indexes.CreateManyAsync([
+            new CreateIndexModel<UserSubscription>(Builders<UserSubscription>.IndexKeys.Ascending(x => x.UserId)),
+            new CreateIndexModel<UserSubscription>(Builders<UserSubscription>.IndexKeys.Ascending(x => x.PlanId))
+        ]);
+
+        await ctx.UserModuleOverrides.Indexes.CreateManyAsync([
+            new CreateIndexModel<UserModuleOverride>(
+                Builders<UserModuleOverride>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.ModuleKey),
+                new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<UserModuleOverride>(Builders<UserModuleOverride>.IndexKeys.Ascending(x => x.ExpiresAt))
+        ]);
+
+        await ctx.LifeAreaCatalog.Indexes.CreateOneAsync(new CreateIndexModel<LifeAreaCatalogItem>(
+            Builders<LifeAreaCatalogItem>.IndexKeys.Ascending(x => x.Key),
+            new CreateIndexOptions { Unique = true }));
+
+        await ctx.AdminAuditLogs.Indexes.CreateManyAsync([
+            new CreateIndexModel<AdminAuditLog>(Builders<AdminAuditLog>.IndexKeys.Descending(x => x.OccurredAt)),
+            new CreateIndexModel<AdminAuditLog>(Builders<AdminAuditLog>.IndexKeys.Ascending(x => x.TargetUserId))
+        ]);
+
         // Life OS indexes
         await ctx.DailyTasks.Indexes.CreateManyAsync([
             new CreateIndexModel<DailyTask>(Builders<DailyTask>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Date)),
-            new CreateIndexModel<DailyTask>(Builders<DailyTask>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Status))
+            new CreateIndexModel<DailyTask>(Builders<DailyTask>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Status)),
+            new CreateIndexModel<DailyTask>(
+                Builders<DailyTask>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.SourceModule).Ascending(x => x.SourceId),
+                new CreateIndexOptions { Sparse = true })
         ]);
 
         await ctx.Habits.Indexes.CreateManyAsync([
@@ -239,9 +285,55 @@ public static class ServiceCollectionExtensions
             new CreateIndexModel<EvolutionPhoto>(Builders<EvolutionPhoto>.IndexKeys.Ascending(x => x.AlbumId).Ascending(x => x.UserId))
         ]);
 
+        await ctx.StudySkills.Indexes.CreateManyAsync([
+            new CreateIndexModel<StudySkill>(Builders<StudySkill>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Status)),
+            new CreateIndexModel<StudySkill>(Builders<StudySkill>.IndexKeys.Ascending(x => x.UserId).Descending(x => x.PriorityScore))
+        ]);
+
+        await ctx.StudyPriorityAssessments.Indexes.CreateManyAsync([
+            new CreateIndexModel<StudyPriorityAssessment>(Builders<StudyPriorityAssessment>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.SkillId)),
+            new CreateIndexModel<StudyPriorityAssessment>(Builders<StudyPriorityAssessment>.IndexKeys.Ascending(x => x.SkillId).Descending(x => x.CreatedAt))
+        ]);
+
+        await ctx.StudySessions.Indexes.CreateManyAsync([
+            new CreateIndexModel<StudySession>(Builders<StudySession>.IndexKeys.Ascending(x => x.UserId).Descending(x => x.Date)),
+            new CreateIndexModel<StudySession>(Builders<StudySession>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Status)),
+            new CreateIndexModel<StudySession>(Builders<StudySession>.IndexKeys.Ascending(x => x.SkillId).Descending(x => x.Date))
+        ]);
+
+        await ctx.StudyReviews.Indexes.CreateManyAsync([
+            new CreateIndexModel<StudyReview>(Builders<StudyReview>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.DueDate)),
+            new CreateIndexModel<StudyReview>(Builders<StudyReview>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Status)),
+            new CreateIndexModel<StudyReview>(Builders<StudyReview>.IndexKeys.Ascending(x => x.SkillId).Ascending(x => x.DueDate))
+        ]);
+
+        await ctx.StudyTopics.Indexes.CreateManyAsync([
+            new CreateIndexModel<StudyTopic>(Builders<StudyTopic>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.SkillId)),
+            new CreateIndexModel<StudyTopic>(Builders<StudyTopic>.IndexKeys.Ascending(x => x.SkillId).Ascending(x => x.Stage))
+        ]);
+
+        await ctx.StudyResources.Indexes.CreateManyAsync([
+            new CreateIndexModel<StudyResource>(Builders<StudyResource>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.SkillId)),
+            new CreateIndexModel<StudyResource>(Builders<StudyResource>.IndexKeys.Ascending(x => x.SkillId).Ascending(x => x.SortOrder))
+        ]);
+
+        await ctx.StudyPracticeTasks.Indexes.CreateManyAsync([
+            new CreateIndexModel<StudyPracticeTask>(Builders<StudyPracticeTask>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.SkillId)),
+            new CreateIndexModel<StudyPracticeTask>(Builders<StudyPracticeTask>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Status).Ascending(x => x.DueDate)),
+            new CreateIndexModel<StudyPracticeTask>(Builders<StudyPracticeTask>.IndexKeys.Ascending(x => x.SkillId).Ascending(x => x.Status))
+        ]);
+
         await ctx.XpEntries.Indexes.CreateManyAsync([
             new CreateIndexModel<XpEntry>(Builders<XpEntry>.IndexKeys.Ascending(x => x.UserId).Descending(x => x.OccurredAt)),
             new CreateIndexModel<XpEntry>(Builders<XpEntry>.IndexKeys.Ascending(x => x.UserId).Ascending(x => x.Source).Ascending(x => x.OccurredAt))
         ]);
+    }
+
+    public static async Task SeedAccessControlAsync(this IServiceProvider sp, IConfiguration configuration)
+    {
+        var ctx = sp.GetRequiredService<MongoContext>();
+        var encryption = sp.GetRequiredService<IEncryptionService>();
+        var passwordHasher = sp.GetRequiredService<IPasswordHasher>();
+        await AccessControlSeeder.SeedAsync(ctx, configuration, encryption, passwordHasher);
     }
 }

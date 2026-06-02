@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Dashboard.CashFlow;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/dashboard")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Finances), Route("api/dashboard")]
 public class DashboardController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet("monthly-summary")]

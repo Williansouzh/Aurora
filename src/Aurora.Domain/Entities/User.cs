@@ -1,4 +1,5 @@
 using Aurora.Domain.Common;
+using Aurora.Domain.Enums;
 
 namespace Aurora.Domain.Entities;
 
@@ -20,6 +21,8 @@ public class User : EntityBase
     public bool IsEmailConfirmed { get; set; }
     public DateTime? EmailConfirmedAt { get; set; }
     public bool IsMfaEnabled { get; set; } = true;
+    public UserRole Role { get; set; } = UserRole.User;
+    public UserStatus Status { get; set; } = UserStatus.Active;
     public DateTime? DeletedAt { get; set; }
     public string? DeletionReason { get; set; }
 

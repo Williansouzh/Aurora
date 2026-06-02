@@ -1,4 +1,4 @@
-import { CalendarDays, CheckSquare, Loader2, Plus, X } from 'lucide-react';
+import { BookOpen, CalendarDays, CheckCircle2, CheckSquare, Clock, Loader2, Plus, RotateCcw, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -162,6 +162,7 @@ function CurrentPlanCard({ plan, api, onUpdated, onClose }) {
             </Button>
           </div>
         </div>
+        {plan.studies && <StudyWeekSummary summary={plan.studies} />}
         {plan.review && (
           <div className="border-t pt-3">
             <p className="text-xs font-medium text-muted-foreground mb-1">Revisão</p>
@@ -170,6 +171,40 @@ function CurrentPlanCard({ plan, api, onUpdated, onClose }) {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function StudyWeekSummary({ summary }) {
+  const plannedHours = ((summary.plannedStudyMinutes ?? 0) / 60).toFixed(1);
+  const completedHours = ((summary.completedStudyMinutes ?? 0) / 60).toFixed(1);
+
+  return (
+    <div className="border-t pt-3">
+      <p className="mb-2 text-sm font-medium">Estudos na semana</p>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <MiniStat icon={BookOpen} label="Prioridades" value={summary.activePriorities ?? 0} />
+        <MiniStat icon={Clock} label="Horas" value={`${completedHours}/${plannedHours}`} />
+        <MiniStat icon={RotateCcw} label="Revisoes" value={summary.completedReviews ?? 0} />
+        <MiniStat icon={CheckCircle2} label="Praticas" value={summary.completedPracticeTasks ?? 0} />
+      </div>
+      {(summary.dueReviews > 0 || summary.openPracticeTasks > 0) && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Pendencias: {summary.dueReviews ?? 0} revisoes e {summary.openPracticeTasks ?? 0} praticas abertas.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function MiniStat({ icon: Icon, label, value }) {
+  return (
+    <div className="rounded-lg border bg-muted/30 p-3">
+      <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Icon className="h-3.5 w-3.5" />
+        <span>{label}</span>
+      </div>
+      <p className="text-base font-semibold tabular-nums">{value}</p>
+    </div>
   );
 }
 

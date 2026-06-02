@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Dashboard.CloseMonth;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/home")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Home), Route("api/home")]
 public class HomeController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet]

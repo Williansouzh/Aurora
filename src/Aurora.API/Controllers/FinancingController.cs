@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Financings.Common;
@@ -18,7 +19,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/financings")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Finances), Route("api/financings")]
 public class FinancingController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet]

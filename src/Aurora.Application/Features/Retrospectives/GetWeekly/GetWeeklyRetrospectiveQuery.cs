@@ -17,6 +17,10 @@ public record WeeklyRetrospectiveDto(
     double AverageMood,
     List<TopHabitDto> TopHabits,
     int XpEarned,
+    int StudyMinutes,
+    int StudySessionsCompleted,
+    int StudyReviewsCompleted,
+    int StudyPracticesCompleted,
     string? WeeklyReview);
 
 public class GetWeeklyRetrospectiveHandler(
@@ -25,7 +29,10 @@ public class GetWeeklyRetrospectiveHandler(
     IHabitCheckInRepository checkInRepo,
     IDiaryEntryRepository diaryRepo,
     IWeeklyPlanRepository weeklyRepo,
-    IXpRepository xpRepo)
+    IXpRepository xpRepo,
+    IStudySessionRepository studySessions,
+    IStudyReviewRepository studyReviews,
+    IStudyPracticeTaskRepository studyPractices)
     : IRequestHandler<GetWeeklyRetrospectiveQuery, WeeklyRetrospectiveDto>
 {
     public async Task<WeeklyRetrospectiveDto> Handle(GetWeeklyRetrospectiveQuery q, CancellationToken ct)
@@ -37,8 +44,12 @@ public class GetWeeklyRetrospectiveHandler(
         var tDiary   = diaryRepo.GetRecentAsync(q.UserId, 7);
         var tPlan    = weeklyRepo.GetCurrentAsync(q.UserId);
         var tXp      = xpRepo.GetTotalForPeriodAsync(q.UserId, weekStart, weekEnd.AddDays(1));
+        var tStudyMinutes = studySessions.SumCompletedMinutesThisWeekAsync(q.UserId, weekStart, weekEnd.AddDays(1), ct);
+        var tStudySessions = studySessions.CountCompletedAsync(q.UserId, weekStart, weekEnd.AddDays(1), ct);
+        var tStudyReviews = studyReviews.CountCompletedThisWeekAsync(q.UserId, weekStart, weekEnd.AddDays(1), ct);
+        var tStudyPractices = studyPractices.CountCompletedThisWeekAsync(q.UserId, weekStart, weekEnd.AddDays(1), ct);
 
-        await Task.WhenAll(tHabits, tDiary, tPlan, tXp);
+        await Task.WhenAll(tHabits, tDiary, tPlan, tXp, tStudyMinutes, tStudySessions, tStudyReviews, tStudyPractices);
 
         var habits       = tHabits.Result;
         var checkInTasks = habits.Select(h => checkInRepo.GetByHabitAsync(h.Id, q.UserId, weekStart, weekEnd));
@@ -72,6 +83,10 @@ public class GetWeeklyRetrospectiveHandler(
             Math.Round(avgMood, 1),
             topHabits,
             tXp.Result,
+            tStudyMinutes.Result,
+            tStudySessions.Result,
+            tStudyReviews.Result,
+            tStudyPractices.Result,
             tPlan.Result?.Review);
     }
 }

@@ -13,6 +13,7 @@ import {
   Moon,
   Scroll,
   Settings,
+  Shield,
   Sun,
   Tag,
   Target,
@@ -27,27 +28,49 @@ import { cn, getInitials } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const navItems = [
-  { to: '/', end: true, icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/today', icon: CalendarCheck, label: 'Meu Dia' },
-  { to: '/backlog', icon: Inbox, label: 'Backlog' },
-  { to: '/habits', icon: Flame, label: 'Rituais' },
-  { to: '/goals', icon: Target, label: 'Minha Jornada' },
-  { to: '/timeline', icon: Scroll, label: 'Linha da Vida' },
-  { to: '/weekly', icon: CalendarDays, label: 'Minha Semana' },
-  { to: '/diary', icon: BookOpen, label: 'Diário' },
-  { to: '/evolution', icon: Camera, label: 'Evolução' },
-  { to: '/retrospectives', icon: TrendingUp, label: 'Retrospectiva' },
-  { to: '/transactions', icon: ArrowLeftRight, label: 'Transações' },
-  { to: '/accounts', icon: Wallet, label: 'Contas' },
-  { to: '/categories', icon: Tag, label: 'Categorias' },
-  { to: '/budgets', icon: Target, label: 'Orçamentos' },
-  { to: '/financings', icon: Building2, label: 'Financiamentos' },
+const navSections = [
+  {
+    title: 'Central',
+    items: [
+      { moduleKey: 'home', to: '/', end: true, icon: LayoutDashboard, label: 'Dashboard' },
+      { moduleKey: 'today', to: '/today', icon: CalendarCheck, label: 'Meu Dia' },
+      { moduleKey: 'tasks', to: '/backlog', icon: Inbox, label: 'Backlog' },
+    ],
+  },
+  {
+    title: 'Life OS',
+    items: [
+      { moduleKey: 'habits', to: '/habits', icon: Flame, label: 'Rituais' },
+      { moduleKey: 'goals', to: '/goals', icon: Target, label: 'Minha Jornada' },
+      { moduleKey: 'timeline', to: '/timeline', icon: Scroll, label: 'Linha da Vida' },
+      { moduleKey: 'weekly-planning', to: '/weekly', icon: CalendarDays, label: 'Minha Semana' },
+      { moduleKey: 'diary', to: '/diary', icon: BookOpen, label: 'Diario' },
+      { moduleKey: 'evolution', to: '/evolution', icon: Camera, label: 'Evolucao' },
+      { moduleKey: 'studies', to: '/studies', icon: BookOpen, label: 'Estudos' },
+      { moduleKey: 'retrospectives', to: '/retrospectives', icon: TrendingUp, label: 'Retrospectiva' },
+    ],
+  },
+  {
+    title: 'Dinheiro',
+    items: [
+      { moduleKey: 'finances', to: '/transactions', icon: ArrowLeftRight, label: 'Transacoes' },
+      { moduleKey: 'finances', to: '/accounts', icon: Wallet, label: 'Contas' },
+      { moduleKey: 'finances', to: '/categories', icon: Tag, label: 'Categorias' },
+      { moduleKey: 'finances', to: '/budgets', icon: Target, label: 'Orcamentos' },
+      { moduleKey: 'finances', to: '/financings', icon: Building2, label: 'Financiamentos' },
+    ],
+  },
+  {
+    title: 'Operacao',
+    items: [
+      { moduleKey: 'admin', to: '/admin', icon: Shield, label: 'Super Admin' },
+    ],
+  },
 ];
 
-function NavItem({ to, end, icon: Icon, label, collapsed, onClick }) {
+function NavItem({ to, end, icon: Icon, label, collapsed = false, onClick }) {
   return (
     <NavLink
       to={to}
@@ -82,20 +105,30 @@ function useDarkMode() {
     localStorage.setItem('aurora-theme', dark ? 'dark' : 'light');
   }, [dark]);
 
-  return [dark, setDark];
+  return [dark, setDark] as const;
 }
 
-export function Shell({ children, user, onSignOut, api }) {
+export function Shell({ children, user, onSignOut, access }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dark, setDark] = useDarkMode();
   const location = useLocation();
 
-  // Close mobile drawer on navigation
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  const allowedModules = new Set(
+    access?.modules
+      ?.filter((module) => module.isAllowed && module.showInNavigation)
+      .map((module) => module.key)
+  );
+  const visibleSections = navSections
+    .map((section) => ({
+      ...section,
+      items: access ? section.items.filter((item) => allowedModules.has(item.moduleKey)) : section.items,
+    }))
+    .filter((section) => section.items.length > 0);
 
   const sidebarContent = (isMobile = false) => (
     <div className="flex h-full flex-col">
-      {/* Brand */}
       <div className="flex items-center gap-2.5 px-4 py-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
           <Zap className="h-4 w-4 text-primary-foreground" />
@@ -113,22 +146,29 @@ export function Shell({ children, user, onSignOut, api }) {
 
       <Separator />
 
-      {/* Navigation */}
       <nav className="flex-1 space-y-0.5 px-3 py-4">
         <TooltipProvider delayDuration={300}>
-          {navItems.map((item) => (
-            <Tooltip key={item.to}>
-              <TooltipTrigger asChild>
-                <NavItem {...item} onClick={isMobile ? () => setMobileOpen(false) : undefined} />
-              </TooltipTrigger>
-            </Tooltip>
+          {visibleSections.map((section) => (
+            <div key={section.title} className="mb-4 last:mb-0">
+              <div className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {section.title}
+              </div>
+              <div className="space-y-0.5">
+                {section.items.map((item) => (
+                  <Tooltip key={item.to}>
+                    <TooltipTrigger asChild>
+                      <NavItem {...item} onClick={isMobile ? () => setMobileOpen(false) : undefined} />
+                    </TooltipTrigger>
+                  </Tooltip>
+                ))}
+              </div>
+            </div>
           ))}
         </TooltipProvider>
       </nav>
 
       <Separator />
 
-      {/* Footer */}
       <div className="p-3 space-y-1">
         <button
           onClick={() => setDark((d) => !d)}
@@ -152,7 +192,7 @@ export function Shell({ children, user, onSignOut, api }) {
           }
         >
           <Settings className="h-4 w-4" />
-          <span>Configurações</span>
+          <span>Configuracoes</span>
         </NavLink>
 
         <Separator className="my-2" />
@@ -164,7 +204,7 @@ export function Shell({ children, user, onSignOut, api }) {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{user?.name ?? 'Usuário'}</p>
+            <p className="text-sm font-medium text-foreground truncate">{user?.name ?? 'Usuario'}</p>
             <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
           </div>
           <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground" onClick={onSignOut} title="Sair">
@@ -177,12 +217,10 @@ export function Shell({ children, user, onSignOut, api }) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar */}
       <aside className="hidden md:flex md:w-60 md:flex-col md:fixed md:inset-y-0 md:left-0 border-r border-border bg-card z-30">
         {sidebarContent()}
       </aside>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 md:hidden"
@@ -190,7 +228,6 @@ export function Shell({ children, user, onSignOut, api }) {
         />
       )}
 
-      {/* Mobile Drawer */}
       <aside
         className={cn(
           'fixed inset-y-0 left-0 z-50 w-72 bg-card border-r border-border transform transition-transform duration-300 ease-in-out md:hidden',
@@ -200,9 +237,7 @@ export function Shell({ children, user, onSignOut, api }) {
         {sidebarContent(true)}
       </aside>
 
-      {/* Main content */}
       <div className="flex flex-1 flex-col md:pl-60">
-        {/* Mobile header */}
         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-card/80 backdrop-blur-sm px-4 md:hidden">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMobileOpen(true)}>
             <Menu className="h-4 w-4" />

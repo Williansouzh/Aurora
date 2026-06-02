@@ -21,6 +21,8 @@ public class GetMeHandler(IUserRepository users, IEncryptionService encryption)
             user.Name,
             UserSecurityMapper.ReadEmail(user, encryption),
             user.IsEmailConfirmed,
-            user.IsMfaEnabled);
+            user.IsMfaEnabled,
+            user.Role,
+            user.Status);
     }
 }

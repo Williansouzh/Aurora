@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.WeeklyPlanning.Close;
@@ -12,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/weekly-planning")]
+[ApiController, Authorize, RequireModule(ModuleKeys.WeeklyPlanning), Route("api/weekly-planning")]
 public class WeeklyPlanningController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet("current")]

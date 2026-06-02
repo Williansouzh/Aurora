@@ -132,6 +132,13 @@ function WeeklyView({ data }) {
         </Card>
       )}
 
+      <StudyRetroCard
+        minutes={data.studyMinutes}
+        sessions={data.studySessionsCompleted}
+        reviews={data.studyReviewsCompleted}
+        practices={data.studyPracticesCompleted}
+      />
+
       {data.weeklyReview && (
         <Card>
           <CardHeader className="pb-2">
@@ -183,6 +190,44 @@ function MonthlyView({ data }) {
           </CardContent>
         </Card>
       )}
+
+      <StudyRetroCard
+        minutes={data.studyMinutes}
+        sessions={data.studySessionsCompleted}
+        reviews={data.studyReviewsCompleted}
+        practices={data.studyPracticesCompleted}
+      />
+    </div>
+  );
+}
+
+function StudyRetroCard({ minutes = 0, sessions = 0, reviews = 0, practices = 0 }) {
+  const hours = (minutes / 60).toFixed(1);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
+          <BookOpen className="h-4 w-4 text-blue-500" /> Estudos
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StudyMetric label="Horas" value={`${hours}h`} />
+          <StudyMetric label="Sessoes" value={sessions} />
+          <StudyMetric label="Revisoes" value={reviews} />
+          <StudyMetric label="Praticas" value={practices} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function StudyMetric({ label, value }) {
+  return (
+    <div className="rounded-lg border bg-muted/30 p-3">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 text-lg font-bold tabular-nums">{value}</p>
     </div>
   );
 }

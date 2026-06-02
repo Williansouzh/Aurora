@@ -45,6 +45,10 @@ services:
       Cors__FrontendUrl: http://localhost:5174
       Smtp__Enabled: "false"
       Auth__MfaEnabled: "false"
+      Admin__SuperAdminEmails__0: williansouza4041@gmail.com
+      Admin__DefaultSuperAdmin__Name: Aurora Super Admin
+      Admin__DefaultSuperAdmin__Email: superadmin@aurora.com.br
+      Admin__DefaultSuperAdmin__Password: AuroraAdmin#2026!
       Storage__Endpoint: minio:9000
       Storage__AccessKey: aurora
       Storage__SecretKey: aurora-secret-123

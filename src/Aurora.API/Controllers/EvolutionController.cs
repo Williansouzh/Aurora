@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.EvolutionPhotos.Albums;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/evolution")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Evolution), Route("api/evolution")]
 public class EvolutionController(ISender sender, IUserContext user) : ControllerBase
 {
     // Albums

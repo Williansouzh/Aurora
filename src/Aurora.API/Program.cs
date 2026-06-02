@@ -23,7 +23,10 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
     .Enrich.WithProperty("Application", "Aurora")
     .WriteTo.Console());
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, UserContext>();
 
@@ -144,6 +147,7 @@ app.MapControllers().RequireRateLimiting("global");
 using (var scope = app.Services.CreateScope())
 {
     await scope.ServiceProvider.EnsureIndexesAsync();
+    await scope.ServiceProvider.SeedAccessControlAsync(app.Configuration);
 }
 
 app.Run();

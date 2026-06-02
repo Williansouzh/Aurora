@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Accounts.Archive;
@@ -16,7 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/accounts")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Finances), Route("api/accounts")]
 public class AccountsController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet]

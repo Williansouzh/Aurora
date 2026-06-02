@@ -5,10 +5,26 @@ let _onUnauthorized = null;
 export function setUnauthorizedCallback(fn) { _onUnauthorized = fn; }
 
 let _refreshPromise = null;
+const REQUEST_TIMEOUT_MS = 12000;
+
+async function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      throw new Error('A API demorou para responder. Verifique se o backend esta rodando.');
+    }
+    throw err;
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
 
 async function silentRefresh() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
     });
@@ -42,7 +58,7 @@ async function parseResponse(response) {
 
 async function rawRequest(path, options = {}, isRetry = false) {
   const token = getMemoryToken();
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
     ...options,
     credentials: 'include',
     headers: {
@@ -66,7 +82,7 @@ async function rawRequest(path, options = {}, isRetry = false) {
 export function createHttpClient() {
   const download = async (path) => {
     const token = getMemoryToken();
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
       credentials: 'include',
       headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     });

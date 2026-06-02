@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Habits.CheckIn;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/habits")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Habits), Route("api/habits")]
 public class HabitsController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet]

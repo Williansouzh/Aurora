@@ -1,4 +1,5 @@
 using System.Text;
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Transactions.Common;
@@ -19,7 +20,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/transactions")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Finances), Route("api/transactions")]
 public class TransactionsController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet]

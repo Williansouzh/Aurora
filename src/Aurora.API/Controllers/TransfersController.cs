@@ -1,3 +1,4 @@
+using Aurora.API.Authorization;
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Common;
 using Aurora.Application.Features.Transfers.Common;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aurora.API.Controllers;
 
-[ApiController, Authorize, Route("api/transfers")]
+[ApiController, Authorize, RequireModule(ModuleKeys.Finances), Route("api/transfers")]
 public class TransfersController(ISender sender, IUserContext user) : ControllerBase
 {
     [HttpGet]
