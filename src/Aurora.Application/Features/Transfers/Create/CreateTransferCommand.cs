@@ -3,6 +3,7 @@ using Aurora.Application.Features.Transfers.Common;
 using Aurora.Domain.Entities;
 using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
+using FluentValidation;
 using MediatR;
 
 namespace Aurora.Application.Features.Transfers.Create;
@@ -14,6 +15,19 @@ public record CreateTransferCommand(
     decimal Amount,
     DateTime Date,
     string Description) : IRequest<TransferDto>;
+
+public class CreateTransferValidator : AbstractValidator<CreateTransferCommand>
+{
+    public CreateTransferValidator()
+    {
+        RuleFor(x => x.FromAccountId).NotEmpty();
+        RuleFor(x => x.ToAccountId).NotEmpty();
+        RuleFor(x => x.Amount).GreaterThan(0);
+        RuleFor(x => x.Description).NotEmpty().MaximumLength(200);
+        RuleFor(x => x).Must(x => x.FromAccountId != x.ToAccountId)
+            .WithMessage("Conta de origem e destino devem ser diferentes.");
+    }
+}
 
 public class CreateTransferHandler(
     ITransferRepository transfers,

@@ -4,6 +4,7 @@ using Aurora.Application.Common;
 using Aurora.Application.Features.Transactions.Common;
 using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
+using FluentValidation;
 using MediatR;
 
 namespace Aurora.Application.Features.Transactions.UpdateRecurring;
@@ -26,6 +27,22 @@ public record UpdateRecurringTransactionCommand(
     int RecurrenceInterval = 1,
     DateTime? RecurrenceEndDate = null,
     int? TotalInstallments = null) : IRequest<List<TransactionDto>>;
+
+public class UpdateRecurringTransactionValidator : AbstractValidator<UpdateRecurringTransactionCommand>
+{
+    private static readonly string[] ValidScopes = ["this", "future", "all"];
+
+    public UpdateRecurringTransactionValidator()
+    {
+        RuleFor(x => x.Id).NotEmpty();
+        RuleFor(x => x.Scope).NotEmpty().Must(s => ValidScopes.Contains(s))
+            .WithMessage("Scope deve ser 'this', 'future' ou 'all'.");
+        RuleFor(x => x.AccountId).NotEmpty();
+        RuleFor(x => x.CategoryId).NotEmpty();
+        RuleFor(x => x.Description).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Amount).GreaterThan(0);
+    }
+}
 
 public class UpdateRecurringTransactionHandler(
     ITransactionRepository txRepo,

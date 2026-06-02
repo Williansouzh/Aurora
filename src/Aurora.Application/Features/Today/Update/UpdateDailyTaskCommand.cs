@@ -2,6 +2,7 @@ using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Features.Today.Common;
 using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
+using FluentValidation;
 using MediatR;
 
 namespace Aurora.Application.Features.Today.Update;
@@ -11,7 +12,18 @@ public record UpdateDailyTaskCommand(
     string Id,
     string Title,
     string? Notes,
-    DailyTaskPriority Priority) : IRequest<DailyTaskDto>;
+    DailyTaskPriority Priority,
+    DateTime? Date = null) : IRequest<DailyTaskDto>;
+
+public class UpdateDailyTaskValidator : AbstractValidator<UpdateDailyTaskCommand>
+{
+    public UpdateDailyTaskValidator()
+    {
+        RuleFor(x => x.Id).NotEmpty();
+        RuleFor(x => x.Title).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Notes).MaximumLength(1000).When(x => x.Notes is not null);
+    }
+}
 
 public class UpdateDailyTaskHandler(IDailyTaskRepository repo)
     : IRequestHandler<UpdateDailyTaskCommand, DailyTaskDto>
@@ -24,6 +36,11 @@ public class UpdateDailyTaskHandler(IDailyTaskRepository repo)
         task.Title = cmd.Title;
         task.Notes = cmd.Notes;
         task.Priority = cmd.Priority;
+        if (cmd.Date.HasValue)
+        {
+            task.Date = cmd.Date.Value.Date;
+            task.IsBacklog = false;
+        }
         task.UpdatedAt = DateTime.UtcNow;
 
         await repo.UpdateAsync(task, ct);

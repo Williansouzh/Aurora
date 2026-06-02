@@ -4,11 +4,24 @@ using Aurora.Application.Common;
 using Aurora.Application.Features.Transactions.Common;
 using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
+using FluentValidation;
 using MediatR;
 
 namespace Aurora.Application.Features.Transactions.DeleteRecurring;
 
 public record DeleteRecurringTransactionCommand(string UserId, string Id, string Scope) : IRequest;
+
+public class DeleteRecurringTransactionValidator : AbstractValidator<DeleteRecurringTransactionCommand>
+{
+    private static readonly string[] ValidScopes = ["this", "future", "all"];
+
+    public DeleteRecurringTransactionValidator()
+    {
+        RuleFor(x => x.Id).NotEmpty();
+        RuleFor(x => x.Scope).NotEmpty().Must(s => ValidScopes.Contains(s))
+            .WithMessage("Scope deve ser 'this', 'future' ou 'all'.");
+    }
+}
 
 public class DeleteRecurringTransactionHandler(
     ITransactionRepository txRepo,

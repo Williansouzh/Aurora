@@ -1,10 +1,16 @@
 using Aurora.Application.Abstractions.Persistence;
 using Aurora.Domain.Exceptions;
+using FluentValidation;
 using MediatR;
 
 namespace Aurora.Application.Features.Today.Delete;
 
 public record DeleteDailyTaskCommand(string UserId, string Id) : IRequest;
+
+public class DeleteDailyTaskValidator : AbstractValidator<DeleteDailyTaskCommand>
+{
+    public DeleteDailyTaskValidator() => RuleFor(x => x.Id).NotEmpty();
+}
 
 public class DeleteDailyTaskHandler(IDailyTaskRepository repo)
     : IRequestHandler<DeleteDailyTaskCommand>

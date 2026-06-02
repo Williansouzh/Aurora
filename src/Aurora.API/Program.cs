@@ -78,9 +78,12 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var frontUrl = builder.Configuration["Cors:FrontendUrl"] ?? "http://localhost:5173";
+var extraOrigins = (builder.Configuration["Cors:ExtraOrigins"] ?? "")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+var allOrigins = new[] { frontUrl }.Concat(extraOrigins).ToArray();
 builder.Services.AddCors(o => o.AddPolicy(
     "front",
-    p => p.WithOrigins(frontUrl).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
+    p => p.WithOrigins(allOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

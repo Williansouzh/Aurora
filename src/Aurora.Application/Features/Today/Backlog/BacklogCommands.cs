@@ -1,4 +1,5 @@
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Common;
 using Aurora.Application.Features.Today.Common;
 using Aurora.Domain.Entities;
 using Aurora.Domain.Enums;
@@ -8,7 +9,8 @@ using MediatR;
 
 namespace Aurora.Application.Features.Today.Backlog;
 
-public record GetBacklogQuery(string UserId) : IRequest<List<DailyTaskDto>>;
+public record GetBacklogQuery(string UserId, int Page = 1, int PageSize = 20)
+    : IRequest<PagedResultDto<DailyTaskDto>>;
 
 public record AddToBacklogCommand(
     string UserId,
@@ -24,12 +26,18 @@ public class AddToBacklogValidator : AbstractValidator<AddToBacklogCommand>
 }
 
 public class GetBacklogHandler(IDailyTaskRepository repo)
-    : IRequestHandler<GetBacklogQuery, List<DailyTaskDto>>
+    : IRequestHandler<GetBacklogQuery, PagedResultDto<DailyTaskDto>>
 {
-    public async Task<List<DailyTaskDto>> Handle(GetBacklogQuery q, CancellationToken ct)
+    public async Task<PagedResultDto<DailyTaskDto>> Handle(GetBacklogQuery q, CancellationToken ct)
     {
-        var items = await repo.GetBacklogAsync(q.UserId);
-        return items.Select(t => t.ToDto()).ToList();
+        var page = q.Page < 1 ? 1 : q.Page;
+        var pageSize = q.PageSize < 1 ? 20 : q.PageSize > 100 ? 100 : q.PageSize;
+
+        var (items, total) = await repo.GetBacklogPagedAsync(q.UserId, page, pageSize);
+        var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+
+        return new PagedResultDto<DailyTaskDto>(
+            items.Select(t => t.ToDto()).ToList(), total, page, pageSize, totalPages);
     }
 }
 

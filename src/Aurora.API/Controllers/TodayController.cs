@@ -7,6 +7,7 @@ using Aurora.Application.Features.Today.Complete;
 using Aurora.Application.Features.Today.Create;
 using Aurora.Application.Features.Today.Delete;
 using Aurora.Application.Features.Today.GetToday;
+using Aurora.Application.Features.Today.Postpone;
 using Aurora.Application.Features.Today.Reopen;
 using Aurora.Application.Features.Today.Update;
 using MediatR;
@@ -47,8 +48,9 @@ public class TodayController(ISender sender, IUserContext user) : ControllerBase
 
     // Backlog
     [HttpGet("backlog")]
-    public async Task<IActionResult> GetBacklog() =>
-        Ok(new ApiResponse<List<DailyTaskDto>>(true, await sender.Send(new GetBacklogQuery(user.UserId))));
+    public async Task<IActionResult> GetBacklog([FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+        Ok(new ApiResponse<PagedResultDto<DailyTaskDto>>(true,
+            await sender.Send(new GetBacklogQuery(user.UserId, page, pageSize))));
 
     [HttpPost("backlog")]
     public async Task<IActionResult> AddToBacklog(AddToBacklogCommand req) =>
@@ -57,4 +59,8 @@ public class TodayController(ISender sender, IUserContext user) : ControllerBase
     [HttpPatch("{id}/move-to-today")]
     public async Task<IActionResult> MoveToToday(string id) =>
         Ok(new ApiResponse<DailyTaskDto>(true, await sender.Send(new MoveToTodayCommand(user.UserId, id))));
+
+    [HttpPatch("{id}/postpone")]
+    public async Task<IActionResult> Postpone(string id) =>
+        Ok(new ApiResponse<DailyTaskDto>(true, await sender.Send(new PostponeOverdueTaskCommand(user.UserId, id))));
 }

@@ -30,10 +30,20 @@ public class DailyTaskRepository(MongoContext context, MongoUnitOfWork unitOfWor
             .ToListAsync();
     }
 
-    public Task<List<DailyTask>> GetBacklogAsync(string userId) =>
-        Collection.Find(x => x.UserId == userId && x.IsBacklog && x.Status == DailyTaskStatus.Pending)
+    public async Task<(List<DailyTask> Items, int TotalCount)> GetBacklogPagedAsync(string userId, int page, int pageSize)
+    {
+        var filter = Builders<DailyTask>.Filter.Where(
+            x => x.UserId == userId && x.IsBacklog && x.Status == DailyTaskStatus.Pending);
+        var total = (int)await Collection.CountDocumentsAsync(filter);
+        var items = await Collection
+            .Find(filter)
             .SortBy(x => x.Priority)
+            .ThenByDescending(x => x.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Limit(pageSize)
             .ToListAsync();
+        return (items, total);
+    }
 
     public async Task<DailyTask?> GetBySourceAsync(string userId, string sourceModule, string sourceId, CancellationToken ct = default) =>
         await Collection.Find(x => x.UserId == userId && x.SourceModule == sourceModule && x.SourceId == sourceId)

@@ -1,11 +1,17 @@
 using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Features.Today.Common;
 using Aurora.Domain.Exceptions;
+using FluentValidation;
 using MediatR;
 
 namespace Aurora.Application.Features.Today.Reopen;
 
 public record ReopenDailyTaskCommand(string UserId, string Id) : IRequest<DailyTaskDto>;
+
+public class ReopenDailyTaskValidator : AbstractValidator<ReopenDailyTaskCommand>
+{
+    public ReopenDailyTaskValidator() => RuleFor(x => x.Id).NotEmpty();
+}
 
 public class ReopenDailyTaskHandler(IDailyTaskRepository repo)
     : IRequestHandler<ReopenDailyTaskCommand, DailyTaskDto>

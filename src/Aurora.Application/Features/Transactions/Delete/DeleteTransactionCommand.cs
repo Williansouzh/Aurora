@@ -4,11 +4,17 @@ using Aurora.Application.Common;
 using Aurora.Application.Features.Transactions.Common;
 using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
+using FluentValidation;
 using MediatR;
 
 namespace Aurora.Application.Features.Transactions.Delete;
 
 public record DeleteTransactionCommand(string UserId, string Id) : IRequest;
+
+public class DeleteTransactionValidator : AbstractValidator<DeleteTransactionCommand>
+{
+    public DeleteTransactionValidator() => RuleFor(x => x.Id).NotEmpty();
+}
 
 public class DeleteTransactionHandler(
     ITransactionRepository txRepo,

@@ -2,11 +2,17 @@ using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Common;
 using Aurora.Domain.Exceptions;
+using FluentValidation;
 using MediatR;
 
 namespace Aurora.Application.Features.Budgets.Delete;
 
 public record DeleteBudgetCommand(string UserId, string Id) : IRequest;
+
+public class DeleteBudgetValidator : AbstractValidator<DeleteBudgetCommand>
+{
+    public DeleteBudgetValidator() => RuleFor(x => x.Id).NotEmpty();
+}
 
 public class DeleteBudgetHandler(IBudgetRepository budgets, ICacheService cache) : IRequestHandler<DeleteBudgetCommand>
 {

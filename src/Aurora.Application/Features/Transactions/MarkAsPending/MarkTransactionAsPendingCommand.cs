@@ -4,11 +4,17 @@ using Aurora.Application.Common;
 using Aurora.Application.Features.Transactions.Common;
 using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
+using FluentValidation;
 using MediatR;
 
 namespace Aurora.Application.Features.Transactions.MarkAsPending;
 
 public record MarkTransactionAsPendingCommand(string UserId, string Id) : IRequest<TransactionDto>;
+
+public class MarkTransactionAsPendingValidator : AbstractValidator<MarkTransactionAsPendingCommand>
+{
+    public MarkTransactionAsPendingValidator() => RuleFor(x => x.Id).NotEmpty();
+}
 
 public class MarkTransactionAsPendingHandler(
     ITransactionRepository txRepo,

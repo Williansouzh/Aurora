@@ -17,8 +17,10 @@ public class SyncFinancialGoalHandler(IGoalRepository goalRepo, ITransactionRepo
         var goal = await goalRepo.GetByIdAsync(cmd.GoalId, cmd.UserId, ct);
         if (goal is null || goal.LinkedCategoryId is null) return null;
 
-        var spent = await txRepo.SumAsync(cmd.UserId, cmd.Month, cmd.Year,
-            TransactionType.Expense, TransactionStatus.Paid);
+        var byCategory = await txRepo.CategoryExpenseAsync(cmd.UserId, cmd.Month, cmd.Year);
+        var spent = byCategory
+            .FirstOrDefault(x => x.CategoryId == goal.LinkedCategoryId)
+            .Total;
 
         goal.CurrentValue = spent;
         goal.UpdatedAt = DateTime.UtcNow;
@@ -34,12 +36,14 @@ public class SyncAllFinancialGoalsHandler(IGoalRepository goalRepo, ITransaction
     {
         var goals = await goalRepo.GetByStatusAsync(cmd.UserId, GoalStatus.Active);
         var financialGoals = goals.Where(g => g.Area == LifeArea.Money && g.LinkedCategoryId is not null).ToList();
+        if (financialGoals.Count == 0) return;
+
+        var byCategory = await txRepo.CategoryExpenseAsync(cmd.UserId, cmd.Month, cmd.Year);
+        var lookup = byCategory.ToDictionary(x => x.CategoryId, x => x.Total);
 
         foreach (var goal in financialGoals)
         {
-            var categorySum = await txRepo.SumAsync(cmd.UserId, cmd.Month, cmd.Year,
-                TransactionType.Expense, TransactionStatus.Paid);
-            goal.CurrentValue = categorySum;
+            goal.CurrentValue = lookup.GetValueOrDefault(goal.LinkedCategoryId!, 0m);
             goal.UpdatedAt = DateTime.UtcNow;
             await goalRepo.UpdateAsync(goal, ct);
         }
