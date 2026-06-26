@@ -29,13 +29,13 @@ import { useData } from '../hooks/useData';
 import { cn, formatCurrency } from '../lib/utils';
 
 const MOOD_EMOJI = { 1: ':(', 2: ':/', 3: ':|', 4: ':)', 5: ':D' };
-const LEVEL_COLORS = [
-  'from-slate-400 to-slate-500',
-  'from-emerald-400 to-emerald-600',
-  'from-blue-400 to-blue-600',
-  'from-violet-400 to-violet-600',
-  'from-amber-400 to-amber-600',
-];
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Bom dia';
+  if (h < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
 
 const MODULE_FILTERS = [
   { key: 'overview', label: 'Geral', moduleKey: 'home', icon: LayoutDashboard },
@@ -81,25 +81,28 @@ export function DashboardPage({ api, access }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-            <Zap className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Aurora Home</h1>
-            <p className="text-sm text-muted-foreground">Dashboard por modulo, conforme seu acesso.</p>
-          </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-foreground">{greeting()}</h1>
+          <p className="mt-1 text-sm text-mut2">Seu dia, seus rituais e sua evolução em um só lugar.</p>
         </div>
 
-        <div className="flex items-center gap-1 rounded-lg border bg-card px-1 py-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigateMonth(-1)}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="min-w-[160px] px-3 text-center text-sm font-medium capitalize">{monthLabel}</span>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigateMonth(1)}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center gap-2">
+          {overview && data?.level != null && (
+            <span className="flex items-center gap-2 rounded-full border border-chipline bg-card px-3 py-1.5 text-sm">
+              <Star className="h-3.5 w-3.5 text-primary" />
+              <span className="font-semibold text-ink2">Nível {data.level}</span>
+            </span>
+          )}
+          <div className="flex items-center gap-1 rounded-lg border border-chipline bg-card px-1 py-1">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigateMonth(-1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="min-w-[150px] px-2 text-center text-sm font-semibold capitalize">{monthLabel}</span>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigateMonth(1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -185,30 +188,28 @@ function DashboardSection({ title, children }) {
 
 function XpCard({ data }) {
   const { totalXp, level, levelName, xpToNextLevel } = data;
-  const colorIdx = Math.min(Math.floor((level - 1) / 10), LEVEL_COLORS.length - 1);
   const pct = xpToNextLevel > 0 ? Math.round((totalXp / (totalXp + xpToNextLevel)) * 100) : 100;
 
   return (
-    <Card className={cn('bg-gradient-to-r text-white', LEVEL_COLORS[colorIdx])}>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
+    <Card>
+      <CardContent className="p-5">
+        <div className="flex items-end justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4" />
-              <span className="text-sm font-medium opacity-90">Nivel {level} - {levelName}</span>
+            <div className="flex items-center gap-2 text-overline">
+              <Star className="h-3.5 w-3.5 text-primary" /> Nível {level} · {levelName}
             </div>
-            <p className="mt-0.5 text-2xl font-bold">{totalXp.toLocaleString('pt-BR')} XP</p>
+            <p className="mt-1 font-numeral text-[30px] leading-none text-foreground">{totalXp.toLocaleString('pt-BR')} XP</p>
           </div>
           {xpToNextLevel > 0 && (
-            <div className="text-right text-sm opacity-80">
-              <p>+{xpToNextLevel} para</p>
-              <p>Nivel {level + 1}</p>
+            <div className="text-right text-xs text-mut2">
+              <p>+{xpToNextLevel} XP</p>
+              <p>para o nível {level + 1}</p>
             </div>
           )}
         </div>
         {xpToNextLevel > 0 && (
-          <div className="mt-3">
-            <Progress value={pct} className="h-1.5 bg-white/30" indicatorClassName="bg-white" />
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-track">
+            <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
           </div>
         )}
       </CardContent>
@@ -228,8 +229,8 @@ function TodayCard({ tasks }) {
       </CardHeader>
       <CardContent>
         <div className="mb-3 flex items-center gap-4">
-          <MetricNumber value={pendingTasksCount} label="pendentes" className="text-amber-600" />
-          <MetricNumber value={completedTasksCount} label="concluidas" className="text-emerald-600" />
+          <MetricNumber value={pendingTasksCount} label="pendentes" className="text-pending" />
+          <MetricNumber value={completedTasksCount} label="concluidas" className="text-income" />
         </div>
         <div className="space-y-1.5">
           {(topPendingTasks ?? []).slice(0, 3).map((task) => (
@@ -254,7 +255,7 @@ function HabitsCard({ habits = [] }) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-sm font-semibold">
-          <div className="flex items-center gap-1.5"><Flame className="h-4 w-4 text-orange-500" /> Rituais</div>
+          <div className="flex items-center gap-1.5"><Flame className="h-4 w-4 text-pending" /> Rituais</div>
           <Link to="/habits" className="text-xs text-muted-foreground hover:text-primary">Ver tudo</Link>
         </CardTitle>
       </CardHeader>
@@ -262,16 +263,16 @@ function HabitsCard({ habits = [] }) {
         <div className="mb-3 flex items-center gap-3">
           <p className="text-2xl font-bold">{done}<span className="text-lg text-muted-foreground">/{total}</span></p>
           <div className="flex-1">
-            <Progress value={pct} className="h-2" indicatorClassName={pct === 100 ? 'bg-emerald-500' : 'bg-orange-400'} />
+            <Progress value={pct} className="h-2" indicatorClassName={pct === 100 ? 'bg-income' : 'bg-pending'} />
             <p className="mt-0.5 text-[10px] text-muted-foreground">{pct}% concluidos hoje</p>
           </div>
         </div>
         <div className="space-y-1.5">
           {habits.slice(0, 4).map((habit) => (
             <div key={habit.id} className="flex items-center gap-2">
-              <span className={cn('h-2 w-2 shrink-0 rounded-full', habit.checkedInToday ? 'bg-emerald-500' : 'bg-muted-foreground/30')} />
+              <span className={cn('h-2 w-2 shrink-0 rounded-full', habit.checkedInToday ? 'bg-income' : 'bg-muted-foreground/30')} />
               <span className={cn('flex-1 truncate text-sm', habit.checkedInToday && 'text-muted-foreground line-through')}>{habit.name}</span>
-              {habit.currentStreak > 0 && <span className="text-[10px] font-medium text-orange-500">{habit.currentStreak} dias</span>}
+              {habit.currentStreak > 0 && <span className="text-[10px] font-medium text-pending">{habit.currentStreak} dias</span>}
             </div>
           ))}
           {habits.length === 0 && (
@@ -290,9 +291,9 @@ function FinanceDashboard({ data }) {
     <DashboardSection title="Dinheiro">
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <FinanceCard label="Saldo total" value={data.totalBalance} icon={Wallet} color={data.totalBalance >= 0 ? 'text-emerald-600' : 'text-red-600'} />
-          <FinanceCard label="Receitas do mes" value={data.monthlyIncome} icon={ArrowUpRight} color="text-emerald-600" />
-          <FinanceCard label="Despesas do mes" value={data.monthlyExpense} icon={ArrowDownRight} color="text-red-600" />
+          <FinanceCard label="Saldo total" value={data.totalBalance} icon={Wallet} color={data.totalBalance >= 0 ? 'text-income' : 'text-expense'} />
+          <FinanceCard label="Receitas do mes" value={data.monthlyIncome} icon={ArrowUpRight} color="text-income" />
+          <FinanceCard label="Despesas do mes" value={data.monthlyExpense} icon={ArrowDownRight} color="text-expense" />
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <FinanceShortcut to="/transactions" icon={Receipt} label="Transacoes" />
@@ -349,7 +350,7 @@ function GoalsCard({ goals = [] }) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-sm font-semibold">
-          <div className="flex items-center gap-1.5"><Target className="h-4 w-4 text-blue-500" /> Minha Jornada</div>
+          <div className="flex items-center gap-1.5"><Target className="h-4 w-4 text-primary" /> Minha Jornada</div>
           <Link to="/goals" className="text-xs text-muted-foreground hover:text-primary">Ver tudo</Link>
         </CardTitle>
       </CardHeader>
@@ -360,7 +361,7 @@ function GoalsCard({ goals = [] }) {
               <span className="truncate pr-2 font-medium">{goal.title}</span>
               <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">{goal.progress?.toFixed(0)}%</span>
             </div>
-            <Progress value={goal.progress ?? 0} className="h-1.5" indicatorClassName={goal.progress >= 100 ? 'bg-violet-500' : 'bg-blue-500'} />
+            <Progress value={goal.progress ?? 0} className="h-1.5" indicatorClassName={goal.progress >= 100 ? 'bg-primary' : 'bg-primary'} />
           </div>
         ))}
         {goals.length === 0 && (
@@ -378,7 +379,7 @@ function MoodCard({ moodHistory = [], todayMood }) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-sm font-semibold">
-          <div className="flex items-center gap-1.5"><BookOpen className="h-4 w-4 text-pink-500" /> Humor</div>
+          <div className="flex items-center gap-1.5"><BookOpen className="h-4 w-4 text-primary" /> Humor</div>
           <Link to="/diary" className="text-xs text-muted-foreground hover:text-primary">Diario</Link>
         </CardTitle>
       </CardHeader>
@@ -394,7 +395,7 @@ function MoodCard({ moodHistory = [], todayMood }) {
         <div className="flex h-12 items-end gap-1">
           {moodHistory.slice(-7).map((entry, index) => (
             <div key={index} className="flex flex-1 flex-col items-center gap-0.5">
-              <div className="w-full rounded-t-sm bg-pink-400/60" style={{ height: `${(entry.mood / 5) * 100}%`, minHeight: 4 }} />
+              <div className="w-full rounded-t-sm bg-primary/50" style={{ height: `${(entry.mood / 5) * 100}%`, minHeight: 4 }} />
               <span className="text-[8px] text-muted-foreground">
                 {new Date(entry.date).toLocaleDateString('pt-BR', { day: '2-digit' })}
               </span>
@@ -409,12 +410,12 @@ function MoodCard({ moodHistory = [], todayMood }) {
 
 const EVENT_ICONS = { 1: Flame, 2: CheckCircle2, 3: Target, 4: Target, 5: BookOpen, 10: Heart };
 const EVENT_COLORS = {
-  1: 'text-orange-500',
-  2: 'text-emerald-500',
-  3: 'text-blue-500',
-  4: 'text-violet-500',
-  5: 'text-pink-500',
-  10: 'text-slate-500',
+  1: 'text-pending',
+  2: 'text-income',
+  3: 'text-primary',
+  4: 'text-primary',
+  5: 'text-primary',
+  10: 'text-mut2',
 };
 
 function TimelineCard({ events = [] }) {
@@ -438,7 +439,7 @@ function TimelineCard({ events = [] }) {
                   {new Date(event.occurredAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
                 </p>
               </div>
-              {event.isFavorite && <Heart className="h-3.5 w-3.5 shrink-0 text-red-400" fill="currentColor" />}
+              {event.isFavorite && <Heart className="h-3.5 w-3.5 shrink-0 text-expense" fill="currentColor" />}
             </div>
           );
         })}

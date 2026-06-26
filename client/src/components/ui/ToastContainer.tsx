@@ -10,17 +10,17 @@ const icons = {
 };
 
 const typeClasses = {
-  success: 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-100',
-  error: 'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100',
-  warning: 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-  info: 'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100',
+  success: 'border-income/40 bg-income-soft text-income dark:border-income/40 dark:bg-income dark:text-income',
+  error: 'border-expense/40 bg-expense-soft text-expense dark:border-expense/40 dark:bg-expense dark:text-expense',
+  warning: 'border-pending/40 bg-pending-soft text-pending dark:border-pending/40 dark:bg-pending dark:text-pending',
+  info: 'border-primary/40 bg-accent text-primary dark:border-primary/40 dark:bg-primary dark:text-primary',
 };
 
 const iconClasses = {
-  success: 'text-emerald-500',
-  error: 'text-red-500',
-  warning: 'text-amber-500',
-  info: 'text-blue-500',
+  success: 'text-income',
+  error: 'text-expense',
+  warning: 'text-pending',
+  info: 'text-primary',
 };
 
 export function ToastContainer() {

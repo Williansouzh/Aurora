@@ -31,14 +31,14 @@ export function UpcomingInstallmentsList({ installments = [] }) {
             </div>
             <span className={cn(
               'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold border',
-              overdue ? 'bg-red-50 text-red-700 border-red-200' :
-              today ? 'bg-amber-50 text-amber-700 border-amber-200' :
-              soon ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+              overdue ? 'bg-expense-soft text-expense border-expense/40' :
+              today ? 'bg-pending-soft text-pending border-pending/40' :
+              soon ? 'bg-pending-soft text-pending border-pending/40' :
               'bg-muted text-muted-foreground border-border'
             )}>
               {overdue ? 'Atrasada' : today ? 'Hoje' : days === 1 ? 'Amanhã' : `${days}d`}
             </span>
-            <span className="text-sm font-semibold tabular-nums text-red-700 shrink-0">
+            <span className="text-sm font-semibold tabular-nums text-expense shrink-0">
               {formatCurrency(inst.totalPayment)}
             </span>
           </div>

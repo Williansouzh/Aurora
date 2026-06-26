@@ -9,7 +9,7 @@ import { useData } from '../hooks/useData';
 import { cn } from '../lib/utils';
 
 const PRIORITY_LABEL = { 1: 'Baixa', 2: 'Média', 3: 'Alta' };
-const PRIORITY_COLOR = { 1: 'text-slate-500', 2: 'text-amber-500', 3: 'text-red-500' };
+const PRIORITY_COLOR = { 1: 'text-mut2', 2: 'text-pending', 3: 'text-expense' };
 
 export function BacklogPage({ api }) {
   const [title, setTitle] = useState('');

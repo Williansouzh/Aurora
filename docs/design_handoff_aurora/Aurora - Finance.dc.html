@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:rgba(120,115,105,.28);border-radius:8px;border:3px solid transparent;background-clip:content-box;}
+  [data-nav]{cursor:pointer;transition:background .15s,color .15s;}
+  [data-themebtn],[data-tab]{cursor:pointer;}
+  input::placeholder{color:var(--faint,#a8a299);}
+</style>
+</helmet>
+
+<div ref="{{ setRoot }}" style="display:flex;height:100vh;width:100%;overflow:hidden;font-family:'Hanken Grotesk',sans-serif;background:var(--bg,#f3f1ec);color:var(--ink,#26241f);">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <div style="width:240px;flex:none;border-right:1px solid var(--line,#eceae5);background:var(--side,#faf9f7);padding:24px 16px;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px;margin-bottom:28px;">
+      <div style="width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#a7b0d6,#3d4eac);flex:none;"></div>
+      <span style="font-family:'Newsreader',serif;font-size:22px;letter-spacing:-0.01em;">Aurora</span>
+    </div>
+    <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;padding:0 12px 9px;">Finance</div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <div data-nav="dashboard" onClick="{{ goDashboard }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Dashboard</div>
+      <div data-nav="transactions" onClick="{{ goTransactions }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Transactions</div>
+      <div data-nav="accounts" onClick="{{ goAccounts }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Accounts</div>
+      <div data-nav="categories" onClick="{{ goCategories }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Categories</div>
+      <div data-nav="financings" onClick="{{ goFinancings }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Financings</div>
+    </div>
+
+    <div style="margin-top:auto;background:var(--accentsoft,#eeece6);border-radius:11px;padding:14px;">
+      <div style="font-size:12.5px;font-weight:600;margin-bottom:3px;">June 2026 result</div>
+      <div style="font-family:'Newsreader',serif;font-size:24px;color:var(--accent,#3d4eac);">+$2,260</div>
+      <div style="font-size:11.5px;color:var(--mut2,#8a857c);margin-top:2px;">12% better than May</div>
+    </div>
+    <div style="border-top:1px solid var(--line,#eceae5);padding-top:14px;margin-top:14px;display:flex;align-items:center;gap:10px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:#d9c3b0;flex:none;"></div>
+      <div style="line-height:1.25;flex:1;"><div style="font-size:13px;font-weight:600;">Mariana Reis</div><div style="font-size:11.5px;color:var(--faint,#a8a299);">mariana@email.com</div></div>
+    </div>
+  </div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div style="height:60px;flex:none;border-bottom:1px solid var(--line,#eceae5);background:var(--panel,#fcfcfb);display:flex;align-items:center;justify-content:space-between;padding:0 28px;">
+      <div data-title style="font-size:14px;font-weight:600;color:var(--ink2,#2b2925);">Dashboard</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="display:flex;align-items:center;gap:6px;border:1px solid var(--chipline,#e6e3dc);border-radius:8px;padding:6px 11px;font-size:13px;color:var(--ink2,#2b2925);"><span style="color:var(--faint,#a8a299);cursor:pointer;">◀</span><span style="font-weight:600;">June 2026</span><span style="color:var(--faint,#a8a299);cursor:pointer;">▶</span></div>
+        <button style="border:none;background:var(--accent,#3d4eac);color:#fff;border-radius:8px;padding:8px 15px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">+ New transaction</button>
+        <div data-themebtn onClick="{{ toggleTheme }}" style="display:flex;align-items:center;gap:8px;border:1px solid var(--chipline,#e6e3dc);border-radius:999px;padding:5px 13px 5px 11px;font-size:12.5px;color:var(--mut,#6b665d);user-select:none;">
+          <span data-themeicon style="width:13px;height:13px;border-radius:50%;border:2px solid var(--accent,#3d4eac);display:inline-block;"></span><span data-themelabel>Light</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;">
+
+      <!-- ============ DASHBOARD ============ -->
+      <div data-screen="dashboard" style="display:block;padding:32px 40px 56px;max-width:1240px;">
+        <div style="margin-bottom:24px;">
+          <div style="font-family:'Newsreader',serif;font-size:32px;line-height:1.12;letter-spacing:-0.01em;">Financial overview</div>
+          <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:5px;">June 2026 · 4 accounts · 28 transactions this month</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px;">
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Total balance</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;">$14,280</div><div style="font-size:11.5px;color:var(--good,#6f8f6a);margin-top:3px;">▲ 2.1% vs May</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Income · paid</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;color:var(--good,#6f8f6a);">$6,200</div><div style="font-size:11.5px;color:var(--mut2,#8a857c);margin-top:3px;">$800 pending</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Expenses · paid</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;color:var(--bad,#c1796a);">$3,940</div><div style="font-size:11.5px;color:var(--mut2,#8a857c);margin-top:3px;">$1,262 pending</div></div>
+          <div style="background:var(--accentsoft,#eeece6);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Result · June</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;color:var(--accent,#3d4eac);">+$2,260</div><div style="font-size:11.5px;color:var(--good,#6f8f6a);margin-top:3px;">▲ 12% vs May</div></div>
+        </div>
+
+        <div style="display:flex;gap:18px;align-items:flex-start;">
+          <div style="flex:1.6;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px;"><span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Cash flow · 2026</span><span style="display:flex;gap:14px;font-size:12px;color:var(--mut2,#8a857c);"><span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--good,#6f8f6a);"></span>Income</span><span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--bad,#c1796a);"></span>Expenses</span></span></div>
+              <div data-cashflow style="display:flex;justify-content:space-between;align-items:flex-end;height:150px;gap:7px;"></div>
+            </div>
+
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;"><span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Recent transactions</span><span data-nav-link onClick="{{ goTransactions }}" style="font-size:13px;color:var(--accent,#3d4eac);font-weight:600;cursor:pointer;">View all →</span></div>
+              <div data-recent style="display:flex;flex-direction:column;"></div>
+            </div>
+          </div>
+
+          <div style="flex:1;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:18px;">Spending by category</div>
+              <div data-catspend style="display:flex;flex-direction:column;gap:14px;"></div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--warn,#c1976a);"></span><span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Upcoming &amp; overdue</span></div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Rent</span><span style="font-size:11.5px;color:var(--bad,#c1796a);background:var(--badsoft,#f6e9e6);border-radius:5px;padding:2px 7px;">today</span><span style="font-size:14px;font-weight:600;width:62px;text-align:right;">$1,850</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Credit card bill</span><span style="font-size:11.5px;color:var(--warn,#c1976a);background:var(--warnsoft,#f6f0e6);border-radius:5px;padding:2px 7px;">Jun 28</span><span style="font-size:14px;font-weight:600;width:62px;text-align:right;">$1,240</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Gym (overdue)</span><span style="font-size:11.5px;color:var(--bad,#c1796a);background:var(--badsoft,#f6e9e6);border-radius:5px;padding:2px 7px;">2d late</span><span style="font-size:14px;font-weight:600;width:62px;text-align:right;">$60</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;"><span style="font-size:14px;flex:1;">Spotify</span><span style="font-size:11.5px;color:var(--mut2,#8a857c);background:var(--track,#eceae5);border-radius:5px;padding:2px 7px;">Jun 25</span><span style="font-size:14px;font-weight:600;width:62px;text-align:right;">$22</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TRANSACTIONS ============ -->
+      <div data-screen="transactions" style="display:none;padding:32px 40px 56px;max-width:1240px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;">
+          <div>
+            <div style="font-family:'Newsreader',serif;font-size:32px;line-height:1.12;letter-spacing:-0.01em;">Transactions</div>
+            <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:5px;">June 2026 · 28 records · $6,200 in · $3,940 out</div>
+          </div>
+          <button style="border:none;background:var(--accent,#3d4eac);color:#fff;border-radius:8px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;flex:none;">+ New transaction</button>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+          <div style="display:flex;align-items:center;gap:7px;border:1px solid var(--chipline,#e6e3dc);background:var(--panel,#fcfcfb);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--ink2,#2b2925);">June <span style="color:var(--faint,#a8a299);">▾</span></div>
+          <div style="display:flex;align-items:center;gap:7px;border:1px solid var(--chipline,#e6e3dc);background:var(--panel,#fcfcfb);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--ink2,#2b2925);">2026 <span style="color:var(--faint,#a8a299);">▾</span></div>
+          <div style="display:flex;align-items:center;gap:7px;border:1px solid var(--chipline,#e6e3dc);background:var(--panel,#fcfcfb);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--ink2,#2b2925);">All types <span style="color:var(--faint,#a8a299);">▾</span></div>
+          <div style="display:flex;align-items:center;gap:7px;border:1px solid var(--chipline,#e6e3dc);background:var(--panel,#fcfcfb);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--ink2,#2b2925);">All status <span style="color:var(--faint,#a8a299);">▾</span></div>
+          <div style="display:flex;align-items:center;gap:7px;border:1px solid var(--chipline,#e6e3dc);background:var(--panel,#fcfcfb);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--ink2,#2b2925);">All categories <span style="color:var(--faint,#a8a299);">▾</span></div>
+          <div style="flex:1;min-width:160px;display:flex;align-items:center;gap:8px;border:1px solid var(--chipline,#e6e3dc);background:var(--panel,#fcfcfb);border-radius:8px;padding:8px 12px;"><span style="color:var(--faint,#a8a299);font-size:13px;">⌕</span><input placeholder="Search description…" style="flex:1;min-width:0;border:none;background:transparent;outline:none;font-size:13px;font-family:inherit;color:var(--ink,#26241f);"></div>
+        </div>
+
+        <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:90px 1.7fr 1.1fr 1.1fr 1fr 110px;gap:14px;padding:13px 22px;border-bottom:1px solid var(--line,#eceae5);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;background:var(--side,#faf9f7);">
+            <span>Date</span><span>Description</span><span>Category</span><span>Account</span><span>Status</span><span style="text-align:right;">Amount</span>
+          </div>
+          <div data-txtable></div>
+        </div>
+      </div>
+
+      <!-- ============ ACCOUNTS ============ -->
+      <div data-screen="accounts" style="display:none;padding:32px 40px 56px;max-width:1240px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;">
+          <div>
+            <div style="font-family:'Newsreader',serif;font-size:32px;line-height:1.12;letter-spacing:-0.01em;">Accounts</div>
+            <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:5px;">4 active · 1 archived · $14,280 total balance</div>
+          </div>
+          <button style="border:none;background:var(--accent,#3d4eac);color:#fff;border-radius:8px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;flex:none;">+ New account</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px;">
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;padding:20px;border-top:3px solid #7b5cd6;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;"><div><div style="font-size:15px;font-weight:600;">Main Checking</div><div style="font-size:12px;color:var(--faint,#a8a299);margin-top:2px;">Checking account · Nubank</div></div><span style="width:11px;height:11px;border-radius:4px;background:#7b5cd6;flex:none;"></span></div>
+            <div style="font-family:'Newsreader',serif;font-size:28px;">$4,120</div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut2,#8a857c);margin-top:10px;"><span>Initial $3,200</span><span style="color:var(--good,#6f8f6a);">▲ $920</span></div>
+          </div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;padding:20px;border-top:3px solid #6f8f6a;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;"><div><div style="font-size:15px;font-weight:600;">Emergency Savings</div><div style="font-size:12px;color:var(--faint,#a8a299);margin-top:2px;">Savings · Inter</div></div><span style="width:11px;height:11px;border-radius:4px;background:#6f8f6a;flex:none;"></span></div>
+            <div style="font-family:'Newsreader',serif;font-size:28px;">$7,200</div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut2,#8a857c);margin-top:10px;"><span>Initial $5,000</span><span style="color:var(--good,#6f8f6a);">▲ $2,200</span></div>
+          </div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;padding:20px;border-top:3px solid #3d4eac;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;"><div><div style="font-size:15px;font-weight:600;">Investments</div><div style="font-size:12px;color:var(--faint,#a8a299);margin-top:2px;">Investment · XP</div></div><span style="width:11px;height:11px;border-radius:4px;background:#3d4eac;flex:none;"></span></div>
+            <div style="font-family:'Newsreader',serif;font-size:28px;">$2,700</div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut2,#8a857c);margin-top:10px;"><span>Initial $2,400</span><span style="color:var(--good,#6f8f6a);">▲ $300</span></div>
+          </div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;padding:20px;border-top:3px solid #c1976a;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;"><div><div style="font-size:15px;font-weight:600;">Wallet</div><div style="font-size:12px;color:var(--faint,#a8a299);margin-top:2px;">Cash</div></div><span style="width:11px;height:11px;border-radius:4px;background:#c1976a;flex:none;"></span></div>
+            <div style="font-family:'Newsreader',serif;font-size:28px;">$260</div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut2,#8a857c);margin-top:10px;"><span>Initial $400</span><span style="color:var(--bad,#c1796a);">▼ $140</span></div>
+          </div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;padding:20px;border-top:3px solid #c1796a;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;"><div><div style="font-size:15px;font-weight:600;">Credit Card</div><div style="font-size:12px;color:var(--faint,#a8a299);margin-top:2px;">Credit card · closes 28th</div></div><span style="width:11px;height:11px;border-radius:4px;background:#c1796a;flex:none;"></span></div>
+            <div style="font-family:'Newsreader',serif;font-size:28px;color:var(--bad,#c1796a);">−$1,240</div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut2,#8a857c);margin-top:10px;"><span>Limit $5,000</span><span>25% used</span></div>
+          </div>
+          <div style="border:1.5px dashed var(--chipline,#e6e3dc);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--faint,#a8a299);min-height:128px;cursor:pointer;">
+            <div style="font-size:26px;font-weight:300;line-height:1;">+</div>
+            <div style="font-size:13px;margin-top:6px;">Add account</div>
+          </div>
+        </div>
+
+        <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:12px;">Archived</div>
+        <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:12px;opacity:.7;max-width:420px;">
+          <span style="width:11px;height:11px;border-radius:4px;background:#8a857c;flex:none;"></span>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;">Old Checking</div><div style="font-size:12px;color:var(--faint,#a8a299);">Checking · archived May 2026</div></div>
+          <span style="font-size:13px;color:var(--accent,#3d4eac);font-weight:600;cursor:pointer;">Restore</span>
+        </div>
+      </div>
+
+      <!-- ============ CATEGORIES ============ -->
+      <div data-screen="categories" style="display:none;padding:32px 40px 56px;max-width:1240px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;">
+          <div>
+            <div style="font-family:'Newsreader',serif;font-size:32px;line-height:1.12;letter-spacing:-0.01em;">Categories</div>
+            <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:5px;">4 income · 8 expense · created with your account</div>
+          </div>
+          <button style="border:none;background:var(--accent,#3d4eac);color:#fff;border-radius:8px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;flex:none;">+ New category</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:9px;padding:16px 20px;border-bottom:1px solid var(--line,#eceae5);background:var(--side,#faf9f7);"><span style="width:8px;height:8px;border-radius:50%;background:var(--good,#6f8f6a);"></span><span style="font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mut,#6b665d);font-weight:600;">Income</span></div>
+            <div data-cat-income></div>
+          </div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:9px;padding:16px 20px;border-bottom:1px solid var(--line,#eceae5);background:var(--side,#faf9f7);"><span style="width:8px;height:8px;border-radius:50%;background:var(--bad,#c1796a);"></span><span style="font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mut,#6b665d);font-weight:600;">Expense</span></div>
+            <div data-cat-expense></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ FINANCINGS ============ -->
+      <div data-screen="financings" style="display:none;padding:32px 40px 56px;max-width:1240px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;">
+          <div>
+            <div style="font-family:'Newsreader',serif;font-size:32px;line-height:1.12;letter-spacing:-0.01em;">Financings</div>
+            <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:5px;">Apartment · SAC · 360 installments · 14 paid</div>
+          </div>
+          <button style="border:none;background:var(--accent,#3d4eac);color:#fff;border-radius:8px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;flex:none;">+ Simulate financing</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;">
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Asset value</div><div style="font-family:'Newsreader',serif;font-size:26px;margin-top:3px;">$320,000</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Financed</div><div style="font-family:'Newsreader',serif;font-size:26px;margin-top:3px;">$256,000</div><div style="font-size:11.5px;color:var(--mut2,#8a857c);margin-top:2px;">$64k down · 9.5%/yr</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Outstanding</div><div style="font-family:'Newsreader',serif;font-size:26px;margin-top:3px;color:var(--bad,#c1796a);">$246,044</div></div>
+          <div style="background:var(--accentsoft,#eeece6);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Paid off</div><div style="font-family:'Newsreader',serif;font-size:26px;margin-top:3px;color:var(--accent,#3d4eac);">3.9%</div><div style="font-size:11.5px;color:var(--mut2,#8a857c);margin-top:2px;">14 of 360</div></div>
+        </div>
+
+        <div style="display:flex;gap:18px;align-items:flex-start;">
+          <div style="flex:1.7;background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;overflow:hidden;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line,#eceae5);">
+              <span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Amortization · SAC</span>
+              <span style="font-size:12px;color:var(--mut2,#8a857c);">Showing 15–22 of 360</span>
+            </div>
+            <div style="display:grid;grid-template-columns:54px 1fr 1fr 1fr 1fr 1fr 90px;gap:10px;padding:11px 22px;border-bottom:1px solid var(--line,#eceae5);font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;background:var(--side,#faf9f7);">
+              <span>#</span><span>Due</span><span style="text-align:right;">Amort.</span><span style="text-align:right;">Interest</span><span style="text-align:right;">Fees</span><span style="text-align:right;">Total</span><span style="text-align:right;">Status</span>
+            </div>
+            <div data-amort></div>
+          </div>
+
+          <div style="flex:1;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:16px;">SAC vs Price</div>
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div style="border:1px solid var(--accent,#3d4eac);border-radius:10px;padding:14px;background:var(--accentsoft,#eeece6);">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:14px;font-weight:600;">SAC <span style="font-size:11px;color:var(--accent,#3d4eac);font-weight:600;">· active</span></span><span style="font-size:13px;color:var(--mut,#6b665d);">1st: $2,738</span></div>
+                  <div style="font-size:12px;color:var(--mut2,#8a857c);">Decreasing installments · total interest <strong style="color:var(--ink2,#2b2925);">$117,440</strong></div>
+                </div>
+                <div style="border:1px solid var(--line,#eceae5);border-radius:10px;padding:14px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:14px;font-weight:600;">Price</span><span style="font-size:13px;color:var(--mut,#6b665d);">fixed: $2,152</span></div>
+                  <div style="font-size:12px;color:var(--mut2,#8a857c);">Fixed installments · total interest <strong style="color:var(--ink2,#2b2925);">$518,720</strong></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:14px;">Details</div>
+              <div style="display:flex;flex-direction:column;font-size:13.5px;">
+                <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="color:var(--mut,#6b665d);">Institution</span><span style="font-weight:600;">Caixa</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="color:var(--mut,#6b665d);">Term</span><span style="font-weight:600;">360 months</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="color:var(--mut,#6b665d);">Interest (yr)</span><span style="font-weight:600;">9.5%</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="color:var(--mut,#6b665d);">CET (yr)</span><span style="font-weight:600;">10.2%</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="color:var(--mut,#6b665d);">Monthly insurance</span><span style="font-weight:600;">$48</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:var(--mut,#6b665d);">First due date</span><span style="font-weight:600;">May 2025</span></div>
+              </div>
+              <button style="width:100%;margin-top:16px;border:1px solid var(--chipline,#e6e3dc);background:transparent;color:var(--ink2,#2b2925);border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Simulate extra payment</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--END-SCREENS-->
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860}}">
+const LIGHT = {
+  '--bg':'#f3f1ec','--panel':'#fcfcfb','--side':'#faf9f7','--line':'#eceae5','--line2':'#f1efea',
+  '--ink':'#26241f','--ink2':'#2b2925','--mut':'#6b665d','--mut2':'#8a857c','--faint':'#a8a299',
+  '--chipline':'#e6e3dc','--accent':'#3d4eac','--accentsoft':'#eeece6','--good':'#6f8f6a',
+  '--warn':'#c1976a','--bad':'#c1796a','--track':'#eceae5','--goodsoft':'#e9f0e8','--badsoft':'#f6e9e6','--warnsoft':'#f6f0e6'
+};
+const DARK = {
+  '--bg':'#131214','--panel':'#1b1a1f','--side':'#171619','--line':'#2a2930','--line2':'#232228',
+  '--ink':'#f1efe8','--ink2':'#e8e6df','--mut':'#a39e94','--mut2':'#8a857c','--faint':'#6f6a61',
+  '--chipline':'#2f2e36','--accent':'#8c93e8','--accentsoft':'#26263a','--good':'#8fae89',
+  '--warn':'#d4ab78','--bad':'#d18f86','--track':'#2a2930','--goodsoft':'#1e2820','--badsoft':'#2c211f','--warnsoft':'#2c2820'
+};
+const TITLES = { dashboard:'Dashboard', transactions:'Transactions', accounts:'Accounts', categories:'Categories', financings:'Financings' };
+
+const CASHFLOW = [
+  ['J',78,60],['F',82,54],['M',70,72],['A',88,50],['M',84,64],['J',92,58,1],
+  ['J',0,0,0,1],['A',0,0,0,1],['S',0,0,0,1],['O',0,0,0,1],['N',0,0,0,1],['D',0,0,0,1]
+];
+const CATSPEND = [
+  ['Housing','#3d4eac',1850,90],['Food','#6f8f6a',720,38],['Leisure','#c1976a',480,26],
+  ['Transport','#c1796a',410,22],['Subscriptions','#8a857c',180,10]
+];
+const RECENT = [
+  ['Salary · June','income','+$5,400','paid'],
+  ['Freelance project','income','+$800','paid'],
+  ['Whole Foods','expense','−$92','paid'],
+  ['Gym membership','expense','−$60','overdue'],
+  ['Electricity bill','expense','−$140','pending']
+];
+const TX = [
+  ['Jun 21','Salary · June','Salary','Checking','income','paid','+$5,400'],
+  ['Jun 21','Freelance project','Freelance','Checking','income','paid','+$800'],
+  ['Jun 20','Whole Foods','Food','Checking','expense','paid','−$92'],
+  ['Jun 20','Uber rides','Transport','Credit card','expense','paid','−$38'],
+  ['Jun 19','Spotify','Subscriptions','Credit card','expense','pending','−$22'],
+  ['Jun 18','Electricity bill','Housing','Checking','expense','pending','−$140'],
+  ['Jun 17','Transfer to Savings','Transfer','Savings','transfer','paid','$1,000'],
+  ['Jun 15','Gym membership','Leisure','Checking','expense','overdue','−$60'],
+  ['Jun 14','Cinema','Leisure','Cash','expense','paid','−$28'],
+  ['Jun 12','Restaurant','Food','Credit card','expense','paid','−$74'],
+  ['Jun 10','Dividends','Investments','Investments','income','paid','+$120'],
+  ['Jun 08','Pharmacy','Food','Checking','expense','cancelled','−$45'],
+  ['Jun 05','Internet','Housing','Checking','expense','paid','−$70'],
+  ['Jun 01','Rent','Housing','Checking','expense','pending','−$1,850']
+];
+const STATUS_STYLE = {
+  paid:['var(--good)','var(--goodsoft)','Paid'], pending:['var(--warn)','var(--warnsoft)','Pending'],
+  overdue:['var(--bad)','var(--badsoft)','Overdue'], cancelled:['var(--faint)','var(--track)','Cancelled']
+};
+
+const CAT_INCOME = [
+  ['Salary','#6f8f6a','◆',1,'$5,400 this month'],
+  ['Freelance','#7b5cd6','◈',1,'$800 this month'],
+  ['Investments','#3d4eac','▲',1,'$120 this month'],
+  ['Other income','#c1976a','＋',0,'—']
+];
+const CAT_EXPENSE = [
+  ['Housing','#3d4eac','⌂',1,'$1,850'],
+  ['Food','#6f8f6a','🍽',1,'$720'],
+  ['Transport','#c1796a','⛽',1,'$410'],
+  ['Leisure','#c1976a','◷',1,'$480'],
+  ['Subscriptions','#8a857c','♺',1,'$180'],
+  ['Health','#d6748f','＋',1,'$95'],
+  ['Education','#5aa0a8','✎',0,'$240'],
+  ['Other','#9a8a72','•',0,'$60']
+];
+// SAC: installment #, due, amortization (fixed ~711), interest (decreasing), fees+insurance, total, status
+const AMORT = [
+  [15,'Jul 2026','$711','$1,979','$48','$2,738','paid'],
+  [16,'Aug 2026','$711','$1,974','$48','$2,733','paid'],
+  [17,'Sep 2026','$711','$1,968','$48','$2,727','pending'],
+  [18,'Oct 2026','$711','$1,962','$48','$2,721','pending'],
+  [19,'Nov 2026','$711','$1,957','$48','$2,716','pending'],
+  [20,'Dec 2026','$711','$1,951','$48','$2,710','pending'],
+  [21,'Jan 2027','$711','$1,945','$48','$2,704','pending'],
+  [22,'Feb 2027','$711','$1,940','$48','$2,699','pending']
+];
+
+class Component extends DCLogic {
+  state = { screen:'dashboard', dark:false };
+  componentDidMount(){ this.apply(); }
+  componentDidUpdate(){ this.apply(); }
+  esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  apply(){
+    const r = this.rootEl; if(!r) return;
+    const t = this.state.dark ? DARK : LIGHT;
+    for(const k in t) r.style.setProperty(k, t[k]);
+    r.querySelectorAll('[data-screen]').forEach(el=>{ el.style.display = el.getAttribute('data-screen')===this.state.screen ? 'block':'none'; });
+    r.querySelectorAll('[data-nav]').forEach(el=>{
+      const on = el.getAttribute('data-nav')===this.state.screen;
+      el.style.background = on ? 'var(--accentsoft)' : 'transparent';
+      el.style.color = on ? 'var(--ink2)' : 'var(--mut)';
+      el.style.fontWeight = on ? '600' : '500';
+      const dot = el.querySelector('[data-dot]'); if(dot) dot.style.background = on ? 'var(--accent)' : 'var(--track)';
+    });
+    const title = r.querySelector('[data-title]'); if(title) title.textContent = TITLES[this.state.screen]||'';
+    const lbl = r.querySelector('[data-themelabel]'); if(lbl) lbl.textContent = this.state.dark ? 'Dark':'Light';
+    const ic = r.querySelector('[data-themeicon]'); if(ic) ic.style.background = this.state.dark ? 'var(--accent)' : 'transparent';
+    this.fillDashboard(r); this.fillTx(r); this.fillCats(r); this.fillAmort(r);
+  }
+  fillCats(r){
+    const mk = (rows)=> rows.map(([n,c,ic,def,sub],i)=>{
+      const bd = i<rows.length-1 ? 'border-bottom:1px solid var(--line2)' : '';
+      const badge = def ? `<span style="font-size:10.5px;color:var(--faint);border:1px solid var(--chipline);border-radius:5px;padding:2px 7px">default</span>` : '';
+      return `<div style="display:flex;align-items:center;gap:13px;padding:13px 20px;${bd}"><span style="width:30px;height:30px;border-radius:9px;background:${c}1f;color:${c};display:flex;align-items:center;justify-content:center;font-size:14px;flex:none">${ic}</span><div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:600">${this.esc(n)}</div><div style="font-size:12px;color:var(--faint)">${sub}</div></div>${badge}</div>`;
+    }).join('');
+    const inc = r.querySelector('[data-cat-income]'); if(inc && !inc.dataset.done){ inc.innerHTML = mk(CAT_INCOME); inc.dataset.done='1'; }
+    const exp = r.querySelector('[data-cat-expense]'); if(exp && !exp.dataset.done){ exp.innerHTML = mk(CAT_EXPENSE); exp.dataset.done='1'; }
+  }
+  fillAmort(r){
+    const a = r.querySelector('[data-amort]');
+    if(a && !a.dataset.done){
+      a.innerHTML = AMORT.map(([n,due,am,intr,fee,tot,st],i)=>{
+        const [col,bg,lbl] = STATUS_STYLE[st];
+        const bd = i<AMORT.length-1 ? 'border-bottom:1px solid var(--line2)' : '';
+        return `<div style="display:grid;grid-template-columns:54px 1fr 1fr 1fr 1fr 1fr 90px;gap:10px;padding:12px 22px;${bd};align-items:center;font-size:13px">
+          <span style="color:var(--mut2);font-weight:600">${n}</span>
+          <span style="color:var(--mut)">${due}</span>
+          <span style="text-align:right">${am}</span>
+          <span style="text-align:right;color:var(--mut)">${intr}</span>
+          <span style="text-align:right;color:var(--mut)">${fee}</span>
+          <span style="text-align:right;font-weight:600">${tot}</span>
+          <span style="text-align:right"><span style="font-size:11px;color:${col};background:${bg};border-radius:5px;padding:2px 8px">${lbl}</span></span>
+        </div>`;
+      }).join('');
+      a.dataset.done='1';
+    }
+  }
+  fillDashboard(r){
+    const cf = r.querySelector('[data-cashflow]');
+    if(cf && !cf.dataset.done){
+      cf.innerHTML = CASHFLOW.map(([m,inc,exp,cur,future])=>{
+        const op = future ? ';opacity:.32' : '';
+        const incC = future ? 'var(--track)' : 'var(--good)';
+        const expC = future ? 'var(--track)' : 'var(--bad)';
+        const mc = cur ? 'var(--accent);font-weight:700' : 'var(--faint)';
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px${op}"><div style="display:flex;gap:3px;align-items:flex-end;height:124px"><span style="width:8px;height:${inc||3}px;background:${incC};border-radius:3px"></span><span style="width:8px;height:${exp||3}px;background:${expC};border-radius:3px"></span></div><span style="font-size:10px;color:${mc}">${m}</span></div>`;
+      }).join('');
+      cf.dataset.done='1';
+    }
+    const cs = r.querySelector('[data-catspend]');
+    if(cs && !cs.dataset.done){
+      cs.innerHTML = CATSPEND.map(([n,c,v,w])=>`<div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:3px;background:${c}"></span>${n}</span><span style="color:var(--mut)">$${v.toLocaleString()}</span></div><div style="height:6px;border-radius:4px;background:var(--track)"><div style="height:6px;width:${w}%;border-radius:4px;background:${c}"></div></div></div>`).join('');
+      cs.dataset.done='1';
+    }
+    const rc = r.querySelector('[data-recent]');
+    if(rc && !rc.dataset.done){
+      rc.innerHTML = RECENT.map(([d,ty,amt,st],i)=>{
+        const [col,bg,lbl] = STATUS_STYLE[st];
+        const amtC = ty==='income' ? 'var(--good)' : 'var(--ink)';
+        const bd = i<RECENT.length-1 ? 'border-bottom:1px solid var(--line2)' : '';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:11px 0;${bd}"><span style="font-size:14.5px;flex:1">${this.esc(d)}</span><span style="font-size:11px;color:${col};background:${bg};border-radius:5px;padding:2px 8px">${lbl}</span><span style="font-size:14.5px;font-weight:600;color:${amtC};width:70px;text-align:right">${amt}</span></div>`;
+      }).join('');
+      rc.dataset.done='1';
+    }
+  }
+  fillTx(r){
+    const tb = r.querySelector('[data-txtable]');
+    if(tb && !tb.dataset.done){
+      tb.innerHTML = TX.map(([date,desc,cat,acc,ty,st,amt],i)=>{
+        const [col,bg,lbl] = STATUS_STYLE[st];
+        const amtC = ty==='income' ? 'var(--good)' : (ty==='transfer' ? 'var(--mut)' : 'var(--ink)');
+        const bd = i<TX.length-1 ? 'border-bottom:1px solid var(--line2)' : '';
+        const dot = ty==='income'?'var(--good)':(ty==='transfer'?'var(--accent)':'var(--bad)');
+        return `<div style="display:grid;grid-template-columns:90px 1.7fr 1.1fr 1.1fr 1fr 110px;gap:14px;padding:13px 22px;${bd};align-items:center">
+          <span style="font-size:13px;color:var(--mut2)">${date}</span>
+          <span style="font-size:14px;display:flex;align-items:center;gap:9px;min-width:0"><span style="width:7px;height:7px;border-radius:50%;background:${dot};flex:none"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${this.esc(desc)}</span></span>
+          <span style="font-size:13px;color:var(--mut)">${cat}</span>
+          <span style="font-size:13px;color:var(--mut)">${acc}</span>
+          <span><span style="font-size:11px;color:${col};background:${bg};border-radius:5px;padding:2px 8px">${lbl}</span></span>
+          <span style="font-size:14px;font-weight:600;color:${amtC};text-align:right">${amt}</span>
+        </div>`;
+      }).join('');
+      tb.dataset.done='1';
+    }
+  }
+  go(s){ this.setState({ screen:s }); }
+  renderVals(){
+    return {
+      setRoot: el => { this.rootEl = el; if(el) this.apply(); },
+      goDashboard:()=>this.go('dashboard'), goTransactions:()=>this.go('transactions'),
+      goAccounts:()=>this.go('accounts'), goCategories:()=>this.go('categories'), goFinancings:()=>this.go('financings'),
+      toggleTheme:()=>this.setState(s=>({ dark:!s.dark }))
+    };
+  }
+}
+</script>
+</body>
+</html>

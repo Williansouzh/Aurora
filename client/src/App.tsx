@@ -12,6 +12,7 @@ import { BudgetsPage } from './pages/BudgetsPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ConfirmEmailPage, ForgotPasswordPage, ResetPasswordPage } from './pages/ForgotPasswordPage';
+import { FinanceOverviewPage } from './pages/FinanceOverviewPage';
 import { FinancingDetailPage } from './pages/FinancingDetailPage';
 import { FinancingsPage } from './pages/FinancingsPage';
 import { BacklogPage } from './pages/BacklogPage';
@@ -67,6 +68,7 @@ function App() {
                   <Route path="/evolution" element={<Guard moduleKey="evolution" access={access}><EvolutionPage api={api} /></Guard>} />
                   <Route path="/studies" element={<Guard moduleKey="studies" access={access}><StudiesPage api={api} /></Guard>} />
                   <Route path="/retrospectives" element={<Guard moduleKey="retrospectives" access={access}><RetrospectivesPage api={api} /></Guard>} />
+                  <Route path="/finance" element={<Guard moduleKey="finances" access={access}><FinanceOverviewPage api={api} /></Guard>} />
                   <Route path="/accounts" element={<Guard moduleKey="finances" access={access}><AccountsPage api={api} /></Guard>} />
                   <Route path="/accounts/:accountId/invoices" element={<Guard moduleKey="finances" access={access}><InvoicePage api={api} /></Guard>} />
                   <Route path="/categories" element={<Guard moduleKey="finances" access={access}><CategoriesPage api={api} /></Guard>} />

@@ -4,9 +4,9 @@ using Aurora.Application.Common;
 using Aurora.Application.Features.Budgets.Common;
 using Aurora.Domain.Entities;
 using Aurora.Domain.Enums;
-using Aurora.Domain.Exceptions;
 using FluentValidation;
 using MediatR;
+using ValidationException = Aurora.Domain.Exceptions.ValidationException;
 
 namespace Aurora.Application.Features.Budgets.Upsert;
 

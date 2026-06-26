@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  ::-webkit-scrollbar{width:10px;}
+  ::-webkit-scrollbar-thumb{background:rgba(120,115,105,.28);border-radius:8px;border:3px solid transparent;background-clip:content-box;}
+</style>
+</helmet>
+
+<div ref="{{ setRoot }}" style="min-height:100vh;background:#f3f1ec;font-family:'Hanken Grotesk',sans-serif;color:#26241f;display:flex;">
+
+  <!-- ============ TOC SIDEBAR ============ -->
+  <div style="width:248px;flex:none;border-right:1px solid #eceae5;background:#faf9f7;padding:32px 20px;position:sticky;top:0;height:100vh;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#a7b0d6,#3d4eac);flex:none;"></div>
+      <span style="font-family:'Newsreader',serif;font-size:23px;letter-spacing:-0.01em;">Aurora</span>
+    </div>
+    <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#a8a299;font-weight:600;margin-bottom:28px;padding-left:36px;">Design System</div>
+    <div style="display:flex;flex-direction:column;gap:1px;">
+      <a href="#foundations" style="text-decoration:none;color:#6b665d;font-size:13.5px;padding:7px 12px;border-radius:7px;">Foundations</a>
+      <a href="#color" style="text-decoration:none;color:#6b665d;font-size:13.5px;padding:7px 12px;border-radius:7px;">Color</a>
+      <a href="#type" style="text-decoration:none;color:#6b665d;font-size:13.5px;padding:7px 12px;border-radius:7px;">Typography</a>
+      <a href="#space" style="text-decoration:none;color:#6b665d;font-size:13.5px;padding:7px 12px;border-radius:7px;">Space &amp; radius</a>
+      <a href="#buttons" style="text-decoration:none;color:#6b665d;font-size:13.5px;padding:7px 12px;border-radius:7px;">Buttons</a>
+      <a href="#forms" style="text-decoration:none;color:#6b665d;font-size:13.5px;padding:7px 12px;border-radius:7px;">Forms</a>
+      <a href="#status" style="text-decoration:none;color:#6b665d;font-size:13.5px;padding:7px 12px;border-radius:7px;">Status &amp; chips</a>
+      <a href="#cards" style="text-decoration:none;color:#6b665d;font-size:13.5px;padding:7px 12px;border-radius:7px;">Cards &amp; data</a>
+      <a href="#nav" style="text-decoration:none;color:#6b665d;font-size:13.5px;padding:7px 12px;border-radius:7px;">Navigation</a>
+      <a href="#dark" style="text-decoration:none;color:#6b665d;font-size:13.5px;padding:7px 12px;border-radius:7px;">Dark theme</a>
+    </div>
+    <div style="margin-top:32px;padding:14px;background:#eeece6;border-radius:11px;font-size:12px;line-height:1.5;color:#6b665d;">Direction <strong style="color:#26241f;">A · Quiet</strong> — calm, editorial, type-led. One indigo accent over warm neutrals.</div>
+  </div>
+
+  <!-- ============ CONTENT ============ -->
+  <div style="flex:1;min-width:0;overflow-y:auto;height:100vh;">
+    <div style="max-width:980px;padding:56px 64px 96px;">
+
+      <!-- HERO -->
+      <div style="margin-bottom:18px;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#a8a299;font-weight:600;">Aurora Life OS</div>
+      <div style="font-family:'Newsreader',serif;font-size:46px;line-height:1.08;letter-spacing:-0.015em;margin-bottom:16px;">The Quiet design system</div>
+      <div style="font-size:17px;line-height:1.6;color:#6b665d;max-width:680px;margin-bottom:8px;">A calm, private space where someone watches themselves become who they want to be. The interface stays out of the way: warm paper neutrals, editorial serif headlines, a single indigo for action, and gamification that whispers rather than shouts.</div>
+
+      <!-- ============ FOUNDATIONS ============ -->
+      <div id="foundations" style="height:1px;"></div>
+      <div style="margin:56px 0 8px;font-family:'Newsreader',serif;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#3d4eac;font-weight:600;font-family:'Hanken Grotesk';">01 — Foundations</div>
+      <div style="font-family:'Newsreader',serif;font-size:30px;letter-spacing:-0.01em;margin-bottom:20px;">Principles</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:22px;"><div style="font-family:'Newsreader',serif;font-size:22px;color:#3d4eac;margin-bottom:8px;">Calm over loud</div><div style="font-size:14px;line-height:1.55;color:#6b665d;">Generous whitespace, muted color, no gradients or noise. The user's life is the content.</div></div>
+        <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:22px;"><div style="font-family:'Newsreader',serif;font-size:22px;color:#3d4eac;margin-bottom:8px;">Type leads</div><div style="font-size:14px;line-height:1.55;color:#6b665d;">A serif headline gives every screen a human, journal-like voice. Numbers are set in serif too.</div></div>
+        <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:22px;"><div style="font-family:'Newsreader',serif;font-size:22px;color:#3d4eac;margin-bottom:8px;">Reward, quietly</div><div style="font-size:14px;line-height:1.55;color:#6b665d;">Streaks, levels and XP are present but understated — a small flame, a thin progress bar.</div></div>
+      </div>
+
+      <!-- ============ COLOR ============ -->
+      <div id="color" style="height:1px;"></div>
+      <div style="margin:56px 0 8px;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#3d4eac;font-weight:600;">02 — Color</div>
+      <div style="font-family:'Newsreader',serif;font-size:30px;letter-spacing:-0.01em;margin-bottom:6px;">Palette &amp; tokens</div>
+      <div style="font-size:14px;color:#8a857c;margin-bottom:22px;">Light theme. Every value is exposed as a CSS variable, mirrored in the dark theme below.</div>
+
+      <div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#a8a299;font-weight:600;margin-bottom:12px;">Surfaces &amp; ink</div>
+      <div data-sw-surfaces style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:26px;"></div>
+
+      <div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#a8a299;font-weight:600;margin-bottom:12px;">Accent &amp; semantic</div>
+      <div data-sw-accent style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;"></div>
+
+      <!-- ============ TYPE ============ -->
+      <div id="type" style="height:1px;"></div>
+      <div style="margin:56px 0 8px;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#3d4eac;font-weight:600;">03 — Typography</div>
+      <div style="font-family:'Newsreader',serif;font-size:30px;letter-spacing:-0.01em;margin-bottom:22px;">Two families, clear roles</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:24px;">
+          <div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#a8a299;font-weight:600;margin-bottom:10px;">Display · Newsreader</div>
+          <div style="font-family:'Newsreader',serif;font-size:40px;line-height:1.05;letter-spacing:-0.01em;">Good morning</div>
+          <div style="font-size:13px;color:#8a857c;margin-top:12px;">Headlines, greetings, key numbers ($14,280), streak counts. Weights 400–500. Letter-spacing −0.01em.</div>
+        </div>
+        <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:24px;">
+          <div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#a8a299;font-weight:600;margin-bottom:10px;">Text · Hanken Grotesk</div>
+          <div style="font-size:30px;font-weight:600;">Pay rent</div>
+          <div style="font-size:13px;color:#8a857c;margin-top:12px;">Body, labels, navigation, table data. Weights 400 / 500 / 600 / 700. Uppercase labels use 0.12em tracking.</div>
+        </div>
+      </div>
+      <div data-typescale style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:10px 24px;"></div>
+
+      <!-- ============ SPACE & RADIUS ============ -->
+      <div id="space" style="height:1px;"></div>
+      <div style="margin:56px 0 8px;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#3d4eac;font-weight:600;">04 — Space &amp; radius</div>
+      <div style="font-family:'Newsreader',serif;font-size:30px;letter-spacing:-0.01em;margin-bottom:22px;">Rhythm</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:24px;">
+          <div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#a8a299;font-weight:600;margin-bottom:16px;">Spacing scale</div>
+          <div data-spacescale style="display:flex;flex-direction:column;gap:12px;"></div>
+        </div>
+        <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:24px;">
+          <div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#a8a299;font-weight:600;margin-bottom:16px;">Corner radius</div>
+          <div data-radiusscale style="display:flex;gap:14px;align-items:flex-end;"></div>
+          <div style="font-size:13px;color:#8a857c;margin-top:18px;line-height:1.5;">Chips &amp; bars 999px (pill) · inputs &amp; buttons 8px · cards 12–14px · stat tiles 10px.</div>
+        </div>
+      </div>
+
+      <!-- ============ BUTTONS ============ -->
+      <div id="buttons" style="height:1px;"></div>
+      <div style="margin:56px 0 8px;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#3d4eac;font-weight:600;">05 — Buttons</div>
+      <div style="font-family:'Newsreader',serif;font-size:30px;letter-spacing:-0.01em;margin-bottom:22px;">Actions</div>
+      <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:28px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+        <button style="border:none;background:#3d4eac;color:#fff;border-radius:8px;padding:11px 18px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;">Primary action</button>
+        <button style="border:1px solid #e6e3dc;background:#fcfcfb;color:#2b2925;border-radius:8px;padding:11px 18px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;">Secondary</button>
+        <button style="border:none;background:transparent;color:#3d4eac;border-radius:8px;padding:11px 14px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;">Text link →</button>
+        <button style="border:1px solid #c1796a;background:transparent;color:#c1796a;border-radius:8px;padding:11px 18px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;">Destructive</button>
+        <div style="width:42px;height:42px;border-radius:50%;background:#3d4eac;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:300;box-shadow:0 4px 14px rgba(61,78,172,.35);">+</div>
+        <span style="font-size:12.5px;color:#a8a299;">FAB · mobile primary</span>
+      </div>
+
+      <!-- ============ FORMS ============ -->
+      <div id="forms" style="height:1px;"></div>
+      <div style="margin:56px 0 8px;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#3d4eac;font-weight:600;">06 — Forms</div>
+      <div style="font-family:'Newsreader',serif;font-size:30px;letter-spacing:-0.01em;margin-bottom:22px;">Inputs &amp; controls</div>
+      <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div>
+          <div style="font-size:12.5px;font-weight:600;margin-bottom:7px;">Text field</div>
+          <div style="border:1px solid #eceae5;background:#faf9f7;border-radius:8px;padding:11px 13px;font-size:14px;color:#a8a299;">Add a task or note…</div>
+          <div style="font-size:12.5px;font-weight:600;margin:18px 0 7px;">Search field</div>
+          <div style="display:flex;align-items:center;gap:8px;border:1px solid #eceae5;background:#faf9f7;border-radius:8px;padding:11px 13px;"><span style="color:#a8a299;">⌕</span><span style="font-size:14px;color:#a8a299;">Search description…</span></div>
+          <div style="font-size:12.5px;font-weight:600;margin:18px 0 7px;">Dropdown / filter</div>
+          <div style="display:inline-flex;align-items:center;gap:8px;border:1px solid #e6e3dc;background:#fcfcfb;border-radius:8px;padding:9px 13px;font-size:13px;">All status <span style="color:#a8a299;">▾</span></div>
+        </div>
+        <div>
+          <div style="font-size:12.5px;font-weight:600;margin-bottom:7px;">Checkbox &amp; toggle</div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="width:20px;height:20px;border-radius:6px;border:1.5px solid #cfccc4;flex:none;"></span>
+            <span style="width:20px;height:20px;border-radius:6px;background:#3d4eac;flex:none;position:relative;"><span style="position:absolute;left:6px;top:3px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);"></span></span>
+            <span style="width:42px;height:24px;border-radius:999px;background:#3d4eac;position:relative;flex:none;"><span style="position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:#fff;"></span></span>
+            <span style="width:42px;height:24px;border-radius:999px;background:#eceae5;position:relative;flex:none;"><span style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;"></span></span>
+          </div>
+          <div style="font-size:12.5px;font-weight:600;margin:18px 0 7px;">Progress bar</div>
+          <div style="height:6px;border-radius:4px;background:#eceae5;margin-bottom:10px;"><div style="height:6px;width:60%;border-radius:4px;background:#3d4eac;"></div></div>
+          <div style="height:6px;border-radius:4px;background:#eceae5;"><div style="height:6px;width:72%;border-radius:4px;background:#6f8f6a;"></div></div>
+          <div style="font-size:12.5px;font-weight:600;margin:18px 0 7px;">Segmented filter</div>
+          <div style="display:flex;gap:7px;"><span style="font-size:12px;font-weight:600;color:#fff;background:#3d4eac;border-radius:999px;padding:5px 13px;">All</span><span style="font-size:12px;color:#6b665d;border:1px solid #e6e3dc;border-radius:999px;padding:5px 13px;">Income</span><span style="font-size:12px;color:#6b665d;border:1px solid #e6e3dc;border-radius:999px;padding:5px 13px;">Expense</span></div>
+        </div>
+      </div>
+
+      <!-- ============ STATUS ============ -->
+      <div id="status" style="height:1px;"></div>
+      <div style="margin:56px 0 8px;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#3d4eac;font-weight:600;">07 — Status &amp; chips</div>
+      <div style="font-family:'Newsreader',serif;font-size:30px;letter-spacing:-0.01em;margin-bottom:8px;">Transaction states</div>
+      <div style="font-size:14px;color:#8a857c;margin-bottom:22px;">The four states from the finance module, plus category and tag chips.</div>
+      <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:28px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:12px;color:#6f8f6a;background:#e9f0e8;border-radius:6px;padding:4px 11px;font-weight:500;">Paid</span>
+        <span style="font-size:12px;color:#c1976a;background:#f6f0e6;border-radius:6px;padding:4px 11px;font-weight:500;">Pending</span>
+        <span style="font-size:12px;color:#c1796a;background:#f6e9e6;border-radius:6px;padding:4px 11px;font-weight:500;">Overdue</span>
+        <span style="font-size:12px;color:#a8a299;background:#eceae5;border-radius:6px;padding:4px 11px;font-weight:500;">Cancelled</span>
+        <span style="width:1px;height:24px;background:#eceae5;"></span>
+        <span style="font-size:12px;color:#8a857c;border:1px solid #e6e3dc;border-radius:5px;padding:3px 9px;">Studies</span>
+        <span style="font-size:12px;color:#8a857c;border:1px solid #e6e3dc;border-radius:5px;padding:3px 9px;">Money</span>
+        <span style="width:1px;height:24px;background:#eceae5;"></span>
+        <span style="font-size:12px;color:#3d4eac;font-weight:600;display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:#6f8f6a;"></span>Income</span>
+        <span style="font-size:12px;color:#3d4eac;font-weight:600;display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:#c1796a;"></span>Expense</span>
+        <span style="font-size:12px;color:#3d4eac;font-weight:600;display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:#3d4eac;"></span>Transfer</span>
+        <span style="width:1px;height:24px;background:#eceae5;"></span>
+        <span style="font-size:12.5px;font-weight:600;color:#3d4eac;">12🔥 streak</span>
+        <span style="display:flex;align-items:center;gap:7px;border:1px solid #e6e3dc;border-radius:999px;padding:5px 11px;font-size:12px;"><span>Level 12</span><span style="width:46px;height:5px;border-radius:3px;background:#eceae5;position:relative;overflow:hidden;"><span style="position:absolute;inset:0 38% 0 0;background:#3d4eac;border-radius:3px;"></span></span></span>
+      </div>
+
+      <!-- ============ CARDS & DATA ============ -->
+      <div id="cards" style="height:1px;"></div>
+      <div style="margin:56px 0 8px;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#3d4eac;font-weight:600;">08 — Cards &amp; data</div>
+      <div style="font-family:'Newsreader',serif;font-size:30px;letter-spacing:-0.01em;margin-bottom:22px;">Building blocks</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
+        <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:12px;padding:18px;"><div style="font-size:12px;color:#a8a299;">Total balance</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;">$14,280</div><div style="font-size:11.5px;color:#6f8f6a;margin-top:3px;">▲ 2.1% vs May</div></div>
+        <div style="background:#eeece6;border:1px solid #eceae5;border-radius:12px;padding:18px;"><div style="font-size:12px;color:#a8a299;">Result</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;color:#3d4eac;">+$2,260</div><div style="font-size:11.5px;color:#6f8f6a;margin-top:3px;">▲ 12% vs May</div></div>
+        <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:12px;padding:18px;border-top:3px solid #6f8f6a;"><div style="font-size:14px;font-weight:600;">Savings</div><div style="font-size:11.5px;color:#a8a299;margin-top:2px;">Inter</div><div style="font-family:'Newsreader',serif;font-size:24px;margin-top:10px;">$7,200</div></div>
+        <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:12px;padding:18px;text-align:center;"><div style="font-size:14px;font-weight:600;">Workout</div><div style="font-family:'Newsreader',serif;font-size:26px;color:#3d4eac;margin-top:6px;">12</div><div style="font-size:11px;color:#a8a299;">day streak</div></div>
+      </div>
+      <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:12px;overflow:hidden;">
+        <div style="display:grid;grid-template-columns:90px 1.7fr 1.1fr 1fr 100px;gap:14px;padding:12px 20px;border-bottom:1px solid #eceae5;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#a8a299;font-weight:600;background:#faf9f7;"><span>Date</span><span>Description</span><span>Category</span><span>Status</span><span style="text-align:right;">Amount</span></div>
+        <div style="display:grid;grid-template-columns:90px 1.7fr 1.1fr 1fr 100px;gap:14px;padding:13px 20px;border-bottom:1px solid #f1efea;align-items:center;"><span style="font-size:13px;color:#8a857c;">Jun 21</span><span style="font-size:14px;display:flex;align-items:center;gap:9px;"><span style="width:7px;height:7px;border-radius:50%;background:#6f8f6a;"></span>Salary · June</span><span style="font-size:13px;color:#6b665d;">Salary</span><span><span style="font-size:11px;color:#6f8f6a;background:#e9f0e8;border-radius:5px;padding:2px 8px;">Paid</span></span><span style="font-size:14px;font-weight:600;color:#6f8f6a;text-align:right;">+$5,400</span></div>
+        <div style="display:grid;grid-template-columns:90px 1.7fr 1.1fr 1fr 100px;gap:14px;padding:13px 20px;align-items:center;"><span style="font-size:13px;color:#8a857c;">Jun 15</span><span style="font-size:14px;display:flex;align-items:center;gap:9px;"><span style="width:7px;height:7px;border-radius:50%;background:#c1796a;"></span>Gym membership</span><span style="font-size:13px;color:#6b665d;">Leisure</span><span><span style="font-size:11px;color:#c1796a;background:#f6e9e6;border-radius:5px;padding:2px 8px;">Overdue</span></span><span style="font-size:14px;font-weight:600;text-align:right;">−$60</span></div>
+      </div>
+
+      <!-- ============ NAV ============ -->
+      <div id="nav" style="height:1px;"></div>
+      <div style="margin:56px 0 8px;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#3d4eac;font-weight:600;">09 — Navigation</div>
+      <div style="font-family:'Newsreader',serif;font-size:30px;letter-spacing:-0.01em;margin-bottom:22px;">Sidebar &amp; tabs</div>
+      <div style="display:grid;grid-template-columns:240px 1fr;gap:16px;">
+        <div style="background:#faf9f7;border:1px solid #eceae5;border-radius:14px;padding:16px;">
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;background:#eeece6;color:#2b2925;font-weight:600;font-size:14px;"><span style="width:7px;height:7px;border-radius:50%;background:#3d4eac;"></span>Dashboard</div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#6b665d;font-size:14px;"><span style="width:7px;height:7px;border-radius:50%;background:#cfccc4;"></span>Transactions</div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#6b665d;font-size:14px;"><span style="width:7px;height:7px;border-radius:50%;background:#cfccc4;"></span>Accounts</div>
+          <div style="font-size:12px;color:#a8a299;margin-top:6px;text-align:center;">Active = soft indigo fill + filled dot</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div style="background:#fcfcfb;border:1px solid #eceae5;border-radius:14px;padding:0 20px;display:flex;gap:6px;">
+            <span style="font-size:13.5px;font-weight:600;color:#3d4eac;padding:14px 12px;border-bottom:2px solid #3d4eac;">Users</span>
+            <span style="font-size:13.5px;color:#6b665d;padding:14px 12px;">Plans</span>
+            <span style="font-size:13.5px;color:#6b665d;padding:14px 12px;">Modules</span>
+            <span style="font-size:13.5px;color:#6b665d;padding:14px 12px;">Audit log</span>
+          </div>
+          <div style="background:#faf9f7;border:1px solid #eceae5;border-radius:14px;display:flex;justify-content:space-around;padding:12px 0;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#3d4eac;"><span style="width:6px;height:6px;border-radius:50%;background:#3d4eac;"></span><span style="font-size:10px;font-weight:600;">Home</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#a8a299;"><span style="width:6px;height:6px;border-radius:50%;background:#cfccc4;"></span><span style="font-size:10px;">Activity</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#a8a299;"><span style="width:6px;height:6px;border-radius:50%;background:#cfccc4;"></span><span style="font-size:10px;">Accounts</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#a8a299;"><span style="width:6px;height:6px;border-radius:50%;background:#cfccc4;"></span><span style="font-size:10px;">Loans</span></div>
+          </div>
+          <div style="font-size:12.5px;color:#8a857c;padding:0 4px;">Desktop uses a left sidebar; mobile uses a bottom tab bar with the same accent-dot active state. A circular FAB carries the primary action on mobile.</div>
+        </div>
+      </div>
+
+      <!-- ============ DARK ============ -->
+      <div id="dark" style="height:1px;"></div>
+      <div style="margin:56px 0 8px;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#3d4eac;font-weight:600;">10 — Dark theme</div>
+      <div style="font-family:'Newsreader',serif;font-size:30px;letter-spacing:-0.01em;margin-bottom:22px;">The same calm, dimmed</div>
+      <div style="background:#131214;border:1px solid #2a2930;border-radius:16px;padding:28px;">
+        <div data-sw-dark style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px;"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+          <div style="background:#1b1a1f;border:1px solid #2a2930;border-radius:12px;padding:18px;"><div style="font-size:12px;color:#6f6a61;">Total balance</div><div style="font-family:'Newsreader',serif;font-size:28px;margin-top:4px;color:#f1efe8;">$14,280</div></div>
+          <div style="background:#26263a;border:1px solid #2a2930;border-radius:12px;padding:18px;"><div style="font-size:12px;color:#6f6a61;">Result</div><div style="font-family:'Newsreader',serif;font-size:28px;margin-top:4px;color:#8c93e8;">+$2,260</div></div>
+          <div style="background:#1b1a1f;border:1px solid #2a2930;border-radius:12px;padding:18px;display:flex;gap:8px;align-items:center;"><span style="font-size:12px;color:#8fae89;background:#1e2820;border-radius:5px;padding:3px 9px;">Paid</span><span style="font-size:12px;color:#d4ab78;background:#2c2820;border-radius:5px;padding:3px 9px;">Pending</span><span style="font-size:12px;color:#d18f86;background:#2c211f;border-radius:5px;padding:3px 9px;">Overdue</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top:48px;padding-top:24px;border-top:1px solid #eceae5;font-size:13px;color:#a8a299;">Aurora Life OS · Quiet design system · applied across Home, My Day, Rituals, Journey, Studies, Money &amp; Super Admin — desktop and mobile.</div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:900}}">
+const SURFACES = [
+  ['--bg','#f3f1ec','Background'],['--panel','#fcfcfb','Panel'],['--side','#faf9f7','Sidebar'],
+  ['--line','#eceae5','Border'],['--ink','#26241f','Ink'],['--mut','#6b665d','Muted']
+];
+const ACCENT = [
+  ['--accent','#3d4eac','Accent'],['--accentsoft','#eeece6','Accent soft'],['--good','#6f8f6a','Income'],
+  ['--bad','#c1796a','Expense'],['--warn','#c1976a','Pending'],['--faint','#a8a299','Faint']
+];
+const DARKSW = [
+  ['--bg','#131214','Background'],['--panel','#1b1a1f','Panel'],['--line','#2a2930','Border'],
+  ['--ink','#f1efe8','Ink'],['--accent','#8c93e8','Accent'],['--accentsoft','#26263a','Accent soft']
+];
+const TYPESCALE = [
+  ['Display XL','Newsreader',46,400,'Hero headline'],
+  ['Display','Newsreader',32,400,'Screen title'],
+  ['Numeral','Newsreader',30,400,'Balance / streak'],
+  ['Title','Hanken Grotesk',18,600,'Card title'],
+  ['Body','Hanken Grotesk',15,400,'Default text'],
+  ['Label','Hanken Grotesk',13,600,'Row / nav'],
+  ['Overline','Hanken Grotesk',12,600,'UPPERCASE · 0.12em']
+];
+const SPACE = [4,8,12,16,22,32,40,56];
+const RADIUS = [['8',8],['10',10],['12',12],['14',14],['pill',24]];
+
+class Component extends DCLogic {
+  fill(){
+    const r = this.rootEl; if(!r || r.dataset.filled) return;
+    const swatch = (hex,name,token,dark)=>`<div style="border-radius:11px;overflow:hidden;border:1px solid ${dark?'#2a2930':'#eceae5'}"><div style="height:56px;background:${hex}"></div><div style="padding:9px 11px"><div style="font-size:13px;font-weight:600;color:${dark?'#f1efe8':'#26241f'}">${name}</div><div style="font-size:11px;color:${dark?'#6f6a61':'#a8a299'};font-family:ui-monospace,monospace">${token}</div><div style="font-size:11px;color:${dark?'#6f6a61':'#a8a299'};font-family:ui-monospace,monospace">${hex}</div></div></div>`;
+    const set = (sel,rows,dark)=>{ const el=r.querySelector(sel); if(el) el.innerHTML = rows.map(([t,h,n])=>swatch(h,n,t,dark)).join(''); };
+    set('[data-sw-surfaces]',SURFACES,false);
+    set('[data-sw-accent]',ACCENT,false);
+    set('[data-sw-dark]',DARKSW,true);
+
+    const ts = r.querySelector('[data-typescale]');
+    if(ts) ts.innerHTML = TYPESCALE.map(([n,fam,sz,w,use],i)=>{
+      const bd = i<TYPESCALE.length-1?'border-bottom:1px solid #f1efea':'';
+      const ff = fam==='Newsreader'?"'Newsreader',serif":"'Hanken Grotesk',sans-serif";
+      return `<div style="display:flex;align-items:baseline;gap:20px;padding:14px 0;${bd}"><span style="width:96px;flex:none;font-size:12px;color:#a8a299;font-weight:600">${n}</span><span style="flex:1;font-family:${ff};font-size:${Math.min(sz,30)}px;font-weight:${w};color:#26241f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${use}</span><span style="font-size:12px;color:#a8a299;font-family:ui-monospace,monospace;white-space:nowrap">${sz}/${w}</span></div>`;
+    }).join('');
+
+    const ss = r.querySelector('[data-spacescale]');
+    if(ss) ss.innerHTML = SPACE.map(v=>`<div style="display:flex;align-items:center;gap:14px"><span style="width:30px;font-size:12px;color:#a8a299;font-family:ui-monospace,monospace">${v}</span><span style="height:14px;width:${v*2}px;background:#3d4eac;border-radius:3px"></span></div>`).join('');
+
+    const rs = r.querySelector('[data-radiusscale]');
+    if(rs) rs.innerHTML = RADIUS.map(([n,v])=>`<div style="text-align:center"><div style="width:54px;height:54px;background:#eeece6;border:1px solid #d8d4ca;border-radius:${v}px"></div><div style="font-size:11px;color:#a8a299;margin-top:6px">${n}</div></div>`).join('');
+
+    r.dataset.filled='1';
+  }
+  renderVals(){ return { setRoot: el => { this.rootEl = el; if(el) this.fill(); } }; }
+}
+</script>
+</body>
+</html>

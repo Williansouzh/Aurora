@@ -11,9 +11,9 @@ import { cn } from '../lib/utils';
 
 const STATUS_LABELS = { 1: 'Não iniciado', 2: 'Em andamento', 3: 'Encerrado' };
 const STATUS_COLORS = {
-  1: 'text-slate-600 bg-slate-100',
-  2: 'text-blue-700 bg-blue-100',
-  3: 'text-emerald-700 bg-emerald-100',
+  1: 'text-mut2 bg-secondary',
+  2: 'text-primary bg-accent',
+  3: 'text-income bg-income-soft',
 };
 
 function weekStart() {

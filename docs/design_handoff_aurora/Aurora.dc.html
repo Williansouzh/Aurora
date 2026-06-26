@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:rgba(120,115,105,.28);border-radius:8px;border:3px solid transparent;background-clip:content-box;}
+  [data-nav]{cursor:pointer;transition:background .15s,color .15s;}
+  [data-themebtn]{cursor:pointer;}
+  input::placeholder,textarea::placeholder{color:var(--faint,#a8a299);}
+</style>
+</helmet>
+
+<div ref="{{ setRoot }}" style="display:flex;height:100vh;width:100%;overflow:hidden;font-family:'Hanken Grotesk',sans-serif;background:var(--bg,#f3f1ec);color:var(--ink,#26241f);">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <div style="width:240px;flex:none;border-right:1px solid var(--line,#eceae5);background:var(--side,#faf9f7);padding:24px 16px;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px;margin-bottom:30px;">
+      <div style="width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#a7b0d6,#3d4eac);flex:none;"></div>
+      <span style="font-family:'Newsreader',serif;font-size:22px;letter-spacing:-0.01em;">Aurora</span>
+    </div>
+    <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;padding:0 12px 9px;">Life OS</div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <div data-nav="home" onClick="{{ goHome }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Home</div>
+      <div data-nav="day" onClick="{{ goDay }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>My Day</div>
+      <div data-nav="rituals" onClick="{{ goRituals }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;color:var(--mut,#6b665d);"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Rituals</div>
+      <div data-nav="journey" onClick="{{ goJourney }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Journey</div>
+      <div data-nav="studies" onClick="{{ goStudies }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Studies</div>
+      <div data-nav="money" onClick="{{ goMoney }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Money</div>
+    </div>
+    <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;padding:22px 12px 9px;">System</div>
+    <div data-nav="admin" onClick="{{ goAdmin }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:14px;"><span data-dot style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);flex:none;"></span>Super Admin</div>
+
+    <div style="margin-top:auto;border-top:1px solid var(--line,#eceae5);padding-top:14px;display:flex;align-items:center;gap:10px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:#d9c3b0;flex:none;"></div>
+      <div style="line-height:1.25;flex:1;"><div style="font-size:13px;font-weight:600;">Mariana</div><div style="font-size:11.5px;color:var(--faint,#a8a299);">Early Access · Lv 12</div></div>
+    </div>
+  </div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <!-- topbar -->
+    <div style="height:60px;flex:none;border-bottom:1px solid var(--line,#eceae5);background:var(--panel,#fcfcfb);display:flex;align-items:center;justify-content:space-between;padding:0 28px;">
+      <div data-title style="font-size:14px;font-weight:600;color:var(--ink2,#2b2925);">Home</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="display:flex;align-items:center;gap:8px;border:1px solid var(--chipline,#e6e3dc);border-radius:999px;padding:5px 13px;font-size:12.5px;color:var(--mut,#6b665d);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--warn,#c1976a);"></span>12-day streak
+        </div>
+        <div data-themebtn onClick="{{ toggleTheme }}" style="display:flex;align-items:center;gap:8px;border:1px solid var(--chipline,#e6e3dc);border-radius:999px;padding:5px 13px 5px 11px;font-size:12.5px;color:var(--mut,#6b665d);user-select:none;">
+          <span data-themeicon style="width:13px;height:13px;border-radius:50%;border:2px solid var(--accent,#3d4eac);display:inline-block;"></span><span data-themelabel>Light</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- scroll area -->
+    <div style="flex:1;overflow-y:auto;">
+
+      <!-- ============ HOME ============ -->
+      <div data-screen="home" style="display:block;padding:34px 40px 56px;max-width:1180px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;">
+          <div>
+            <div style="font-family:'Newsreader',serif;font-size:33px;line-height:1.12;letter-spacing:-0.01em;white-space:nowrap;">Good morning, Mariana</div>
+            <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:6px;">Saturday, June 21 · a quiet 12-day streak going</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;border:1px solid var(--chipline,#e6e3dc);border-radius:999px;padding:6px 9px 6px 13px;">
+            <span style="font-size:12.5px;font-weight:600;">Level 12</span>
+            <span style="width:54px;height:5px;border-radius:3px;background:var(--track,#eceae5);display:inline-block;position:relative;overflow:hidden;"><span style="position:absolute;inset:0 38% 0 0;background:var(--accent,#3d4eac);border-radius:3px;"></span></span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:22px;align-items:flex-start;">
+          <div style="flex:1.55;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;"><span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Today · Top 3</span><span style="font-size:13px;color:var(--mut2,#8a857c);">1 of 3 done</span></div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:18px;height:18px;border-radius:5px;border:1.5px solid var(--accent,#3d4eac);background:var(--accent,#3d4eac);flex:none;position:relative;"><span style="position:absolute;left:5px;top:2px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);"></span></span><span style="font-size:15px;color:var(--faint,#a8a299);text-decoration:line-through;flex:1;">Review Q3 study plan</span><span style="font-size:11.5px;color:var(--mut2,#8a857c);border:1px solid var(--chipline,#e6e3dc);border-radius:5px;padding:2px 7px;">Studies</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:18px;height:18px;border-radius:5px;border:1.5px solid var(--track,#cfccc4);flex:none;"></span><span style="font-size:15px;flex:1;">Pay rent</span><span style="font-size:11.5px;color:var(--mut2,#8a857c);border:1px solid var(--chipline,#e6e3dc);border-radius:5px;padding:2px 7px;">Money</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:11px 0;"><span style="width:18px;height:18px;border-radius:5px;border:1.5px solid var(--track,#cfccc4);flex:none;"></span><span style="font-size:15px;flex:1;">30-min Spanish session</span><span style="font-size:11.5px;color:var(--mut2,#8a857c);border:1px solid var(--chipline,#e6e3dc);border-radius:5px;padding:2px 7px;">Studies</span></div>
+              </div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:16px;">Rituals today</div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+                <div style="border:1px solid var(--line,#eceae5);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:14px;font-weight:600;">Workout</div><div style="font-family:'Newsreader',serif;font-size:26px;color:var(--accent,#3d4eac);margin-top:6px;">12</div><div style="font-size:11px;color:var(--faint,#a8a299);">day streak</div></div>
+                <div style="border:1px solid var(--line,#eceae5);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:14px;font-weight:600;">Read</div><div style="font-family:'Newsreader',serif;font-size:26px;color:var(--accent,#3d4eac);margin-top:6px;">8</div><div style="font-size:11px;color:var(--faint,#a8a299);">day streak</div></div>
+                <div style="border:1px solid var(--line,#eceae5);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:14px;font-weight:600;">Meditate</div><div style="font-family:'Newsreader',serif;font-size:26px;color:var(--accent,#3d4eac);margin-top:6px;">21</div><div style="font-size:11px;color:var(--faint,#a8a299);">day streak</div></div>
+                <div style="border:1px solid var(--line,#eceae5);border-radius:10px;padding:14px;text-align:center;background:var(--side,#faf9f7);"><div style="font-size:14px;font-weight:600;">Spanish</div><div style="font-family:'Newsreader',serif;font-size:26px;color:var(--track,#cfccc4);margin-top:6px;">5</div><div style="font-size:11px;color:var(--faint,#a8a299);">do it →</div></div>
+              </div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:14px;">Your timeline</div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;gap:14px;padding:9px 0;"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent,#3d4eac);margin-top:6px;flex:none;"></span><div><div style="font-size:14px;">Reached a 12-day workout streak</div><div style="font-size:12px;color:var(--faint,#a8a299);">2 hours ago · Health</div></div></div>
+                <div style="display:flex;gap:14px;padding:9px 0;"><span style="width:8px;height:8px;border-radius:50%;background:var(--track,#cfccc4);margin-top:6px;flex:none;"></span><div><div style="font-size:14px;">Added a photo to “Physical evolution”</div><div style="font-size:12px;color:var(--faint,#a8a299);">5 hours ago · Evolution</div></div></div>
+                <div style="display:flex;gap:14px;padding:9px 0;"><span style="width:8px;height:8px;border-radius:50%;background:var(--track,#cfccc4);margin-top:6px;flex:none;"></span><div><div style="font-size:14px;">Goal “Read 12 books” advanced to 35%</div><div style="font-size:12px;color:var(--faint,#a8a299);">Yesterday · Journey</div></div></div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:12px;">This month</div>
+              <div style="font-family:'Newsreader',serif;font-size:34px;letter-spacing:-0.01em;">$14,280</div>
+              <div style="font-size:12.5px;color:var(--mut2,#8a857c);margin-bottom:16px;">total balance · 4 accounts</div>
+              <div style="display:flex;gap:10px;">
+                <div style="flex:1;border-top:2px solid var(--good,#6f8f6a);padding-top:8px;"><div style="font-size:11px;color:var(--faint,#a8a299);">In</div><div style="font-size:15px;font-weight:600;">$6,200</div></div>
+                <div style="flex:1;border-top:2px solid var(--bad,#c1796a);padding-top:8px;"><div style="font-size:11px;color:var(--faint,#a8a299);">Out</div><div style="font-size:15px;font-weight:600;">$3,940</div></div>
+                <div style="flex:1;border-top:2px solid var(--accent,#3d4eac);padding-top:8px;"><div style="font-size:11px;color:var(--faint,#a8a299);">Result</div><div style="font-size:15px;font-weight:600;">+$2,260</div></div>
+              </div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:16px;">In focus</div>
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:7px;"><span>Learn Spanish to B1</span><span style="color:var(--mut2,#8a857c);">60%</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:60%;border-radius:4px;background:var(--accent,#3d4eac);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:7px;"><span>Emergency fund · $10k</span><span style="color:var(--mut2,#8a857c);">72%</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:72%;border-radius:4px;background:var(--good,#6f8f6a);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:7px;"><span>Read 12 books</span><span style="color:var(--mut2,#8a857c);">35%</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:35%;border-radius:4px;background:var(--warn,#c1976a);"></div></div></div>
+              </div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:14px;">Mood this week</div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;height:42px;">
+                <span style="width:11px;height:22px;border-radius:6px;background:var(--track,#d7d3ca);"></span>
+                <span style="width:11px;height:30px;border-radius:6px;background:var(--warn,#c1976a);"></span>
+                <span style="width:11px;height:26px;border-radius:6px;background:var(--warn,#c1976a);"></span>
+                <span style="width:11px;height:38px;border-radius:6px;background:var(--good,#6f8f6a);"></span>
+                <span style="width:11px;height:34px;border-radius:6px;background:var(--good,#6f8f6a);"></span>
+                <span style="width:11px;height:42px;border-radius:6px;background:var(--accent,#3d4eac);"></span>
+                <span style="width:11px;height:36px;border-radius:6px;background:var(--good,#6f8f6a);"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MY DAY ============ -->
+      <div data-screen="day" style="display:none;padding:34px 40px 56px;max-width:1180px;">
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Newsreader',serif;font-size:33px;line-height:1.12;letter-spacing:-0.01em;">My Day</div>
+          <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:6px;">Saturday, June 21 · what matters in the next 24 hours</div>
+        </div>
+
+        <div style="margin-bottom:18px;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Top 3 priorities</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px;">
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-6px;right:8px;font-family:'Newsreader',serif;font-size:64px;color:var(--track,#eceae5);line-height:1;">1</div>
+            <div style="font-size:11.5px;color:var(--mut2,#8a857c);border:1px solid var(--chipline,#e6e3dc);border-radius:5px;padding:2px 7px;display:inline-block;margin-bottom:36px;">Studies</div>
+            <div style="font-size:16px;font-weight:600;line-height:1.35;">Review Q3 study plan</div>
+            <div style="font-size:12.5px;color:var(--faint,#a8a299);margin-top:6px;">09:00 · 45 min · done ✓</div>
+          </div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-6px;right:8px;font-family:'Newsreader',serif;font-size:64px;color:var(--track,#eceae5);line-height:1;">2</div>
+            <div style="font-size:11.5px;color:var(--mut2,#8a857c);border:1px solid var(--chipline,#e6e3dc);border-radius:5px;padding:2px 7px;display:inline-block;margin-bottom:36px;">Money</div>
+            <div style="font-size:16px;font-weight:600;line-height:1.35;">Pay rent</div>
+            <div style="font-size:12.5px;color:var(--faint,#a8a299);margin-top:6px;">due today · $1,850</div>
+          </div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-6px;right:8px;font-family:'Newsreader',serif;font-size:64px;color:var(--track,#eceae5);line-height:1;">3</div>
+            <div style="font-size:11.5px;color:var(--mut2,#8a857c);border:1px solid var(--chipline,#e6e3dc);border-radius:5px;padding:2px 7px;display:inline-block;margin-bottom:36px;">Studies</div>
+            <div style="font-size:16px;font-weight:600;line-height:1.35;">30-min Spanish session</div>
+            <div style="font-size:12.5px;color:var(--faint,#a8a299);margin-top:6px;">evening · interleaved review</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:22px;align-items:flex-start;">
+          <div style="flex:1.5;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;"><span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Tasks today</span><span style="font-size:13px;color:var(--mut2,#8a857c);">3 of 7 done</span></div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:13px;padding:10px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:17px;height:17px;border-radius:5px;border:1.5px solid var(--accent,#3d4eac);background:var(--accent,#3d4eac);flex:none;position:relative;"><span style="position:absolute;left:5px;top:2px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);"></span></span><span style="font-size:14.5px;color:var(--faint,#a8a299);text-decoration:line-through;flex:1;">Morning workout</span><span style="font-size:12px;color:var(--faint,#a8a299);">07:00</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:10px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:17px;height:17px;border-radius:5px;border:1.5px solid var(--accent,#3d4eac);background:var(--accent,#3d4eac);flex:none;position:relative;"><span style="position:absolute;left:5px;top:2px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);"></span></span><span style="font-size:14.5px;color:var(--faint,#a8a299);text-decoration:line-through;flex:1;">Review Q3 study plan</span><span style="font-size:12px;color:var(--faint,#a8a299);">09:00</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:10px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:17px;height:17px;border-radius:5px;border:1.5px solid var(--track,#cfccc4);flex:none;"></span><span style="font-size:14.5px;flex:1;">Reply to landlord about rent</span><span style="font-size:12px;color:var(--faint,#a8a299);">11:00</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:10px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:17px;height:17px;border-radius:5px;border:1.5px solid var(--track,#cfccc4);flex:none;"></span><span style="font-size:14.5px;flex:1;">Grocery run</span><span style="font-size:12px;color:var(--faint,#a8a299);">17:00</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:10px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:17px;height:17px;border-radius:5px;border:1.5px solid var(--track,#cfccc4);flex:none;"></span><span style="font-size:14.5px;flex:1;">30-min Spanish session</span><span style="font-size:12px;color:var(--faint,#a8a299);">20:00</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:10px 0;"><span style="width:17px;height:17px;border-radius:5px;border:1.5px solid var(--track,#cfccc4);flex:none;"></span><span style="font-size:14.5px;flex:1;">Read 20 pages</span><span style="font-size:12px;color:var(--faint,#a8a299);">22:00</span></div>
+              </div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--bad,#c1796a);"></span><span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Overdue · move to review</span></div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:13px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14.5px;flex:1;color:var(--mut,#6b665d);">Renew gym membership</span><span style="font-size:12px;color:var(--bad,#c1796a);">2 days late</span><span style="font-size:12px;color:var(--accent,#3d4eac);font-weight:600;">Reschedule</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:9px 0;"><span style="font-size:14.5px;flex:1;color:var(--mut,#6b665d);">Call dentist</span><span style="font-size:12px;color:var(--bad,#c1796a);">5 days late</span><span style="font-size:12px;color:var(--accent,#3d4eac);font-weight:600;">Reschedule</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="flex:1;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:16px;">How are you, really?</div>
+              <div style="display:flex;justify-content:space-between;">
+                <div style="width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line,#eceae5);"></div>
+                <div style="width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line,#eceae5);"></div>
+                <div style="width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line,#eceae5);"></div>
+                <div style="width:38px;height:38px;border-radius:50%;border:2px solid var(--accent,#3d4eac);background:var(--accentsoft,#eeece6);"></div>
+                <div style="width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line,#eceae5);"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--faint,#a8a299);margin-top:8px;"><span>Low</span><span>Great</span></div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:12px;">Quick capture</div>
+              <div style="display:flex;gap:8px;"><input placeholder="Add a task, note or idea…" style="flex:1;min-width:0;border:1px solid var(--line,#eceae5);background:var(--side,#faf9f7);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;color:var(--ink,#26241f);outline:none;"><button style="border:none;background:var(--accent,#3d4eac);color:#fff;border-radius:8px;padding:0 16px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Add</button></div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:12px;">Mini diary</div>
+              <textarea placeholder="A sentence about today…" style="width:100%;height:84px;resize:none;border:1px solid var(--line,#eceae5);background:var(--side,#faf9f7);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.5;font-family:inherit;color:var(--ink,#26241f);outline:none;"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ STUDIES ============ -->
+      <div data-screen="studies" style="display:none;padding:34px 40px 56px;max-width:1180px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;">
+          <div>
+            <div style="font-family:'Newsreader',serif;font-size:33px;line-height:1.12;letter-spacing:-0.01em;">Studies</div>
+            <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:6px;">3 active skills · learning by doing, not just consuming</div>
+          </div>
+          <button style="border:1px solid var(--chipline,#e6e3dc);background:var(--panel,#fcfcfb);color:var(--ink2,#2b2925);border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;">+ Plan a session</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Active skills</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;">3<span style="font-size:15px;color:var(--faint,#a8a299);"> / 3</span></div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">This week</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;">4h20</div><div style="font-size:11.5px;color:var(--mut2,#8a857c);">of 6h planned</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Reviews due</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;color:var(--bad,#c1796a);">5</div><div style="font-size:11.5px;color:var(--mut2,#8a857c);">do these first</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Study streak</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;">9</div><div style="font-size:11.5px;color:var(--mut2,#8a857c);">days</div></div>
+        </div>
+
+        <div style="display:flex;gap:22px;align-items:flex-start;">
+          <div style="flex:1.5;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--accentsoft,#eeece6);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;">
+              <div><div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent,#3d4eac);font-weight:600;margin-bottom:6px;">Next block</div><div style="font-size:18px;font-weight:600;">Spanish · Past tense drills</div><div style="font-size:13px;color:var(--mut,#6b665d);margin-top:4px;">30 min · Memorize → Apply · interleaved with listening</div></div>
+              <button style="border:none;background:var(--accent,#3d4eac);color:#fff;border-radius:8px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;flex:none;">Start session</button>
+            </div>
+
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:16px;">Active priorities</div>
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:'Newsreader',serif;font-size:22px;color:var(--accent,#3d4eac);width:26px;flex:none;">1</div><div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;font-size:14.5px;font-weight:600;margin-bottom:6px;"><span>Spanish</span><span style="color:var(--faint,#a8a299);font-weight:400;">B1 by Dec · 3h/wk</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:60%;border-radius:4px;background:var(--accent,#3d4eac);"></div></div></div><div style="font-size:12px;color:var(--mut2,#8a857c);width:56px;text-align:right;flex:none;">score 18.5</div></div>
+                <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:'Newsreader',serif;font-size:22px;color:var(--accent,#3d4eac);width:26px;flex:none;">2</div><div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;font-size:14.5px;font-weight:600;margin-bottom:6px;"><span>Programming · Rust</span><span style="color:var(--faint,#a8a299);font-weight:400;">Ship a CLI · 4h/wk</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:40%;border-radius:4px;background:var(--accent,#3d4eac);"></div></div></div><div style="font-size:12px;color:var(--mut2,#8a857c);width:56px;text-align:right;flex:none;">score 17.0</div></div>
+                <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:'Newsreader',serif;font-size:22px;color:var(--accent,#3d4eac);width:26px;flex:none;">3</div><div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;font-size:14.5px;font-weight:600;margin-bottom:6px;"><span>Basic math</span><span style="color:var(--faint,#a8a299);font-weight:400;">Foundations · 2h/wk</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:25%;border-radius:4px;background:var(--accent,#3d4eac);"></div></div></div><div style="font-size:12px;color:var(--mut2,#8a857c);width:56px;text-align:right;flex:none;">score 14.5</div></div>
+              </div>
+            </div>
+
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:18px;">Progress by stage · Spanish</div>
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;text-align:center;">
+                <div><div style="height:74px;background:var(--track,#eceae5);border-radius:8px;display:flex;align-items:flex-end;overflow:hidden;"><div style="width:100%;height:90%;background:var(--good,#6f8f6a);"></div></div><div style="font-size:12px;margin-top:8px;font-weight:600;">Obtain</div></div>
+                <div><div style="height:74px;background:var(--track,#eceae5);border-radius:8px;display:flex;align-items:flex-end;overflow:hidden;"><div style="width:100%;height:75%;background:var(--good,#6f8f6a);"></div></div><div style="font-size:12px;margin-top:8px;font-weight:600;">Organize</div></div>
+                <div><div style="height:74px;background:var(--track,#eceae5);border-radius:8px;display:flex;align-items:flex-end;overflow:hidden;"><div style="width:100%;height:55%;background:var(--accent,#3d4eac);"></div></div><div style="font-size:12px;margin-top:8px;font-weight:600;">Memorize</div></div>
+                <div><div style="height:74px;background:var(--track,#eceae5);border-radius:8px;display:flex;align-items:flex-end;overflow:hidden;"><div style="width:100%;height:35%;background:var(--warn,#c1976a);"></div></div><div style="font-size:12px;margin-top:8px;font-weight:600;">Apply</div></div>
+                <div><div style="height:74px;background:var(--track,#eceae5);border-radius:8px;display:flex;align-items:flex-end;overflow:hidden;"><div style="width:100%;height:15%;background:var(--bad,#c1796a);"></div></div><div style="font-size:12px;margin-top:8px;font-weight:600;">Teach</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="flex:1;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--bad,#c1796a);"></span><span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Reviews due</span></div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Ser vs estar</span><span style="font-size:11px;color:var(--mut2,#8a857c);background:var(--track,#eceae5);border-radius:5px;padding:2px 7px;">D+3</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Ownership &amp; borrowing</span><span style="font-size:11px;color:var(--mut2,#8a857c);background:var(--track,#eceae5);border-radius:5px;padding:2px 7px;">D+7</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Fractions recap</span><span style="font-size:11px;color:var(--mut2,#8a857c);background:var(--track,#eceae5);border-radius:5px;padding:2px 7px;">D+1</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;"><span style="font-size:14px;flex:1;">Past tense verbs</span><span style="font-size:11px;color:var(--mut2,#8a857c);background:var(--track,#eceae5);border-radius:5px;padding:2px 7px;">D+14</span></div>
+              </div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:14px;">Top bottlenecks</div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;justify-content:space-between;font-size:14px;"><span>Subjunctive mood</span><span style="color:var(--bad,#c1796a);font-size:12px;">hard ×4</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:14px;"><span>Lifetimes in Rust</span><span style="color:var(--bad,#c1796a);font-size:12px;">hard ×3</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:14px;"><span>Listening speed</span><span style="color:var(--warn,#c1976a);font-size:12px;">medium</span></div>
+              </div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:14px;">Recent sessions</div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;gap:12px;padding:8px 0;"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent,#3d4eac);margin-top:6px;flex:none;"></span><div><div style="font-size:13.5px;">Spanish · 32 min · Apply</div><div style="font-size:11.5px;color:var(--faint,#a8a299);">Yesterday · Feynman: clear</div></div></div>
+                <div style="display:flex;gap:12px;padding:8px 0;"><span style="width:7px;height:7px;border-radius:50%;background:var(--track,#cfccc4);margin-top:6px;flex:none;"></span><div><div style="font-size:13.5px;">Rust · 48 min · Organize</div><div style="font-size:11.5px;color:var(--faint,#a8a299);">2 days ago · Feynman: confusing</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ JOURNEY ============ -->
+      <div data-screen="journey" style="display:none;padding:34px 40px 56px;max-width:1180px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;">
+          <div>
+            <div style="font-family:'Newsreader',serif;font-size:33px;line-height:1.12;letter-spacing:-0.01em;">My Journey</div>
+            <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:6px;">Goals across the areas of your life · 4 active</div>
+          </div>
+          <button style="border:none;background:var(--accent,#3d4eac);color:#fff;border-radius:8px;padding:10px 17px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;">+ New goal</button>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:22px;">
+          <span style="font-size:13px;font-weight:600;color:#fff;background:var(--accent,#3d4eac);border-radius:999px;padding:6px 14px;">All</span>
+          <span style="font-size:13px;color:var(--mut,#6b665d);border:1px solid var(--chipline,#e6e3dc);border-radius:999px;padding:6px 14px;">Health</span>
+          <span style="font-size:13px;color:var(--mut,#6b665d);border:1px solid var(--chipline,#e6e3dc);border-radius:999px;padding:6px 14px;">Studies</span>
+          <span style="font-size:13px;color:var(--mut,#6b665d);border:1px solid var(--chipline,#e6e3dc);border-radius:999px;padding:6px 14px;">Money</span>
+          <span style="font-size:13px;color:var(--mut,#6b665d);border:1px solid var(--chipline,#e6e3dc);border-radius:999px;padding:6px 14px;">Personal</span>
+        </div>
+
+        <div style="display:flex;gap:22px;align-items:flex-start;">
+          <div style="flex:1.25;display:grid;grid-template-columns:1fr 1fr;gap:16px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--accent,#3d4eac);border-radius:14px;padding:20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><span style="font-size:11.5px;color:var(--accent,#3d4eac);font-weight:600;">Studies</span><span style="font-size:11.5px;color:var(--faint,#a8a299);">Dec 2026</span></div>
+              <div style="font-size:16.5px;font-weight:600;margin-bottom:4px;">Learn Spanish to B1</div>
+              <div style="font-size:12.5px;color:var(--mut2,#8a857c);margin-bottom:16px;">3 of 4 milestones</div>
+              <div style="display:flex;align-items:center;gap:10px;"><div style="flex:1;height:7px;border-radius:5px;background:var(--track,#eceae5);"><div style="height:7px;width:60%;border-radius:5px;background:var(--accent,#3d4eac);"></div></div><span style="font-size:13px;font-weight:600;color:var(--accent,#3d4eac);">60%</span></div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;padding:20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><span style="font-size:11.5px;color:var(--good,#6f8f6a);font-weight:600;">Money</span><span style="font-size:11.5px;color:var(--faint,#a8a299);">ongoing</span></div>
+              <div style="font-size:16.5px;font-weight:600;margin-bottom:4px;">Emergency fund · $10k</div>
+              <div style="font-size:12.5px;color:var(--mut2,#8a857c);margin-bottom:16px;">$7,200 of $10,000</div>
+              <div style="display:flex;align-items:center;gap:10px;"><div style="flex:1;height:7px;border-radius:5px;background:var(--track,#eceae5);"><div style="height:7px;width:72%;border-radius:5px;background:var(--good,#6f8f6a);"></div></div><span style="font-size:13px;font-weight:600;color:var(--good,#6f8f6a);">72%</span></div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;padding:20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><span style="font-size:11.5px;color:var(--warn,#c1976a);font-weight:600;">Personal</span><span style="font-size:11.5px;color:var(--faint,#a8a299);">2026</span></div>
+              <div style="font-size:16.5px;font-weight:600;margin-bottom:4px;">Read 12 books</div>
+              <div style="font-size:12.5px;color:var(--mut2,#8a857c);margin-bottom:16px;">4 of 12 finished</div>
+              <div style="display:flex;align-items:center;gap:10px;"><div style="flex:1;height:7px;border-radius:5px;background:var(--track,#eceae5);"><div style="height:7px;width:35%;border-radius:5px;background:var(--warn,#c1976a);"></div></div><span style="font-size:13px;font-weight:600;color:var(--warn,#c1976a);">35%</span></div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;padding:20px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><span style="font-size:11.5px;color:var(--bad,#c1796a);font-weight:600;">Health</span><span style="font-size:11.5px;color:var(--faint,#a8a299);">Apr 2027</span></div>
+              <div style="font-size:16.5px;font-weight:600;margin-bottom:4px;">Run a half marathon</div>
+              <div style="font-size:12.5px;color:var(--mut2,#8a857c);margin-bottom:16px;">longest run · 8 km</div>
+              <div style="display:flex;align-items:center;gap:10px;"><div style="flex:1;height:7px;border-radius:5px;background:var(--track,#eceae5);"><div style="height:7px;width:20%;border-radius:5px;background:var(--bad,#c1796a);"></div></div><span style="font-size:13px;font-weight:600;color:var(--bad,#c1796a);">20%</span></div>
+            </div>
+          </div>
+
+          <div style="flex:1;background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:14px;padding:24px;min-width:0;">
+            <div style="font-size:11.5px;color:var(--accent,#3d4eac);font-weight:600;margin-bottom:6px;">Studies · target Dec 2026</div>
+            <div style="font-family:'Newsreader',serif;font-size:24px;line-height:1.2;margin-bottom:6px;">Learn Spanish to B1</div>
+            <div style="font-size:13.5px;color:var(--mut,#6b665d);line-height:1.55;margin-bottom:20px;">So I can travel through South America and actually talk to people, not point at menus.</div>
+
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;"><div style="flex:1;height:8px;border-radius:5px;background:var(--track,#eceae5);"><div style="height:8px;width:60%;border-radius:5px;background:var(--accent,#3d4eac);"></div></div><span style="font-family:'Newsreader',serif;font-size:22px;color:var(--accent,#3d4eac);">60%</span></div>
+
+            <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:14px;">Milestones</div>
+            <div style="display:flex;flex-direction:column;margin-bottom:22px;">
+              <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:18px;height:18px;border-radius:50%;border:1.5px solid var(--good,#6f8f6a);background:var(--good,#6f8f6a);flex:none;position:relative;"><span style="position:absolute;left:5px;top:3px;width:5px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);"></span></span><span style="font-size:14.5px;color:var(--faint,#a8a299);text-decoration:line-through;flex:1;">Finish base course</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:18px;height:18px;border-radius:50%;border:1.5px solid var(--good,#6f8f6a);background:var(--good,#6f8f6a);flex:none;position:relative;"><span style="position:absolute;left:5px;top:3px;width:5px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);"></span></span><span style="font-size:14.5px;color:var(--faint,#a8a299);text-decoration:line-through;flex:1;">500 flashcards reviewed</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:18px;height:18px;border-radius:50%;border:1.5px solid var(--accent,#3d4eac);flex:none;"></span><span style="font-size:14.5px;flex:1;">20 hours of listening</span><span style="font-size:12px;color:var(--accent,#3d4eac);font-weight:600;">12 / 20</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:9px 0;"><span style="width:18px;height:18px;border-radius:50%;border:1.5px solid var(--track,#cfccc4);flex:none;"></span><span style="font-size:14.5px;color:var(--mut,#6b665d);flex:1;">5 real conversations</span><span style="font-size:11px;color:var(--mut2,#8a857c);background:var(--track,#eceae5);border-radius:5px;padding:2px 7px;">required</span></div>
+            </div>
+
+            <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:12px;">Linked</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:12.5px;color:var(--mut,#6b665d);border:1px solid var(--chipline,#e6e3dc);border-radius:999px;padding:5px 12px;">Ritual · Spanish 30 min</span>
+              <span style="font-size:12.5px;color:var(--mut,#6b665d);border:1px solid var(--chipline,#e6e3dc);border-radius:999px;padding:5px 12px;">Skill · Spanish</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MONEY ============ -->
+      <div data-screen="money" style="display:none;padding:34px 40px 56px;max-width:1180px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+          <div>
+            <div style="font-family:'Newsreader',serif;font-size:33px;line-height:1.12;letter-spacing:-0.01em;">Money</div>
+            <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:6px;">June 2026 · one area of your life, integrated</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;border:1px solid var(--chipline,#e6e3dc);border-radius:8px;padding:7px 12px;font-size:13.5px;color:var(--ink2,#2b2925);"><span style="color:var(--faint,#a8a299);">◀</span><span style="font-weight:600;">June 2026</span><span style="color:var(--faint,#a8a299);">▶</span></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Total balance</div><div style="font-family:'Newsreader',serif;font-size:28px;margin-top:4px;">$14,280</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Income · paid</div><div style="font-family:'Newsreader',serif;font-size:28px;margin-top:4px;color:var(--good,#6f8f6a);">$6,200</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Expenses · paid</div><div style="font-family:'Newsreader',serif;font-size:28px;margin-top:4px;color:var(--bad,#c1796a);">$3,940</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Result</div><div style="font-family:'Newsreader',serif;font-size:28px;margin-top:4px;color:var(--accent,#3d4eac);">+$2,260</div></div>
+        </div>
+
+        <div style="display:flex;gap:22px;align-items:flex-start;">
+          <div style="flex:1.5;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px;"><span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Cash flow · 2026</span><span style="display:flex;gap:14px;font-size:12px;color:var(--mut2,#8a857c);"><span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--good,#6f8f6a);"></span>In</span><span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--bad,#c1796a);"></span>Out</span></span></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;height:140px;gap:8px;">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:78px;background:var(--good,#6f8f6a);border-radius:3px;"></span><span style="width:7px;height:60px;background:var(--bad,#c1796a);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">J</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:82px;background:var(--good,#6f8f6a);border-radius:3px;"></span><span style="width:7px;height:54px;background:var(--bad,#c1796a);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">F</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:70px;background:var(--good,#6f8f6a);border-radius:3px;"></span><span style="width:7px;height:72px;background:var(--bad,#c1796a);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">M</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:88px;background:var(--good,#6f8f6a);border-radius:3px;"></span><span style="width:7px;height:50px;background:var(--bad,#c1796a);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">A</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:84px;background:var(--good,#6f8f6a);border-radius:3px;"></span><span style="width:7px;height:64px;background:var(--bad,#c1796a);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">M</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:92px;background:var(--good,#6f8f6a);border-radius:3px;"></span><span style="width:7px;height:58px;background:var(--bad,#c1796a);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--accent,#3d4eac);font-weight:700;">J</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;opacity:.4;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:30px;background:var(--track,#cfccc4);border-radius:3px;"></span><span style="width:7px;height:24px;background:var(--track,#cfccc4);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">J</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;opacity:.4;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:30px;background:var(--track,#cfccc4);border-radius:3px;"></span><span style="width:7px;height:24px;background:var(--track,#cfccc4);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">A</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;opacity:.4;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:30px;background:var(--track,#cfccc4);border-radius:3px;"></span><span style="width:7px;height:24px;background:var(--track,#cfccc4);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">S</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;opacity:.4;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:30px;background:var(--track,#cfccc4);border-radius:3px;"></span><span style="width:7px;height:24px;background:var(--track,#cfccc4);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">O</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;opacity:.4;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:30px;background:var(--track,#cfccc4);border-radius:3px;"></span><span style="width:7px;height:24px;background:var(--track,#cfccc4);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">N</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;opacity:.4;"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><span style="width:7px;height:30px;background:var(--track,#cfccc4);border-radius:3px;"></span><span style="width:7px;height:24px;background:var(--track,#cfccc4);border-radius:3px;"></span></div><span style="font-size:10px;color:var(--faint,#a8a299);">D</span></div>
+              </div>
+            </div>
+
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:18px;">Spending by category</div>
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;"><span>Housing</span><span style="color:var(--mut,#6b665d);">$1,850</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:90%;border-radius:4px;background:var(--accent,#3d4eac);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;"><span>Food</span><span style="color:var(--mut,#6b665d);">$720</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:38%;border-radius:4px;background:var(--good,#6f8f6a);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;"><span>Leisure</span><span style="color:var(--mut,#6b665d);">$480</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:26%;border-radius:4px;background:var(--warn,#c1976a);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;"><span>Transport</span><span style="color:var(--mut,#6b665d);">$410</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:22%;border-radius:4px;background:var(--bad,#c1796a);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;"><span>Subscriptions</span><span style="color:var(--mut,#6b665d);">$180</span></div><div style="height:6px;border-radius:4px;background:var(--track,#eceae5);"><div style="height:6px;width:10%;border-radius:4px;background:var(--mut2,#8a857c);"></div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="flex:1;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:14px;">Accounts</div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:9px;height:9px;border-radius:3px;background:#7b5cd6;flex:none;"></span><span style="font-size:14px;flex:1;">Checking</span><span style="font-size:14px;font-weight:600;">$4,120</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:9px;height:9px;border-radius:3px;background:var(--good,#6f8f6a);flex:none;"></span><span style="font-size:14px;flex:1;">Savings</span><span style="font-size:14px;font-weight:600;">$7,200</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:9px;height:9px;border-radius:3px;background:var(--accent,#3d4eac);flex:none;"></span><span style="font-size:14px;flex:1;">Investments</span><span style="font-size:14px;font-weight:600;">$2,700</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;"><span style="width:9px;height:9px;border-radius:3px;background:var(--warn,#c1976a);flex:none;"></span><span style="font-size:14px;flex:1;">Cash</span><span style="font-size:14px;font-weight:600;">$260</span></div>
+              </div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--warn,#c1976a);"></span><span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">Upcoming</span></div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Rent</span><span style="font-size:12px;color:var(--bad,#c1796a);">today</span><span style="font-size:14px;font-weight:600;">$1,850</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Credit card</span><span style="font-size:12px;color:var(--mut2,#8a857c);">Jun 28</span><span style="font-size:14px;font-weight:600;">$1,240</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:9px 0;"><span style="font-size:14px;flex:1;">Spotify</span><span style="font-size:12px;color:var(--mut2,#8a857c);">Jun 25</span><span style="font-size:14px;font-weight:600;">$22</span></div>
+              </div>
+            </div>
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:14px;">Recent</div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Salary</span><span style="font-size:14px;font-weight:600;color:var(--good,#6f8f6a);">+$5,400</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Freelance project</span><span style="font-size:14px;font-weight:600;color:var(--good,#6f8f6a);">+$800</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="font-size:14px;flex:1;">Groceries</span><span style="font-size:14px;font-weight:600;">−$92</span></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:8px 0;"><span style="font-size:14px;flex:1;">Gym</span><span style="font-size:14px;font-weight:600;">−$60</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ ADMIN ============ -->
+      <div data-screen="admin" style="display:none;padding:34px 40px 56px;max-width:1180px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;">
+          <div>
+            <div style="font-family:'Newsreader',serif;font-size:33px;line-height:1.12;letter-spacing:-0.01em;">Super Admin</div>
+            <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:6px;">Access control · plans · ship modules one at a time</div>
+          </div>
+          <button style="border:none;background:var(--accent,#3d4eac);color:#fff;border-radius:8px;padding:10px 17px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;">+ Invite user</button>
+        </div>
+
+        <div style="display:flex;gap:6px;margin-bottom:22px;border-bottom:1px solid var(--line,#eceae5);">
+          <span style="font-size:13.5px;font-weight:600;color:var(--accent,#3d4eac);padding:9px 14px;border-bottom:2px solid var(--accent,#3d4eac);margin-bottom:-1px;">Users</span>
+          <span style="font-size:13.5px;color:var(--mut,#6b665d);padding:9px 14px;">Plans</span>
+          <span style="font-size:13.5px;color:var(--mut,#6b665d);padding:9px 14px;">Modules</span>
+          <span style="font-size:13.5px;color:var(--mut,#6b665d);padding:9px 14px;">Life areas</span>
+          <span style="font-size:13.5px;color:var(--mut,#6b665d);padding:9px 14px;">Audit log</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;">
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:16px 18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Total users</div><div style="font-family:'Newsreader',serif;font-size:26px;margin-top:2px;">248</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:16px 18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Active plans</div><div style="font-family:'Newsreader',serif;font-size:26px;margin-top:2px;">5</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:16px 18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Modules live</div><div style="font-family:'Newsreader',serif;font-size:26px;margin-top:2px;">7<span style="font-size:14px;color:var(--faint,#a8a299);"> / 12</span></div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:16px 18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Beta overrides</div><div style="font-family:'Newsreader',serif;font-size:26px;margin-top:2px;">31</div></div>
+        </div>
+
+        <div style="display:flex;gap:22px;align-items:flex-start;">
+          <div style="flex:1.7;background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;overflow:hidden;min-width:0;">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.1fr 0.8fr;gap:12px;padding:13px 20px;border-bottom:1px solid var(--line,#eceae5);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;background:var(--side,#faf9f7);">
+              <span>User</span><span>Plan</span><span>Role</span><span>Status</span><span style="text-align:right;">Last seen</span>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.1fr 0.8fr;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line2,#f1efea);align-items:center;background:var(--accentsoft,#eeece6);">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0;"><span style="width:28px;height:28px;border-radius:50%;background:#d9c3b0;flex:none;"></span><span style="min-width:0;"><span style="display:block;font-size:14px;font-weight:600;">Ana Costa</span><span style="display:block;font-size:11.5px;color:var(--faint,#a8a299);overflow:hidden;text-overflow:ellipsis;">ana@email.com</span></span></div>
+              <span style="font-size:13px;">Early Access</span>
+              <span style="font-size:12px;color:var(--mut,#6b665d);">User</span>
+              <span><span style="font-size:11.5px;color:var(--good,#6f8f6a);background:var(--accentsoft,#eeece6);border:1px solid var(--good,#6f8f6a);border-radius:5px;padding:2px 8px;">Active</span></span>
+              <span style="font-size:12px;color:var(--mut2,#8a857c);text-align:right;">3h</span>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.1fr 0.8fr;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line2,#f1efea);align-items:center;">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0;"><span style="width:28px;height:28px;border-radius:50%;background:#a7b0d6;flex:none;"></span><span style="min-width:0;"><span style="display:block;font-size:14px;font-weight:600;">Mariana Reis</span><span style="display:block;font-size:11.5px;color:var(--faint,#a8a299);">mariana@email.com</span></span></div>
+              <span style="font-size:13px;">Founder</span>
+              <span style="font-size:12px;color:var(--accent,#3d4eac);font-weight:600;">SuperAdmin</span>
+              <span><span style="font-size:11.5px;color:var(--good,#6f8f6a);border:1px solid var(--good,#6f8f6a);border-radius:5px;padding:2px 8px;">Active</span></span>
+              <span style="font-size:12px;color:var(--mut2,#8a857c);text-align:right;">2m</span>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.1fr 0.8fr;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line2,#f1efea);align-items:center;">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0;"><span style="width:28px;height:28px;border-radius:50%;background:#9cbf9a;flex:none;"></span><span style="min-width:0;"><span style="display:block;font-size:14px;font-weight:600;">João Silva</span><span style="display:block;font-size:11.5px;color:var(--faint,#a8a299);">joao@email.com</span></span></div>
+              <span style="font-size:13px;">Pro</span>
+              <span style="font-size:12px;color:var(--mut,#6b665d);">User</span>
+              <span><span style="font-size:11.5px;color:var(--good,#6f8f6a);border:1px solid var(--good,#6f8f6a);border-radius:5px;padding:2px 8px;">Active</span></span>
+              <span style="font-size:12px;color:var(--mut2,#8a857c);text-align:right;">1h</span>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.1fr 0.8fr;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line2,#f1efea);align-items:center;">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0;"><span style="width:28px;height:28px;border-radius:50%;background:#d6a7a7;flex:none;"></span><span style="min-width:0;"><span style="display:block;font-size:14px;font-weight:600;">Lucas Alves</span><span style="display:block;font-size:11.5px;color:var(--faint,#a8a299);">lucas@email.com</span></span></div>
+              <span style="font-size:13px;">Early Access</span>
+              <span style="font-size:12px;color:var(--mut,#6b665d);">Support</span>
+              <span><span style="font-size:11.5px;color:var(--bad,#c1796a);border:1px solid var(--bad,#c1796a);border-radius:5px;padding:2px 8px;">Suspended</span></span>
+              <span style="font-size:12px;color:var(--mut2,#8a857c);text-align:right;">5d</span>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.1fr 0.8fr;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line2,#f1efea);align-items:center;">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0;"><span style="width:28px;height:28px;border-radius:50%;background:#c9b894;flex:none;"></span><span style="min-width:0;"><span style="display:block;font-size:14px;font-weight:600;">Pedro Lima</span><span style="display:block;font-size:11.5px;color:var(--faint,#a8a299);">pedro@email.com</span></span></div>
+              <span style="font-size:13px;">Free</span>
+              <span style="font-size:12px;color:var(--mut,#6b665d);">User</span>
+              <span><span style="font-size:11.5px;color:var(--warn,#c1976a);border:1px solid var(--warn,#c1976a);border-radius:5px;padding:2px 8px;">Invited</span></span>
+              <span style="font-size:12px;color:var(--mut2,#8a857c);text-align:right;">1d</span>
+            </div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.1fr 0.8fr;gap:12px;padding:14px 20px;align-items:center;">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0;"><span style="width:28px;height:28px;border-radius:50%;background:#b7a7d6;flex:none;"></span><span style="min-width:0;"><span style="display:block;font-size:14px;font-weight:600;">Bianca Souza</span><span style="display:block;font-size:11.5px;color:var(--faint,#a8a299);">bianca@email.com</span></span></div>
+              <span style="font-size:13px;">Pro</span>
+              <span style="font-size:12px;color:var(--mut,#6b665d);">Admin</span>
+              <span><span style="font-size:11.5px;color:var(--good,#6f8f6a);border:1px solid var(--good,#6f8f6a);border-radius:5px;padding:2px 8px;">Active</span></span>
+              <span style="font-size:12px;color:var(--mut2,#8a857c);text-align:right;">2d</span>
+            </div>
+          </div>
+
+          <div style="flex:1;background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;min-width:0;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;"><span style="width:32px;height:32px;border-radius:50%;background:#d9c3b0;flex:none;"></span><div><div style="font-size:15px;font-weight:600;">Ana Costa</div><div style="font-size:11.5px;color:var(--faint,#a8a299);">Early Access · User</div></div></div>
+            <div style="font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin:20px 0 12px;">Module access</div>
+            <div style="display:grid;grid-template-columns:1.4fr 0.7fr 0.9fr;gap:6px;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--line,#eceae5);">
+              <span>Module</span><span style="text-align:center;">Plan</span><span style="text-align:right;">Final</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1.4fr 0.7fr 0.9fr;gap:6px;align-items:center;font-size:13px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span>Home</span><span style="text-align:center;color:var(--good,#6f8f6a);">✓</span><span style="text-align:right;color:var(--good,#6f8f6a);font-size:11.5px;">Allowed</span></div>
+            <div style="display:grid;grid-template-columns:1.4fr 0.7fr 0.9fr;gap:6px;align-items:center;font-size:13px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span>My Day</span><span style="text-align:center;color:var(--good,#6f8f6a);">✓</span><span style="text-align:right;color:var(--good,#6f8f6a);font-size:11.5px;">Allowed</span></div>
+            <div style="display:grid;grid-template-columns:1.4fr 0.7fr 0.9fr;gap:6px;align-items:center;font-size:13px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span>Rituals</span><span style="text-align:center;color:var(--good,#6f8f6a);">✓</span><span style="text-align:right;color:var(--accent,#3d4eac);font-size:11.5px;font-weight:600;">Beta</span></div>
+            <div style="display:grid;grid-template-columns:1.4fr 0.7fr 0.9fr;gap:6px;align-items:center;font-size:13px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span>Studies</span><span style="text-align:center;color:var(--bad,#c1796a);">✗</span><span style="text-align:right;color:var(--accent,#3d4eac);font-size:11.5px;font-weight:600;">Beta ⚑</span></div>
+            <div style="display:grid;grid-template-columns:1.4fr 0.7fr 0.9fr;gap:6px;align-items:center;font-size:13px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span>Money</span><span style="text-align:center;color:var(--good,#6f8f6a);">✓</span><span style="text-align:right;color:var(--good,#6f8f6a);font-size:11.5px;">Allowed</span></div>
+            <div style="display:grid;grid-template-columns:1.4fr 0.7fr 0.9fr;gap:6px;align-items:center;font-size:13px;padding:9px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="color:var(--mut,#6b665d);">Evolution</span><span style="text-align:center;color:var(--bad,#c1796a);">✗</span><span style="text-align:right;color:var(--warn,#c1976a);font-size:11.5px;">Upgrade</span></div>
+            <div style="display:grid;grid-template-columns:1.4fr 0.7fr 0.9fr;gap:6px;align-items:center;font-size:13px;padding:9px 0;"><span style="color:var(--mut,#6b665d);">Super Admin</span><span style="text-align:center;color:var(--bad,#c1796a);">✗</span><span style="text-align:right;color:var(--faint,#a8a299);font-size:11.5px;">Denied</span></div>
+            <div style="margin-top:16px;display:flex;gap:8px;"><button style="flex:1;border:1px solid var(--chipline,#e6e3dc);background:transparent;color:var(--ink2,#2b2925);border-radius:8px;padding:9px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">Change plan</button><button style="flex:1;border:1px solid var(--chipline,#e6e3dc);background:transparent;color:var(--ink2,#2b2925);border-radius:8px;padding:9px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">Grant module</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ RITUALS ============ -->
+      <div data-screen="rituals" style="display:none;padding:34px 40px 56px;max-width:1180px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+          <div>
+            <div style="font-family:'Newsreader',serif;font-size:33px;line-height:1.12;letter-spacing:-0.01em;">Rituals</div>
+            <div style="font-size:14px;color:var(--mut2,#8a857c);margin-top:6px;">Small things, done daily · 4 active rituals</div>
+          </div>
+          <button style="border:none;background:var(--accent,#3d4eac);color:#fff;border-radius:8px;padding:10px 17px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;">+ New ritual</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Done today</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;">3<span style="font-size:15px;color:var(--faint,#a8a299);"> / 4</span></div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Longest streak</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;color:var(--accent,#3d4eac);">21</div><div style="font-size:11.5px;color:var(--mut2,#8a857c);">Meditate</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">This week</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;">86%</div><div style="font-size:11.5px;color:var(--mut2,#8a857c);">24 of 28</div></div>
+          <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:18px;"><div style="font-size:12px;color:var(--faint,#a8a299);">Consistency · 30d</div><div style="font-family:'Newsreader',serif;font-size:30px;margin-top:4px;color:var(--good,#6f8f6a);">82%</div></div>
+        </div>
+
+        <div style="display:flex;gap:22px;align-items:flex-start;">
+          <div style="flex:1.6;background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;"><span style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;">This week</span><span style="display:flex;gap:14px;font-size:12px;color:var(--mut2,#8a857c);">M T W T F S S</span></div>
+            <div data-ritualrows style="display:flex;flex-direction:column;"></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:18px;min-width:0;">
+            <div style="background:var(--panel,#fcfcfb);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--faint,#a8a299);font-weight:600;margin-bottom:14px;">Today's rituals</div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:20px;height:20px;border-radius:6px;border:1.5px solid var(--accent,#3d4eac);background:var(--accent,#3d4eac);flex:none;position:relative;"><span style="position:absolute;left:6px;top:3px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);"></span></span><span style="font-size:14.5px;color:var(--faint,#a8a299);text-decoration:line-through;flex:1;">Workout</span><span style="font-size:12px;color:var(--accent,#3d4eac);font-weight:600;">12🔥</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:20px;height:20px;border-radius:6px;border:1.5px solid var(--accent,#3d4eac);background:var(--accent,#3d4eac);flex:none;position:relative;"><span style="position:absolute;left:6px;top:3px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);"></span></span><span style="font-size:14.5px;color:var(--faint,#a8a299);text-decoration:line-through;flex:1;">Read</span><span style="font-size:12px;color:var(--accent,#3d4eac);font-weight:600;">8🔥</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid var(--line2,#f1efea);"><span style="width:20px;height:20px;border-radius:6px;border:1.5px solid var(--accent,#3d4eac);background:var(--accent,#3d4eac);flex:none;position:relative;"><span style="position:absolute;left:6px;top:3px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);"></span></span><span style="font-size:14.5px;color:var(--faint,#a8a299);text-decoration:line-through;flex:1;">Meditate</span><span style="font-size:12px;color:var(--accent,#3d4eac);font-weight:600;">21🔥</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:11px 0;"><span style="width:20px;height:20px;border-radius:6px;border:1.5px solid var(--track,#cfccc4);flex:none;"></span><span style="font-size:14.5px;flex:1;">Spanish 30 min</span><span style="font-size:12px;color:var(--mut2,#8a857c);">5🔥</span></div>
+              </div>
+            </div>
+            <div style="background:var(--accentsoft,#eeece6);border:1px solid var(--line,#eceae5);border-radius:12px;padding:22px;">
+              <div style="font-family:'Newsreader',serif;font-size:19px;line-height:1.3;margin-bottom:6px;">You're on a 12-day roll.</div>
+              <div style="font-size:13.5px;color:var(--mut,#6b665d);line-height:1.5;">One more day to beat your March record of 13. Keep the workout streak alive tonight.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--END-SCREENS-->
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860}}">
+const LIGHT = {
+  '--bg':'#f3f1ec','--panel':'#fcfcfb','--side':'#faf9f7','--line':'#eceae5','--line2':'#f1efea',
+  '--ink':'#26241f','--ink2':'#2b2925','--mut':'#6b665d','--mut2':'#8a857c','--faint':'#a8a299',
+  '--chipline':'#e6e3dc','--accent':'#3d4eac','--accentsoft':'#eeece6','--good':'#6f8f6a',
+  '--warn':'#c1976a','--bad':'#c1796a','--track':'#eceae5'
+};
+const DARK = {
+  '--bg':'#131214','--panel':'#1b1a1f','--side':'#171619','--line':'#2a2930','--line2':'#232228',
+  '--ink':'#f1efe8','--ink2':'#e8e6df','--mut':'#a39e94','--mut2':'#8a857c','--faint':'#6f6a61',
+  '--chipline':'#2f2e36','--accent':'#8c93e8','--accentsoft':'#26263a','--good':'#8fae89',
+  '--warn':'#d4ab78','--bad':'#d18f86','--track':'#2a2930'
+};
+const TITLES = { home:'Home', day:'My Day', rituals:'Rituals', journey:'Journey', studies:'Studies', money:'Money', admin:'Super Admin' };
+
+class Component extends DCLogic {
+  state = { screen:'home', dark:false };
+  componentDidMount(){ this.apply(); }
+  componentDidUpdate(){ this.apply(); }
+  apply(){
+    const r = this.rootEl; if(!r) return;
+    const t = this.state.dark ? DARK : LIGHT;
+    for(const k in t) r.style.setProperty(k, t[k]);
+    r.querySelectorAll('[data-screen]').forEach(el=>{
+      el.style.display = el.getAttribute('data-screen')===this.state.screen ? 'block':'none';
+    });
+    r.querySelectorAll('[data-nav]').forEach(el=>{
+      const on = el.getAttribute('data-nav')===this.state.screen;
+      el.style.background = on ? 'var(--accentsoft)' : 'transparent';
+      el.style.color = on ? 'var(--ink2)' : 'var(--mut)';
+      el.style.fontWeight = on ? '600' : '500';
+      const dot = el.querySelector('[data-dot]');
+      if(dot) dot.style.background = on ? 'var(--accent)' : 'var(--track)';
+    });
+    const title = r.querySelector('[data-title]'); if(title) title.textContent = TITLES[this.state.screen]||'';
+    const lbl = r.querySelector('[data-themelabel]'); if(lbl) lbl.textContent = this.state.dark ? 'Dark':'Light';
+    const ic = r.querySelector('[data-themeicon]'); if(ic) ic.style.background = this.state.dark ? 'var(--accent)' : 'transparent';
+    const rr = r.querySelector('[data-ritualrows]');
+    if(rr && !rr.dataset.done){
+      const rows=[['Workout',12,[1,1,1,1,1,1,0]],['Read',8,[1,1,0,1,1,1,1]],['Meditate',21,[1,1,1,1,1,1,1]],['Spanish 30 min',5,[1,0,1,1,0,1,0]]];
+      rr.innerHTML = rows.map(([n,st,days],i)=>{
+        const bd = i<rows.length-1?'border-bottom:1px solid var(--line2)':'';
+        const cells = days.map(d=>`<span style="width:26px;height:26px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;${d?'background:var(--accent);color:#fff':'background:var(--track)'};font-size:12px">${d?'✓':''}</span>`).join('');
+        return `<div style="display:flex;align-items:center;gap:16px;padding:13px 0;${bd}"><span style="flex:1;font-size:14.5px;font-weight:600">${n}</span><span style="display:flex;gap:6px">${cells}</span><span style="width:46px;text-align:right;font-size:13px;color:var(--accent);font-weight:600">${st}🔥</span></div>`;
+      }).join('');
+      rr.dataset.done='1';
+    }
+  }
+  go(s){ this.setState({ screen:s }); }
+  renderVals(){
+    return {
+      setRoot: el => { this.rootEl = el; if(el) this.apply(); },
+      goHome: ()=>this.go('home'), goDay: ()=>this.go('day'), goJourney: ()=>this.go('journey'),
+      goStudies: ()=>this.go('studies'), goMoney: ()=>this.go('money'), goAdmin: ()=>this.go('admin'),
+      goRituals: ()=>this.go('rituals'),
+      toggleTheme: ()=>this.setState(s=>({ dark:!s.dark }))
+    };
+  }
+}
+</script>
+</body>
+</html>

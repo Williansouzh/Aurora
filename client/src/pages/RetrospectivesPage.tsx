@@ -98,14 +98,14 @@ function WeeklyView({ data }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard icon={Star} label="XP ganho" value={`+${data.xpEarned}`} color="text-amber-500" />
-        <StatCard icon={Flame} label="Check-ins" value={data.habitCheckIns} color="text-orange-500" />
-        <StatCard icon={CalendarDays} label="Tarefas" value={data.tasksCompleted} color="text-blue-500" />
+        <StatCard icon={Star} label="XP ganho" value={`+${data.xpEarned}`} color="text-pending" />
+        <StatCard icon={Flame} label="Check-ins" value={data.habitCheckIns} color="text-pending" />
+        <StatCard icon={CalendarDays} label="Tarefas" value={data.tasksCompleted} color="text-primary" />
         <StatCard
           icon={BookOpen}
           label="Humor médio"
           value={data.averageMood > 0 ? `${data.averageMood.toFixed(1)} ${MOOD_EMOJI[avgMoodInt] ?? ''}` : '—'}
-          color="text-pink-500"
+          color="text-primary"
         />
       </div>
 
@@ -113,14 +113,14 @@ function WeeklyView({ data }) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
-              <Flame className="h-4 w-4 text-orange-500" /> Hábitos da semana
+              <Flame className="h-4 w-4 text-pending" /> Hábitos da semana
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {data.topHabits.map((h, i) => (
               <div key={i} className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-orange-100 text-orange-700 text-[10px] flex items-center justify-center font-bold">
+                  <span className="w-5 h-5 rounded-full bg-pending-soft text-pending text-[10px] flex items-center justify-center font-bold">
                     {i + 1}
                   </span>
                   {h.habitName}
@@ -161,20 +161,20 @@ function MonthlyView({ data }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard icon={Star} label="XP ganho" value={`+${data.xpEarned}`} color="text-amber-500" />
-        <StatCard icon={Flame} label="Check-ins" value={data.habitCheckIns} color="text-orange-500" />
-        <StatCard icon={BookOpen} label="Diário" value={data.diaryEntriesCount} color="text-pink-500" />
-        <StatCard icon={Award} label="Metas concluídas" value={data.goalsCompleted} color="text-violet-500" />
+        <StatCard icon={Star} label="XP ganho" value={`+${data.xpEarned}`} color="text-pending" />
+        <StatCard icon={Flame} label="Check-ins" value={data.habitCheckIns} color="text-pending" />
+        <StatCard icon={BookOpen} label="Diário" value={data.diaryEntriesCount} color="text-primary" />
+        <StatCard icon={Award} label="Metas concluídas" value={data.goalsCompleted} color="text-primary" />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard icon={Wallet} label="Receitas" value={formatCurrency(data.monthlyIncome)} color="text-emerald-600" large />
-        <StatCard icon={Wallet} label="Despesas" value={formatCurrency(data.monthlyExpense)} color="text-red-600" large />
+        <StatCard icon={Wallet} label="Receitas" value={formatCurrency(data.monthlyIncome)} color="text-income" large />
+        <StatCard icon={Wallet} label="Despesas" value={formatCurrency(data.monthlyExpense)} color="text-expense" large />
         <StatCard
           icon={TrendingUp}
           label={`Economia (${savingsPct}%)`}
           value={formatCurrency(savings)}
-          color={savings >= 0 ? 'text-emerald-600' : 'text-red-600'}
+          color={savings >= 0 ? 'text-income' : 'text-expense'}
           large
         />
       </div>
@@ -208,7 +208,7 @@ function StudyRetroCard({ minutes = 0, sessions = 0, reviews = 0, practices = 0 
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
-          <BookOpen className="h-4 w-4 text-blue-500" /> Estudos
+          <BookOpen className="h-4 w-4 text-primary" /> Estudos
         </CardTitle>
       </CardHeader>
       <CardContent>

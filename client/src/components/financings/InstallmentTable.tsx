@@ -7,9 +7,9 @@ import { Button } from '../ui/button';
 import { PayInstallmentModal } from './PayInstallmentModal';
 
 const INST_STATUS_VARIANTS = {
-  0: 'secondary',
+  0: 'neutral',
   1: 'success',
-  2: 'destructive',
+  2: 'danger',
 };
 
 export function InstallmentTable({ installments = [], financingId, onMarkPaid, showAll = false }) {
@@ -26,23 +26,23 @@ export function InstallmentTable({ installments = [], financingId, onMarkPaid, s
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/40 text-xs text-muted-foreground">
-              <th className="px-4 py-2 text-left font-medium">#</th>
-              <th className="px-4 py-2 text-left font-medium">Vencimento</th>
-              <th className="px-4 py-2 text-right font-medium">Amortização</th>
-              <th className="px-4 py-2 text-right font-medium">Juros</th>
-              <th className="px-4 py-2 text-right font-medium hidden md:table-cell">Seg/Taxas</th>
-              <th className="px-4 py-2 text-right font-medium">Parcela</th>
-              <th className="px-4 py-2 text-right font-medium hidden lg:table-cell">Saldo</th>
-              <th className="px-4 py-2 text-center font-medium">Status</th>
-              {onMarkPaid && <th className="px-4 py-2" />}
+            <tr className="border-b border-border bg-secondary [&>th]:px-4 [&>th]:py-3 [&>th]:text-[11px] [&>th]:font-semibold [&>th]:uppercase [&>th]:tracking-[0.1em] [&>th]:text-faint">
+              <th className="text-left">#</th>
+              <th className="text-left">Vencimento</th>
+              <th className="text-right">Amortização</th>
+              <th className="text-right">Juros</th>
+              <th className="text-right hidden md:table-cell">Seg/Taxas</th>
+              <th className="text-right">Parcela</th>
+              <th className="text-right hidden lg:table-cell">Saldo</th>
+              <th className="text-center">Status</th>
+              {onMarkPaid && <th />}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-line2">
             {visible.map((inst) => (
               <tr
                 key={inst.number}
-                className={inst.status === 1 ? 'opacity-60 bg-muted/20' : 'hover:bg-muted/30 transition-colors'}
+                className={inst.status === 1 ? 'bg-secondary/50 opacity-70' : 'transition-colors hover:bg-secondary'}
               >
                 <td className="px-4 py-2.5 tabular-nums text-muted-foreground">{inst.number}</td>
                 <td className="px-4 py-2.5 tabular-nums">{formatDate(inst.dueDate)}</td>

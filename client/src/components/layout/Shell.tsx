@@ -20,7 +20,6 @@ import {
   TrendingUp,
   Wallet,
   X,
-  Zap,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
@@ -55,6 +54,7 @@ const navSections = [
   {
     title: 'Dinheiro',
     items: [
+      { moduleKey: 'finances', to: '/finance', icon: LayoutDashboard, label: 'Visao Financeira' },
       { moduleKey: 'finances', to: '/transactions', icon: ArrowLeftRight, label: 'Transacoes' },
       { moduleKey: 'finances', to: '/accounts', icon: Wallet, label: 'Contas' },
       { moduleKey: 'finances', to: '/categories', icon: Tag, label: 'Categorias' },
@@ -130,12 +130,13 @@ export function Shell({ children, user, onSignOut, access }) {
   const sidebarContent = (isMobile = false) => (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2.5 px-4 py-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <Zap className="h-4 w-4 text-primary-foreground" />
-        </div>
+        <div
+          className="h-7 w-7 shrink-0 rounded-full"
+          style={{ background: 'radial-gradient(circle at 30% 30%, #a7b0d6, #3d4eac)' }}
+        />
         <div className="flex flex-col leading-none">
-          <span className="text-base font-bold text-foreground">Aurora</span>
-          <span className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">Life OS</span>
+          <span className="font-display text-xl text-foreground">Aurora</span>
+          <span className="text-[10px] text-muted-foreground font-semibold tracking-[0.14em] uppercase">Life OS</span>
         </div>
         {isMobile && (
           <Button variant="ghost" size="icon" className="ml-auto h-7 w-7" onClick={() => setMobileOpen(false)}>
@@ -243,10 +244,11 @@ export function Shell({ children, user, onSignOut, access }) {
             <Menu className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary">
-              <Zap className="h-3 w-3 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-foreground">Aurora</span>
+            <div
+              className="h-6 w-6 shrink-0 rounded-full"
+              style={{ background: 'radial-gradient(circle at 30% 30%, #a7b0d6, #3d4eac)' }}
+            />
+            <span className="font-display text-lg text-foreground">Aurora</span>
           </div>
         </header>
 

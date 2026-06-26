@@ -24,27 +24,27 @@ export function formatDateShort(date) {
 
 export function transactionTypeClasses(type) {
   const map = {
-    0: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-    1: 'text-red-700 bg-red-50 border-red-200',
-    2: 'text-indigo-700 bg-indigo-50 border-indigo-200',
-    income: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-    expense: 'text-red-700 bg-red-50 border-red-200',
-    transfer: 'text-indigo-700 bg-indigo-50 border-indigo-200',
+    0: 'text-income bg-income-soft border-income/30',
+    1: 'text-expense bg-expense-soft border-expense/30',
+    2: 'text-transfer bg-accent border-transfer/30',
+    income: 'text-income bg-income-soft border-income/30',
+    expense: 'text-expense bg-expense-soft border-expense/30',
+    transfer: 'text-transfer bg-accent border-transfer/30',
   };
-  return map[type] ?? 'text-gray-600 bg-gray-50 border-gray-200';
+  return map[type] ?? 'text-faint bg-muted border-border';
 }
 
 export function statusClasses(status) {
   const map = {
-    0: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-    1: 'text-amber-700 bg-amber-50 border-amber-200',
-    2: 'text-red-700 bg-red-50 border-red-200',
-    paid: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-    pending: 'text-amber-700 bg-amber-50 border-amber-200',
-    overdue: 'text-red-700 bg-red-50 border-red-200',
-    cancelled: 'text-gray-500 bg-gray-50 border-gray-200',
+    0: 'text-income bg-income-soft border-income/30',
+    1: 'text-pending bg-pending-soft border-pending/30',
+    2: 'text-expense bg-expense-soft border-expense/30',
+    paid: 'text-income bg-income-soft border-income/30',
+    pending: 'text-pending bg-pending-soft border-pending/30',
+    overdue: 'text-expense bg-expense-soft border-expense/30',
+    cancelled: 'text-faint bg-muted border-border',
   };
-  return map[status] ?? 'text-gray-500 bg-gray-50 border-gray-200';
+  return map[status] ?? 'text-faint bg-muted border-border';
 }
 
 export function getInitials(name) {

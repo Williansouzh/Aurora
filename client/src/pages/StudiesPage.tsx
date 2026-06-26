@@ -26,11 +26,11 @@ import { cn } from '../lib/utils';
 
 const STATUS = { 1: 'Backlog', 2: 'Ativo', 3: 'Pausado', 4: 'Concluido', 5: 'Arquivado' };
 const STATUS_COLORS = {
-  1: 'bg-slate-100 text-slate-700',
-  2: 'bg-emerald-100 text-emerald-700',
-  3: 'bg-amber-100 text-amber-700',
-  4: 'bg-violet-100 text-violet-700',
-  5: 'bg-slate-100 text-slate-500',
+  1: 'bg-secondary text-mut2',
+  2: 'bg-income-soft text-income',
+  3: 'bg-pending-soft text-pending',
+  4: 'bg-accent text-primary',
+  5: 'bg-secondary text-mut2',
 };
 const CATEGORIES = {
   1: 'Idiomas',
@@ -53,9 +53,9 @@ const STAGES = {
 };
 const SESSION_STATUS = { 1: 'Planejada', 2: 'Concluida', 3: 'Cancelada' };
 const SESSION_STATUS_COLORS = {
-  1: 'bg-blue-100 text-blue-700',
-  2: 'bg-emerald-100 text-emerald-700',
-  3: 'bg-slate-100 text-slate-500',
+  1: 'bg-accent text-primary',
+  2: 'bg-income-soft text-income',
+  3: 'bg-secondary text-mut2',
 };
 const REVIEW_RESULTS = {
   1: 'Repetir',
@@ -77,10 +77,10 @@ const RESOURCE_TYPES = {
 const RESOURCE_STATUS = { 1: 'Planejado', 2: 'Em andamento', 3: 'Concluido', 4: 'Arquivado' };
 const PRACTICE_STATUS = { 1: 'Planejada', 2: 'Em andamento', 3: 'Concluida', 4: 'Cancelada' };
 const PRACTICE_STATUS_COLORS = {
-  1: 'bg-blue-100 text-blue-700',
-  2: 'bg-amber-100 text-amber-700',
-  3: 'bg-emerald-100 text-emerald-700',
-  4: 'bg-slate-100 text-slate-500',
+  1: 'bg-accent text-primary',
+  2: 'bg-pending-soft text-pending',
+  3: 'bg-income-soft text-income',
+  4: 'bg-secondary text-mut2',
 };
 
 export function StudiesPage({ api }) {
@@ -376,7 +376,7 @@ function StudySkillCard({ skill, onAssess, onActivate, onPause }) {
             <span>Score de prioridade</span>
             <span className="font-semibold tabular-nums">{Number(skill.priorityScore ?? 0).toFixed(1)}</span>
           </div>
-          <Progress value={scorePct} className="h-2" indicatorClassName={scorePct >= 70 ? 'bg-emerald-500' : 'bg-blue-500'} />
+          <Progress value={scorePct} className="h-2" indicatorClassName={scorePct >= 70 ? 'bg-income-soft0' : 'bg-accent0'} />
         </div>
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           <span>{Math.round((skill.weeklyTimeBudgetMinutes ?? 0) / 60)}h/semana</span>
@@ -399,8 +399,8 @@ function StudyReviewsSection({ reviews, onComplete }) {
       {reviews.length === 0 ? (
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100">
-              <CheckCircle2 className="h-4 w-4 text-emerald-700" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-income-soft">
+              <CheckCircle2 className="h-4 w-4 text-income" />
             </div>
             <div>
               <p className="text-sm font-semibold">Nenhuma revisao vencida</p>
@@ -570,7 +570,7 @@ function StudyPracticeRow({ practice, onComplete }) {
       </div>
       {practice.instructions && <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{practice.instructions}</p>}
       {practice.mistakes && (
-        <p className="mt-2 line-clamp-2 rounded-md bg-amber-50 p-2 text-xs text-amber-800">
+        <p className="mt-2 line-clamp-2 rounded-md bg-pending-soft p-2 text-xs text-pending">
           Erros: {practice.mistakes}
         </p>
       )}
@@ -580,13 +580,13 @@ function StudyPracticeRow({ practice, onComplete }) {
 
 function StudyReviewCard({ review, onComplete }) {
   return (
-    <Card className="border-amber-200 bg-amber-50/40 transition-shadow hover:shadow-md dark:border-amber-900/60 dark:bg-amber-950/20">
+    <Card className="border-pending/40 bg-pending-soft/40 transition-shadow hover:shadow-md dark:border-pending/40/60 dark:bg-pending/20">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <CardTitle className="truncate text-base font-semibold">{review.skillTitle}</CardTitle>
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
-              <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">
+              <span className="rounded-full bg-pending-soft px-1.5 py-0.5 text-[11px] font-medium text-pending">
                 Venceu {new Date(review.dueDate).toLocaleDateString('pt-BR')}
               </span>
               <span className="text-[11px] text-muted-foreground">Revisao #{(review.reviewCount ?? 0) + 1}</span>
@@ -675,7 +675,7 @@ function StudySessionCard({ session, onFinish }) {
             <span>Tempo</span>
             <span>{completed ? `${actual}/${planned} min` : `${planned} min planejados`}</span>
           </div>
-          <Progress value={completed ? pct : 0} className="h-2" indicatorClassName={completed ? 'bg-emerald-500' : 'bg-blue-500'} />
+          <Progress value={completed ? pct : 0} className="h-2" indicatorClassName={completed ? 'bg-income-soft0' : 'bg-accent0'} />
         </div>
         {completed && (
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">

@@ -47,17 +47,17 @@ export function useToast() {
 }
 
 const icons = {
-  success: <CheckCircle className="h-4 w-4 text-emerald-500" />,
-  error: <AlertCircle className="h-4 w-4 text-red-500" />,
-  warning: <AlertTriangle className="h-4 w-4 text-amber-500" />,
-  info: <Info className="h-4 w-4 text-blue-500" />,
+  success: <CheckCircle className="h-4 w-4 text-income" />,
+  error: <AlertCircle className="h-4 w-4 text-expense" />,
+  warning: <AlertTriangle className="h-4 w-4 text-pending" />,
+  info: <Info className="h-4 w-4 text-primary" />,
 };
 
 const typeClasses = {
-  success: 'border-emerald-200 bg-emerald-50 text-emerald-900',
-  error: 'border-red-200 bg-red-50 text-red-900',
-  warning: 'border-amber-200 bg-amber-50 text-amber-900',
-  info: 'border-blue-200 bg-blue-50 text-blue-900',
+  success: 'border-income/40 bg-income-soft text-income',
+  error: 'border-expense/40 bg-expense-soft text-expense',
+  warning: 'border-pending/40 bg-pending-soft text-pending',
+  info: 'border-primary/40 bg-accent text-primary',
 };
 
 function Toaster({ toasts, onRemove }) {

@@ -118,11 +118,11 @@ export function FinancingDetailPage({ api }) {
         <CardContent className="p-6 space-y-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-primary">
                 <Building2 className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold">{f.name}</h2>
+                <h2 className="font-display text-2xl text-foreground">{f.name}</h2>
                 <p className="text-sm text-muted-foreground">
                   {f.institution || 'Sem instituição'} · {enumLabel(financingTypes, f.type)} · {enumLabel(amortizationSystems, f.amortizationSystem)}
                 </p>
@@ -140,8 +140,8 @@ export function FinancingDetailPage({ api }) {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4">
             {metrics.map(({ label, value, tone }) => (
               <div key={label}>
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className={`font-semibold tabular-nums mt-0.5 ${tone === 'bad' ? 'text-destructive' : tone === 'good' ? 'text-emerald-600' : ''}`}>
+                <p className="text-xs text-mut2">{label}</p>
+                <p className={`font-numeral text-xl mt-0.5 ${tone === 'bad' ? 'text-expense' : tone === 'good' ? 'text-income' : 'text-foreground'}`}>
                   {value}
                 </p>
               </div>
@@ -154,7 +154,7 @@ export function FinancingDetailPage({ api }) {
               <span>Progresso de amortização</span>
               <span>{formatCurrency(f.paidPrincipal)} amortizados</span>
             </div>
-            <Progress value={f.progressPercentage} className="h-2" indicatorClassName="bg-indigo-500" />
+            <Progress value={f.progressPercentage} className="h-2" indicatorClassName="bg-primary" />
           </div>
 
           {f.notes && (
@@ -167,7 +167,7 @@ export function FinancingDetailPage({ api }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <PiggyBank className="h-4 w-4 text-indigo-500" />
+            <PiggyBank className="h-4 w-4 text-primary" />
             Simular amortização extra
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -194,7 +194,7 @@ export function FinancingDetailPage({ api }) {
           </div>
 
           {extraSim && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 rounded-lg border bg-muted/40 p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 rounded-lg border border-border bg-secondary p-4">
               {[
                 { label: 'Economia de juros', value: formatCurrency(extraSim.interestSavings), tone: 'good' },
                 { label: '% economizado', value: `${extraSim.interestSavingsPercentage}%`, tone: 'good' },
@@ -202,8 +202,8 @@ export function FinancingDetailPage({ api }) {
                 { label: 'Juros restantes', value: formatCurrency(extraSim.newRemainingInterest), tone: 'bad' },
               ].map(({ label, value, tone }) => (
                 <div key={label}>
-                  <p className="text-xs text-muted-foreground">{label}</p>
-                  <p className={`font-semibold tabular-nums mt-0.5 ${tone === 'good' ? 'text-emerald-600' : tone === 'bad' ? 'text-destructive' : ''}`}>
+                  <p className="text-xs text-mut2">{label}</p>
+                  <p className={`font-numeral text-lg mt-0.5 ${tone === 'good' ? 'text-income' : tone === 'bad' ? 'text-expense' : 'text-foreground'}`}>
                     {value}
                   </p>
                 </div>

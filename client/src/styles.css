@@ -3,53 +3,80 @@
 @tailwind utilities;
 
 @layer base {
+  /* Aurora · Quiet design system — calm, editorial, type-led.
+     One indigo accent over warm paper neutrals. */
   :root {
-    --background: 0 0% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 239 84% 67%;
+    --background: 43 23% 94%; /* paper #f3f1ec */
+    --foreground: 43 10% 14%; /* ink #26241f */
+    --card: 60 14% 99%; /* panel #fcfcfb */
+    --card-foreground: 43 10% 14%;
+    --popover: 60 14% 99%;
+    --popover-foreground: 43 10% 14%;
+    --primary: 231 48% 46%; /* indigo accent #3d4eac */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 220 14% 96%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
+    --secondary: 40 23% 97%; /* sidebar #faf9f7 */
+    --secondary-foreground: 43 10% 14%;
+    --muted: 45 19% 92%; /* accent soft #eeece6 */
+    --muted-foreground: 39 7% 39%; /* muted #6b665d */
+    --accent: 45 19% 92%; /* soft indigo fill #eeece6 */
+    --accent-foreground: 43 10% 14%;
+    --destructive: 10 41% 59%; /* terracotta #c1796a */
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 239 84% 67%;
-    --radius: 0.625rem;
-    --income: 160 84% 39%;
-    --expense: 0 84% 60%;
-    --pending: 38 92% 50%;
-    --transfer: 239 84% 67%;
+    --border: 43 16% 91%; /* line #eceae5 */
+    --input: 43 16% 91%;
+    --ring: 231 48% 46%;
+    --radius: 0.875rem; /* cards 14px */
+    --faint: 36 8% 63%; /* #a8a299 */
+    --ink2: 40 8% 16%; /* strong text #2b2925 */
+    --mut2: 39 6% 51%; /* secondary muted #8a857c */
+    --line2: 43 20% 93%; /* inner row divider #f1efea */
+    --chipline: 42 17% 88%; /* chip/control border #e6e3dc */
+    --track: 43 16% 91%; /* progress track #eceae5 */
+
+    /* Finance / semantic */
+    --income: 112 15% 49%; /* good #6f8f6a */
+    --expense: 10 41% 59%; /* bad #c1796a */
+    --pending: 31 41% 59%; /* warn #c1976a */
+    --transfer: 231 48% 46%; /* accent */
+    --income-soft: 113 21% 93%; /* #e9f0e8 */
+    --pending-soft: 37 47% 93%; /* #f6f0e6 */
+    --expense-soft: 11 47% 93%; /* #f6e9e6 */
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 96%;
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 239 84% 67%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 96%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 96%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 239 84% 67%;
+    --background: 270 5% 7%; /* #131214 */
+    --foreground: 47 24% 93%; /* #f1efe8 */
+    --card: 252 9% 11%; /* #1b1a1f */
+    --card-foreground: 47 24% 93%;
+    --popover: 252 9% 11%;
+    --popover-foreground: 47 24% 93%;
+    --primary: 235 67% 73%; /* lavender accent #8c93e8 */
+    --primary-foreground: 252 9% 11%;
+    --secondary: 252 9% 11%;
+    --secondary-foreground: 47 24% 93%;
+    --muted: 249 8% 17%; /* line #2a2930 */
+    --muted-foreground: 39 6% 58%; /* #9a958c */
+    --accent: 240 21% 19%; /* accent soft #26263a */
+    --accent-foreground: 47 24% 93%;
+    --destructive: 7 45% 67%; /* #d18f86 */
+    --destructive-foreground: 270 5% 7%;
+    --border: 249 8% 17%; /* #2a2930 */
+    --input: 249 8% 17%;
+    --ring: 235 67% 73%;
+    --faint: 39 7% 41%;
+    --ink2: 47 16% 89%; /* #e8e6df */
+    --mut2: 39 6% 51%; /* #8a857c */
+    --line2: 250 8% 15%; /* #232228 */
+    --chipline: 248 8% 20%; /* #2f2e36 */
+    --track: 249 8% 17%; /* #2a2930 */
+
+    --income: 110 19% 61%; /* #8fae89 */
+    --expense: 7 45% 67%; /* #d18f86 */
+    --pending: 33 52% 65%; /* #d4ab78 */
+    --transfer: 235 67% 73%;
+    --income-soft: 132 14% 14%; /* #1e2820 */
+    --pending-soft: 40 16% 15%; /* #2c2820 */
+    --expense-soft: 9 17% 15%; /* #2c211f */
   }
 
   * {
@@ -61,6 +88,7 @@
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.005em;
   }
 }
 
@@ -69,18 +97,43 @@
     @apply flex items-center justify-center min-h-screen text-muted-foreground;
   }
 
+  /* Editorial display type — Newsreader serif for headlines & key numbers */
+  .font-display {
+    font-family: 'Newsreader', Georgia, serif;
+    letter-spacing: -0.01em;
+  }
+  /* Serif numerals (balances, streaks) */
+  .font-numeral {
+    font-family: 'Newsreader', Georgia, serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  /* Quiet uppercase overline label */
+  .text-overline {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--faint));
+  }
+
   /* Scrollbar styling */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 10px;
+    height: 10px;
   }
   ::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-border rounded-full;
+    background: rgba(120, 115, 105, 0.28);
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: content-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground/30;
+    background: rgba(120, 115, 105, 0.45);
+    background-clip: content-box;
+    border: 3px solid transparent;
   }
 }

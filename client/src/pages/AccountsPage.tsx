@@ -3,9 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ColorPicker } from '../components/ui/ColorPicker';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
-import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../components/ui/dropdown-menu';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -132,22 +130,13 @@ export function AccountsPage({ api }) {
   const totalBalance = activeAccounts.reduce((s, a) => s + (a.type !== 4 ? (a.currentBalance ?? 0) : 0), 0);
 
   return (
-    <Screen title="Contas" loading={accounts.loading} error={accounts.error}>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            {activeAccounts.length} conta{activeAccounts.length !== 1 ? 's' : ''} ativa{activeAccounts.length !== 1 ? 's' : ''}
-            {' · '}
-            <span className="font-semibold text-foreground">{formatCurrency(totalBalance)}</span> em saldo total
-          </p>
-        </div>
-        <Button onClick={openNew} size="sm">
-          <Plus className="h-4 w-4" />
-          Nova conta
-        </Button>
-      </div>
-
+    <Screen
+      title="Contas"
+      subtitle={`${activeAccounts.length} ${activeAccounts.length === 1 ? 'ativa' : 'ativas'} · ${archivedAccounts.length} ${archivedAccounts.length === 1 ? 'arquivada' : 'arquivadas'} · ${formatCurrency(totalBalance)} total`}
+      actions={<Button onClick={openNew}><Plus className="h-4 w-4" /> Nova conta</Button>}
+      loading={accounts.loading}
+      error={accounts.error}
+    >
       {/* Account cards */}
       {activeAccounts.length === 0 && !accounts.loading ? (
         <EmptyState
@@ -168,6 +157,14 @@ export function AccountsPage({ api }) {
               onDelete={() => setDeleting(account)}
             />
           ))}
+          {/* Dashed "add account" tile */}
+          <button
+            onClick={openNew}
+            className="flex min-h-[140px] flex-col items-center justify-center gap-2 rounded-[14px] border-2 border-dashed border-chipline bg-transparent text-mut2 transition-colors hover:border-primary/40 hover:text-primary"
+          >
+            <Plus className="h-5 w-5" />
+            <span className="text-sm font-medium">Adicionar conta</span>
+          </button>
         </div>
       )}
 
@@ -285,20 +282,24 @@ export function AccountsPage({ api }) {
 
 function AccountCard({ account, onEdit, onArchive, onDelete }) {
   const Icon = typeIcons[account.type] ?? Wallet;
-  const balance = account.type === 4 ? account.availableLimit : account.currentBalance;
   const isCredit = account.type === 4;
+  const balance = isCredit ? account.availableLimit : account.currentBalance;
+  const delta = (account.currentBalance ?? 0) - (account.initialBalance ?? 0);
+  const showDelta = !isCredit && Math.abs(delta) > 0.005;
 
   return (
-    <Card className="relative hover:shadow-card-hover transition-shadow">
-      <CardHeader className="pb-3">
+    <div className="relative overflow-hidden rounded-[14px] border border-border bg-card transition-shadow hover:shadow-card-hover">
+      {/* 3px top border in the account's color */}
+      <div className="h-[3px] w-full" style={{ background: account.color }} />
+      <div className="p-5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: `${account.color}20`, color: account.color }}>
               <Icon className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle className="text-sm">{account.name}</CardTitle>
-              <p className="text-xs text-muted-foreground">{enumLabel(accountTypes, account.type)}</p>
+              <p className="text-[15px] font-semibold text-ink2">{account.name}</p>
+              <p className="text-xs text-mut2">{enumLabel(accountTypes, account.type)}</p>
             </div>
           </div>
           <DropdownMenu>
@@ -324,16 +325,21 @@ function AccountCard({ account, onEdit, onArchive, onDelete }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </CardHeader>
-      <CardContent>
-        <p className={cn('text-2xl font-bold tabular-nums', balance >= 0 ? 'text-foreground' : 'text-red-700')}>
+
+        <p className={cn('mt-4 font-numeral text-[28px] leading-none', balance >= 0 ? 'text-foreground' : 'text-expense')}>
           {formatCurrency(balance)}
         </p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          {isCredit ? 'Limite disponível' : 'Saldo atual'}
-        </p>
+        <div className="mt-1.5 flex items-center gap-2 text-xs">
+          <span className="text-faint">{isCredit ? 'Limite disponível' : 'Saldo atual'}</span>
+          {showDelta && (
+            <span className={cn('font-medium', delta >= 0 ? 'text-income' : 'text-expense')}>
+              {delta >= 0 ? '▲' : '▼'} {formatCurrency(Math.abs(delta))}
+            </span>
+          )}
+        </div>
+
         {isCredit && (
-          <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
+          <div className="mt-3 space-y-1.5 border-t border-line2 pt-3 text-xs text-mut2">
             <div className="flex justify-between">
               <span>Fatura atual</span>
               <span className="font-medium text-foreground">{formatCurrency(account.currentInvoiceAmount)}</span>
@@ -342,12 +348,10 @@ function AccountCard({ account, onEdit, onArchive, onDelete }) {
               <span>Limite total</span>
               <span className="font-medium text-foreground">{formatCurrency(account.creditLimit)}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Fecha dia {account.closingDay} · Vence dia {account.dueDay}</span>
-            </div>
+            <div className="text-faint">Fecha dia {account.closingDay} · Vence dia {account.dueDay}</div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

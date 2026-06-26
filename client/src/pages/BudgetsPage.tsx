@@ -150,7 +150,7 @@ export function BudgetsPage({ api }) {
                         {budget.hasBudget && ` de ${formatCurrency(budget.limitAmount)}`}
                       </p>
                       {pct !== null && (
-                        <p className={cn('text-xs font-semibold tabular-nums shrink-0', over ? 'text-red-600' : warn ? 'text-amber-600' : 'text-emerald-600')}>
+                        <p className={cn('text-xs font-semibold tabular-nums shrink-0', over ? 'text-expense' : warn ? 'text-pending' : 'text-income')}>
                           {pct}%
                         </p>
                       )}

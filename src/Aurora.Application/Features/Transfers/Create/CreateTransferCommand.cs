@@ -2,9 +2,9 @@ using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Features.Transfers.Common;
 using Aurora.Domain.Entities;
 using Aurora.Domain.Enums;
-using Aurora.Domain.Exceptions;
 using FluentValidation;
 using MediatR;
+using ValidationException = Aurora.Domain.Exceptions.ValidationException;
 
 namespace Aurora.Application.Features.Transfers.Create;
 

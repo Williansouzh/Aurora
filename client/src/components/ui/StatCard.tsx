@@ -3,11 +3,11 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { Card, CardContent } from './card';
 
 const variantConfig = {
-  income: { bg: 'bg-emerald-50', icon: 'text-emerald-600', value: 'text-emerald-700' },
-  expense: { bg: 'bg-red-50', icon: 'text-red-600', value: 'text-red-700' },
-  warning: { bg: 'bg-amber-50', icon: 'text-amber-600', value: 'text-amber-700' },
-  neutral: { bg: 'bg-indigo-50', icon: 'text-indigo-600', value: 'text-foreground' },
-  transfer: { bg: 'bg-indigo-50', icon: 'text-indigo-600', value: 'text-indigo-700' },
+  income: { bg: 'bg-income-soft', icon: 'text-income', value: 'text-income' },
+  expense: { bg: 'bg-expense-soft', icon: 'text-expense', value: 'text-expense' },
+  warning: { bg: 'bg-pending-soft', icon: 'text-pending', value: 'text-pending' },
+  neutral: { bg: 'bg-accent', icon: 'text-primary', value: 'text-foreground' },
+  transfer: { bg: 'bg-accent', icon: 'text-primary', value: 'text-primary' },
 };
 
 export function StatCard({ title, value, subtitle, icon: Icon, trend, trendValue, variant = 'neutral', currency = true }) {
@@ -20,7 +20,7 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, trendValue
         <div className="flex items-start justify-between">
           <div className="space-y-1 flex-1">
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className={cn('text-2xl font-bold tracking-tight', cfg.value)}>
+            <p className={cn('font-numeral text-3xl', cfg.value)}>
               {currency ? formatCurrency(value) : value}
             </p>
             {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
@@ -35,11 +35,11 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, trendValue
         {trend !== undefined && trendValue !== undefined && (
           <div className="mt-3 flex items-center gap-1.5">
             {isPositiveTrend ? (
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+              <TrendingUp className="h-3.5 w-3.5 text-income" />
             ) : (
-              <TrendingDown className="h-3.5 w-3.5 text-red-500" />
+              <TrendingDown className="h-3.5 w-3.5 text-expense" />
             )}
-            <span className={cn('text-xs font-medium', isPositiveTrend ? 'text-emerald-600' : 'text-red-600')}>
+            <span className={cn('text-xs font-medium', isPositiveTrend ? 'text-income' : 'text-expense')}>
               {isPositiveTrend ? '+' : ''}{trendValue?.toFixed(1)}%
             </span>
             <span className="text-xs text-muted-foreground">{trend}</span>

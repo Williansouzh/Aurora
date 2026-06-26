@@ -250,7 +250,12 @@ export function TransactionsPage({ api }) {
   const screenError = accounts.error || categories.error || transactionsError || transfers.error;
 
   return (
-    <Screen title="Transações" loading={isLoading && !movementRows.length} error={screenError}>
+    <Screen
+      title="Transações"
+      subtitle={`${transactionsData.totalCount || 0} ${(transactionsData.totalCount || 0) === 1 ? 'registro' : 'registros'} neste período`}
+      loading={isLoading && !movementRows.length}
+      error={screenError}
+    >
       {/* Header actions */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Search */}
@@ -403,9 +408,9 @@ export function TransactionsPage({ api }) {
                   className={cn(
                     'rounded-md py-1.5 text-sm font-medium transition-colors border-0 min-h-0',
                     form.type === val
-                      ? val === 'Income' ? 'bg-emerald-100 text-emerald-700'
-                        : val === 'Expense' ? 'bg-red-100 text-red-700'
-                        : 'bg-indigo-100 text-indigo-700'
+                      ? val === 'Income' ? 'bg-income-soft text-income'
+                        : val === 'Expense' ? 'bg-expense-soft text-expense'
+                        : 'bg-accent text-primary'
                       : 'bg-transparent text-muted-foreground hover:bg-background/80'
                   )}
                 >

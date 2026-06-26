@@ -1,16 +1,13 @@
-import { MoreHorizontal, Plus, Tag } from 'lucide-react';
+import { MoreHorizontal, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { ColorPicker } from '../components/ui/ColorPicker';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
-import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu';
-import { EmptyState } from '../components/ui/EmptyState';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Screen } from '../components/ui/Screen';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { categoryIcons, categoryTypes, colors } from '../constants/financeOptions';
 import { useData } from '../hooks/useData';
 import { useToast } from '../hooks/useToast';
@@ -90,41 +87,31 @@ export function CategoriesPage({ api }) {
   const expense = (categories.data || []).filter((c) => c.type === 1);
 
   return (
-    <Screen title="Categorias" loading={categories.loading} error={categories.error}>
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {income.length} receita{income.length !== 1 ? 's' : ''} · {expense.length} despesa{expense.length !== 1 ? 's' : ''}
-        </p>
-        <Button size="sm" onClick={() => openNew()}>
-          <Plus className="h-4 w-4" />
-          Nova categoria
-        </Button>
+    <Screen
+      title="Categorias"
+      subtitle={`${income.length} ${income.length === 1 ? 'receita' : 'receitas'} · ${expense.length} ${expense.length === 1 ? 'despesa' : 'despesas'}`}
+      actions={<Button onClick={() => openNew()}><Plus className="h-4 w-4" /> Nova categoria</Button>}
+      loading={categories.loading}
+      error={categories.error}
+    >
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <CategoryColumn
+          label="Receitas"
+          dot="bg-income"
+          categories={income}
+          onEdit={openEdit}
+          onDelete={setDeleting}
+          onNew={() => openNew('Income')}
+        />
+        <CategoryColumn
+          label="Despesas"
+          dot="bg-expense"
+          categories={expense}
+          onEdit={openEdit}
+          onDelete={setDeleting}
+          onNew={() => openNew('Expense')}
+        />
       </div>
-
-      <Tabs defaultValue="expense">
-        <TabsList>
-          <TabsTrigger value="expense">Despesas ({expense.length})</TabsTrigger>
-          <TabsTrigger value="income">Receitas ({income.length})</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="expense" className="mt-4">
-          <CategoryGrid
-            categories={expense}
-            onEdit={openEdit}
-            onDelete={setDeleting}
-            onNew={() => openNew('Expense')}
-          />
-        </TabsContent>
-
-        <TabsContent value="income" className="mt-4">
-          <CategoryGrid
-            categories={income}
-            onEdit={openEdit}
-            onDelete={setDeleting}
-            onNew={() => openNew('Income')}
-          />
-        </TabsContent>
-      </Tabs>
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) reset(); }}>
@@ -193,58 +180,54 @@ export function CategoriesPage({ api }) {
   );
 }
 
-function CategoryGrid({ categories, onEdit, onDelete, onNew }) {
-  if (categories.length === 0) {
-    return (
-      <EmptyState
-        icon={Tag}
-        title="Nenhuma categoria"
-        description="Crie uma nova categoria para organizar suas transações"
-        actionLabel="Nova categoria"
-        onAction={onNew}
-      />
-    );
-  }
-
+function CategoryColumn({ label, dot, categories, onEdit, onDelete, onNew }) {
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {categories.map((cat) => (
-        <div
-          key={cat.id}
-          className="group flex items-center gap-3 rounded-lg border bg-card px-4 py-3 hover:shadow-card-hover transition-shadow"
-        >
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
-            style={{ background: `${cat.color}20`, color: cat.color }}
-          >
-            {cat.icon?.slice(0, 2) ?? '?'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{cat.name}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              {cat.icon}
-              {cat.isDefault && (
-                <Badge variant="secondary" className="ml-1 text-[10px] py-0 px-1 h-4">padrão</Badge>
-              )}
-            </p>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(cat)}>Editar</DropdownMenuItem>
-              {!cat.isDefault && (
-                <DropdownMenuItem onClick={() => onDelete(cat)} className="text-destructive focus:text-destructive">
-                  Excluir
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+    <div className="rounded-[14px] border border-border bg-card">
+      <div className="flex items-center justify-between px-5 pb-3 pt-5">
+        <div className="flex items-center gap-2">
+          <span className={cn('h-2 w-2 rounded-full', dot)} />
+          <span className="text-overline">{label}</span>
+          <span className="text-xs text-faint">{categories.length}</span>
         </div>
-      ))}
+        <button onClick={onNew} className="text-[13px] font-semibold text-primary hover:underline">+ Adicionar</button>
+      </div>
+      {categories.length === 0 ? (
+        <p className="px-5 pb-6 pt-2 text-center text-sm text-faint">Nenhuma categoria ainda.</p>
+      ) : (
+        <div className="divide-y divide-line2 px-2 pb-2">
+          {categories.map((cat) => (
+            <div key={cat.id} className="group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary">
+              <div
+                className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg text-xs font-bold"
+                style={{ background: `${cat.color}1f`, color: cat.color }}
+              >
+                {cat.icon?.slice(0, 2) ?? '?'}
+              </div>
+              <div className="flex flex-1 min-w-0 items-center gap-2">
+                <p className="truncate text-sm text-ink2">{cat.name}</p>
+                {cat.isDefault && (
+                  <span className="shrink-0 rounded-full border border-chipline px-2 py-0.5 text-[10px] text-faint">padrão</span>
+                )}
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit(cat)}>Editar</DropdownMenuItem>
+                  {!cat.isDefault && (
+                    <DropdownMenuItem onClick={() => onDelete(cat)} className="text-destructive focus:text-destructive">
+                      Excluir
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

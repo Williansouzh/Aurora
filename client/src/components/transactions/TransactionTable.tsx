@@ -1,21 +1,20 @@
-import { ArrowRight, CheckCircle, Clock, MoreHorizontal, RefreshCw } from 'lucide-react';
-import { Badge } from '../ui/badge';
+import { CheckCircle, Clock, MoreHorizontal, RefreshCw } from 'lucide-react';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { cn, formatCurrency, formatDate } from '../../lib/utils';
-import { recurrenceTypes, transactionStatuses, transactionTypes } from '../../constants/financeOptions';
+import { recurrenceTypes } from '../../constants/financeOptions';
 import { enumLabel } from '../../utils/enumHelpers';
 
-const TYPE_STYLES = {
-  0: { label: 'Receita', cls: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-  1: { label: 'Despesa', cls: 'text-red-700 bg-red-50 border-red-200' },
-  2: { label: 'Transfer.', cls: 'text-indigo-700 bg-indigo-50 border-indigo-200' },
-};
+// Leading 7px type dot — income green, transfer indigo, expense red (Quiet DS)
+const TYPE_DOT = { 0: 'bg-income', 1: 'bg-expense', 2: 'bg-transfer' };
+// Amount color by type — income green, transfer muted, expense ink
+const AMOUNT_CLS = { 0: 'text-income', 1: 'text-foreground', 2: 'text-mut2' };
 
 const STATUS_STYLES = {
-  0: { label: 'Pago', cls: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-  1: { label: 'Pendente', cls: 'text-amber-700 bg-amber-50 border-amber-200' },
-  2: { label: 'Atrasado', cls: 'text-red-700 bg-red-50 border-red-200' },
+  0: { label: 'Paga', cls: 'text-income bg-income-soft' },
+  1: { label: 'Pendente', cls: 'text-pending bg-pending-soft' },
+  2: { label: 'Atrasada', cls: 'text-expense bg-expense-soft' },
+  3: { label: 'Cancelada', cls: 'text-faint bg-muted' },
 };
 
 export function TransactionTable({ transactions, accounts = [], categories = [], compact = false, onEdit, onDelete, onPaid, onPending }) {
@@ -28,32 +27,28 @@ export function TransactionTable({ transactions, accounts = [], categories = [],
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border bg-muted/40">
-            <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Descrição</th>
-            {!compact && <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground hidden md:table-cell">Conta</th>}
-            {!compact && <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground hidden lg:table-cell">Categoria</th>}
-            <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground hidden sm:table-cell">Status</th>
-            <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground hidden sm:table-cell">Data</th>
-            <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground">Valor</th>
+          <tr className="border-b border-border bg-secondary [&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:text-[11px] [&>th]:font-semibold [&>th]:uppercase [&>th]:tracking-[0.1em] [&>th]:text-faint">
+            <th>Descrição</th>
+            {!compact && <th className="hidden md:table-cell">Conta</th>}
+            {!compact && <th className="hidden lg:table-cell">Categoria</th>}
+            <th className="hidden sm:table-cell">Status</th>
+            <th className="hidden sm:table-cell">Data</th>
+            <th className="!text-right">Valor</th>
             {!compact && <th className="w-10" />}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody className="divide-y divide-line2">
           {transactions.map((t) => {
-            const typeStyle = TYPE_STYLES[t.type] ?? TYPE_STYLES[1];
             const statusStyle = STATUS_STYLES[t.status] ?? STATUS_STYLES[1];
             const cat = categoryById[t.categoryId];
-            const isTransfer = t.kind === 'transfer';
+            const isTransfer = t.kind === 'transfer' || t.type === 2;
 
             return (
-              <tr key={t.id} className="group hover:bg-muted/30 transition-colors">
+              <tr key={t.id} className="group transition-colors hover:bg-secondary">
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    {cat?.color && !isTransfer && (
-                      <span className="h-2 w-2 rounded-full shrink-0" style={{ background: cat.color }} />
-                    )}
-                    {isTransfer && <ArrowRight className="h-3.5 w-3.5 text-indigo-500 shrink-0" />}
-                    <span className="font-medium text-foreground truncate max-w-[160px]">{t.description}</span>
+                  <div className="flex items-center gap-2.5">
+                    <span className={cn('h-[7px] w-[7px] shrink-0 rounded-full', TYPE_DOT[t.type] ?? 'bg-mut2')} />
+                    <span className="truncate max-w-[180px] text-foreground">{t.description}</span>
                     {t.isRecurring && (
                       <RefreshCw className="h-3 w-3 text-muted-foreground shrink-0" title={`Recorrente — ${enumLabel(recurrenceTypes, t.recurrenceType)}`} />
                     )}
@@ -72,16 +67,16 @@ export function TransactionTable({ transactions, accounts = [], categories = [],
                   </td>
                 )}
                 <td className="px-4 py-3 hidden sm:table-cell">
-                  <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium', statusStyle.cls)}>
+                  <span className={cn('inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium', statusStyle.cls)}>
                     {statusStyle.label}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-muted-foreground text-xs hidden sm:table-cell">
+                <td className="px-4 py-3 text-mut2 text-xs hidden sm:table-cell">
                   {formatDate(t.date)}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <span className={cn('font-semibold tabular-nums', t.type === 0 ? 'text-emerald-700' : t.type === 2 ? 'text-indigo-700' : 'text-red-700')}>
-                    {t.type === 1 ? '-' : '+'}{formatCurrency(t.amount)}
+                  <span className={cn('font-semibold tabular-nums', AMOUNT_CLS[t.type] ?? 'text-foreground')}>
+                    {t.type === 1 ? '−' : '+'}{formatCurrency(t.amount)}
                   </span>
                 </td>
                 {!compact && (
@@ -101,7 +96,7 @@ export function TransactionTable({ transactions, accounts = [], categories = [],
                         )}
                         {!isTransfer && t.status !== 0 && (
                           <DropdownMenuItem onClick={() => onPaid?.(t.id)} className="gap-2">
-                            <CheckCircle className="h-4 w-4 text-emerald-500" /> Marcar pago
+                            <CheckCircle className="h-4 w-4 text-income" /> Marcar pago
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />

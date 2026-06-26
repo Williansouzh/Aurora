@@ -9,8 +9,8 @@ import { cn } from '../lib/utils';
 const MOOD_EMOJI = { 1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
 const MOOD_LABEL = { 1: 'Muito ruim', 2: 'Ruim', 3: 'Neutro', 4: 'Bom', 5: 'Ótimo' };
 const MOOD_COLOR = {
-  1: 'text-red-500', 2: 'text-orange-500', 3: 'text-slate-500',
-  4: 'text-emerald-500', 5: 'text-emerald-600',
+  1: 'text-expense', 2: 'text-pending', 3: 'text-mut2',
+  4: 'text-income', 5: 'text-income',
 };
 
 export function DiaryPage({ api }) {

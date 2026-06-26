@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Shield, RefreshCw, Save, Search } from 'lucide-react';
+import { RefreshCw, Search, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { cn, getInitials } from '@/lib/utils';
 
 const ROLES = [
   ['User', 1],
@@ -35,6 +35,7 @@ export function AdminPage({ api }) {
   const [detail, setDetail] = useState(null);
   const [search, setSearch] = useState('');
   const [busy, setBusy] = useState(false);
+  const [tab, setTab] = useState('users');
 
   const selectedUser = useMemo(
     () => users.find((user) => user.userId === selectedUserId),
@@ -98,60 +99,114 @@ export function AdminPage({ api }) {
     await loadDetail(selectedUserId);
   };
 
+  const liveModules = modules.filter((m) => m.status === 1 || m.releaseStage === 4).length;
+  const superAdmins = users.filter((u) => u.role === 4).length;
+
+  const TABS = [
+    ['users', 'Usuários'],
+    ['plans', 'Planos'],
+    ['modules', 'Módulos'],
+    ['areas', 'Áreas de vida'],
+    ['audit', 'Log de auditoria'],
+  ];
+
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-            <Shield className="h-6 w-6" /> Super Admin
-          </h1>
-          <p className="text-sm text-muted-foreground">Controle usuários, planos e liberação gradual dos módulos.</p>
+          <h1 className="font-display text-3xl text-foreground">Super Admin</h1>
+          <p className="mt-1 text-sm text-mut2">Controle de acesso · planos · libere módulos um a um.</p>
         </div>
-        <Button onClick={load} disabled={busy} variant="outline">
-          <RefreshCw className="mr-2 h-4 w-4" /> Atualizar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={load} disabled={busy}>
+            <RefreshCw className="h-4 w-4" /> Atualizar
+          </Button>
+          <Button><UserPlus className="h-4 w-4" /> Convidar usuário</Button>
+        </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Usuários</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-2">
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome ou email" />
-              <Button size="icon" variant="outline" onClick={load}><Search className="h-4 w-4" /></Button>
-            </div>
+      {/* KPI cards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <Kpi label="Total de usuários" value={users.length} />
+        <Kpi label="Planos ativos" value={plans.length} />
+        <Kpi label="Módulos no ar" value={`${liveModules}/${modules.length}`} />
+        <Kpi label="Super admins" value={superAdmins} />
+      </div>
 
-            <div className="space-y-2">
-              {users.map((user) => (
-                <button
-                  key={user.userId}
-                  onClick={() => setSelectedUserId(user.userId)}
-                  className={`w-full rounded-md border p-3 text-left transition-colors ${
-                    selectedUserId === user.userId ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted'
-                  }`}
-                >
-                  <div className="font-medium">{user.name}</div>
-                  <div className="text-xs text-muted-foreground">{user.email}</div>
-                  <div className="mt-2 flex gap-2">
-                    <Badge variant="secondary">{user.planName ?? 'Sem plano'}</Badge>
-                    <Badge variant="outline">{roleName(user.role)}</Badge>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Tab bar */}
+      <div className="flex gap-1 border-b border-border">
+        {TABS.map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={cn(
+              'px-3 py-3 text-[13.5px] font-semibold transition-colors',
+              tab === key ? 'border-b-2 border-primary text-primary' : 'text-mut2 hover:text-foreground'
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Configuração do usuário</CardTitle>
-            </CardHeader>
-            <CardContent>
+      {tab === 'users' && (
+        <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+          {/* Users table */}
+          <div className="rounded-[14px] border border-border bg-card">
+            <div className="flex items-center gap-2 border-b border-border p-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
+                <Input value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()} placeholder="Buscar por nome ou email" className="pl-9" />
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-secondary [&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:text-[11px] [&>th]:font-semibold [&>th]:uppercase [&>th]:tracking-[0.1em] [&>th]:text-faint">
+                    <th>Usuário</th>
+                    <th className="hidden sm:table-cell">Plano</th>
+                    <th>Função</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line2">
+                  {users.map((user) => (
+                    <tr
+                      key={user.userId}
+                      onClick={() => setSelectedUserId(user.userId)}
+                      className={cn('cursor-pointer transition-colors', selectedUserId === user.userId ? 'bg-accent' : 'hover:bg-secondary')}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-accent text-[11px] text-primary">{getInitials(user.name)}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-ink2">{user.name}</p>
+                            <p className="truncate text-xs text-mut2">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-mut2">{user.planName ?? '—'}</td>
+                      <td className="px-4 py-3 text-mut2">{roleName(user.role)}</td>
+                      <td className="px-4 py-3"><StatusBadge status={user.status} /></td>
+                    </tr>
+                  ))}
+                  {users.length === 0 && (
+                    <tr><td colSpan={4} className="px-4 py-8 text-center text-sm text-faint">{busy ? 'Carregando…' : 'Nenhum usuário.'}</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* User detail panel */}
+          <div className="space-y-4">
+            <div className="rounded-[14px] border border-border bg-card p-5">
+              <p className="text-overline mb-3">Configuração</p>
               {selectedUser ? (
-                <div className="grid gap-3 md:grid-cols-3">
+                <div className="space-y-3">
                   <Field label="Plano">
                     <Select value={selectedUser.planKey ?? ''} onValueChange={updatePlan}>
                       <SelectTrigger><SelectValue placeholder="Plano" /></SelectTrigger>
@@ -160,99 +215,120 @@ export function AdminPage({ api }) {
                       </SelectContent>
                     </Select>
                   </Field>
-                  <Field label="Role">
-                    <Select value={String(selectedUser.role)} onValueChange={(value) => updateRole(Number(value))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {ROLES.map(([label, value]) => <SelectItem key={value} value={String(value)}>{label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                  <Field label="Status">
-                    <Select value={String(selectedUser.status)} onValueChange={(value) => updateStatus(Number(value))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {STATUSES.map(([label, value]) => <SelectItem key={value} value={String(value)}>{label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </Field>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Função">
+                      <Select value={String(selectedUser.role)} onValueChange={(value) => updateRole(Number(value))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {ROLES.map(([label, value]) => <SelectItem key={value} value={String(value)}>{label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Status">
+                      <Select value={String(selectedUser.status)} onValueChange={(value) => updateStatus(Number(value))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {STATUSES.map(([label, value]) => <SelectItem key={value} value={String(value)}>{label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Selecione um usuário.</p>
+                <p className="text-sm text-faint">Selecione um usuário.</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Módulos do usuário</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <div className="min-w-[760px] space-y-2">
-                  {(detail?.modules ?? modules).map((module) => {
-                    const override = detail?.overrides?.find((item) => item.moduleKey === module.key);
-                    return (
-                      <div key={module.key} className="grid grid-cols-[1.4fr_0.8fr_0.8fr_1fr_auto] items-center gap-3 rounded-md border p-3">
-                        <div>
-                          <div className="font-medium">{module.productName ?? module.name}</div>
-                          <div className="text-xs text-muted-foreground">{module.key}</div>
-                        </div>
-                        <Badge variant={module.isAllowed ? 'default' : 'secondary'}>
-                          {module.isAllowed ? (module.isReadonly ? 'Somente leitura' : 'Liberado') : 'Bloqueado'}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">{module.reason ?? module.releaseStage}</span>
-                        <Select
-                          value={override ? String(override.access) : ''}
-                          onValueChange={(value) => setOverride(module.key, Number(value))}
-                        >
-                          <SelectTrigger><SelectValue placeholder="Override" /></SelectTrigger>
-                          <SelectContent>
-                            {OVERRIDES.map(([label, value]) => <SelectItem key={value} value={String(value)}>{label}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <Button variant="ghost" size="sm" onClick={() => removeOverride(module.key)} disabled={!override}>
-                          Limpar
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Planos e módulos globais</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3 md:grid-cols-2">
-              {plans.map((plan) => (
-                <div key={plan.key} className="rounded-md border p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <div className="font-medium">{plan.name}</div>
-                      <div className="text-xs text-muted-foreground">{plan.key}</div>
+            {/* Module access matrix */}
+            <div className="rounded-[14px] border border-border bg-card p-5">
+              <p className="text-overline mb-3">Acesso a módulos</p>
+              <div className="space-y-1.5">
+                {(detail?.modules ?? modules).map((module) => {
+                  const override = detail?.overrides?.find((item) => item.moduleKey === module.key);
+                  const final = module.isAllowed ? (override ? 'Beta ⚑' : module.isReadonly ? 'Leitura' : 'Liberado') : 'Bloqueado';
+                  const finalCls = module.isAllowed
+                    ? (override ? 'text-pending bg-pending-soft' : 'text-income bg-income-soft')
+                    : 'text-faint bg-muted';
+                  return (
+                    <div key={module.key} className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-secondary">
+                      <span className="flex-1 truncate text-sm text-ink2">{module.productName ?? module.name}</span>
+                      <span className={cn('shrink-0 rounded-md px-2 py-0.5 text-[11px] font-medium', finalCls)}>{final}</span>
+                      <Select value={override ? String(override.access) : ''} onValueChange={(value) => setOverride(module.key, Number(value))}>
+                        <SelectTrigger className="h-7 w-[104px] text-xs"><SelectValue placeholder="Override" /></SelectTrigger>
+                        <SelectContent>
+                          {OVERRIDES.map(([label, value]) => <SelectItem key={value} value={String(value)}>{label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => removeOverride(module.key)} disabled={!override}>
+                        Limpar
+                      </Button>
                     </div>
-                    <Badge variant="outline">{plan.moduleKeys?.length ?? 0} módulos</Badge>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {plan.moduleKeys?.map((key) => <Badge key={key} variant="secondary">{key}</Badge>)}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {tab === 'plans' && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {plans.map((plan) => (
+            <div key={plan.key} className="rounded-[14px] border border-border bg-card p-5">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-[15px] font-semibold text-ink2">{plan.name}</p>
+                  <p className="text-xs text-faint">{plan.key}</p>
+                </div>
+                <span className="rounded-full border border-chipline px-2.5 py-0.5 text-xs text-mut2">{plan.moduleKeys?.length ?? 0} módulos</span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {plan.moduleKeys?.map((key) => (
+                  <span key={key} className="rounded-md bg-secondary px-2 py-0.5 text-[11px] text-mut2">{key}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {(tab === 'modules' || tab === 'areas' || tab === 'audit') && (
+        <div className="rounded-[14px] border border-dashed border-chipline bg-card p-12 text-center">
+          <p className="font-display text-xl text-foreground">Em breve</p>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-faint">
+            Esta aba ainda será construída. O catálogo de módulos, áreas de vida e o log de auditoria entram nas próximas iterações.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
+function Kpi({ label, value }) {
+  return (
+    <div className="rounded-[14px] border border-border bg-card p-5">
+      <p className="text-xs font-medium text-mut2">{label}</p>
+      <p className="mt-1 font-numeral text-[30px] leading-none text-foreground">{value}</p>
+    </div>
+  );
+}
+
+const STATUS_BADGE = {
+  1: { label: 'Ativo', cls: 'text-income border-income/40' },
+  2: { label: 'Suspenso', cls: 'text-expense border-expense/40' },
+  3: { label: 'Convidado', cls: 'text-pending border-pending/40' },
+  4: { label: 'Removido', cls: 'text-faint border-chipline' },
+};
+
+function StatusBadge({ status }) {
+  const s = STATUS_BADGE[status] ?? STATUS_BADGE[1];
+  return <span className={cn('inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium', s.cls)}>{s.label}</span>;
+}
+
 function Field({ label, children }) {
   return (
-    <label className="space-y-1">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+    <label className="block space-y-1">
+      <span className="text-xs font-medium text-mut2">{label}</span>
       {children}
     </label>
   );

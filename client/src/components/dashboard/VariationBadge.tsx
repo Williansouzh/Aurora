@@ -12,7 +12,7 @@ export function VariationBadge({ value = 0, invert = false }) {
   return (
     <span className={cn(
       'inline-flex items-center gap-1 text-xs font-medium',
-      good ? 'text-emerald-600' : bad ? 'text-red-600' : 'text-muted-foreground'
+      good ? 'text-income' : bad ? 'text-expense' : 'text-muted-foreground'
     )}>
       {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
       {Math.abs(numeric).toFixed(1)}% vs mês ant.

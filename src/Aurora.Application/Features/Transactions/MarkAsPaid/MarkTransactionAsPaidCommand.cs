@@ -7,6 +7,7 @@ using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
 using FluentValidation;
 using MediatR;
+using ValidationException = Aurora.Domain.Exceptions.ValidationException;
 
 namespace Aurora.Application.Features.Transactions.MarkAsPaid;
 

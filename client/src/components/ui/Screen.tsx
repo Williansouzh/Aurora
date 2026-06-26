@@ -2,11 +2,14 @@ import { AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from './Skeleton';
 
-export function Screen({ title, actions, loading, loadingFallback, error, children }) {
+export function Screen({ title, subtitle, actions, loading, loadingFallback, error, children }) {
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-foreground">{title}</h1>
+          {subtitle && <p className="mt-1 text-sm text-mut2">{subtitle}</p>}
+        </div>
         {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
       </div>
 

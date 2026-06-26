@@ -162,7 +162,7 @@ function PhotoCard({ photo, onDelete }) {
               {new Date(photo.date).toLocaleDateString('pt-BR')}
             </span>
             <button
-              className="text-white/70 hover:text-red-400"
+              className="text-white/70 hover:text-expense"
               onClick={onDelete}
             >
               <Trash2 className="h-3.5 w-3.5" />

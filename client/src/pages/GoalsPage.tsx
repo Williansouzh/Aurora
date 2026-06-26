@@ -20,10 +20,10 @@ const AREA_LABELS = {
 };
 const STATUS_LABELS = { 1:'Ativa',2:'Pausada',3:'Concluída',4:'Cancelada' };
 const STATUS_COLORS = {
-  1:'bg-emerald-100 text-emerald-700',
-  2:'bg-amber-100 text-amber-700',
-  3:'bg-violet-100 text-violet-700',
-  4:'bg-slate-100 text-slate-500',
+  1:'bg-income-soft text-income',
+  2:'bg-pending-soft text-pending',
+  3:'bg-accent text-primary',
+  4:'bg-secondary text-mut2',
 };
 const METRIC_LABELS = { 0:'Sem métrica',1:'Numérico',2:'Percentual' };
 
@@ -97,7 +97,7 @@ export function GoalsPage({ api }) {
 
 function GoalCard({ goal, onOpen, onDelete }) {
   const progress = goal.progress ?? 0;
-  const progressColor = progress >= 100 ? 'bg-violet-500' : progress >= 60 ? 'bg-emerald-500' : 'bg-blue-500';
+  const progressColor = progress >= 100 ? 'bg-accent0' : progress >= 60 ? 'bg-income-soft0' : 'bg-accent0';
 
   return (
     <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={onOpen}>
@@ -222,7 +222,7 @@ function GoalDetailModal({ api, goal, onClose, onUpdated }) {
                   <button onClick={() => completeMilestone(m.id, m.isCompleted)}>
                     <div className={cn(
                       'w-4 h-4 rounded border-2 flex items-center justify-center transition-colors',
-                      m.isCompleted ? 'bg-emerald-500 border-emerald-500' : 'border-muted-foreground'
+                      m.isCompleted ? 'bg-income-soft0 border-income/40' : 'border-muted-foreground'
                     )}>
                       {m.isCompleted && <span className="text-white text-[10px]">✓</span>}
                     </div>
@@ -252,7 +252,7 @@ function GoalDetailModal({ api, goal, onClose, onUpdated }) {
             {goal.status === 1 && <Button size="sm" variant="outline" onClick={() => changeStatus('pause')}>Pausar</Button>}
             {goal.status === 2 && <Button size="sm" variant="outline" onClick={() => changeStatus('resume')}>Retomar</Button>}
             {goal.status !== 3 && (
-              <Button size="sm" className="bg-violet-600 hover:bg-violet-700" onClick={() => changeStatus('complete')}>
+              <Button size="sm" className="bg-primary hover:bg-primary" onClick={() => changeStatus('complete')}>
                 <Award className="h-3.5 w-3.5 mr-1" /> Concluir
               </Button>
             )}

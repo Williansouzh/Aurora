@@ -104,9 +104,9 @@ export function FinancingsPage({ api }) {
                 key={f.id}
                 type="button"
                 onClick={() => navigate(`/financings/${f.id}`)}
-                className="w-full flex items-center gap-4 rounded-lg border p-4 text-left hover:bg-muted/40 transition-colors group"
+                className="group w-full flex items-center gap-4 rounded-lg border border-border p-4 text-left transition-colors hover:bg-secondary"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent text-primary">
                   <Building2 className="h-5 w-5" />
                 </div>
                 <div className="flex-1 min-w-0 space-y-1">
@@ -123,7 +123,7 @@ export function FinancingsPage({ api }) {
                     <span>{formatCurrency(f.remainingBalance)} restantes</span>
                     <span>{f.paidInstallments}/{f.termMonths} parcelas</span>
                   </div>
-                  <Progress value={f.progressPercentage} className="h-1.5 mt-1" indicatorClassName="bg-indigo-500" />
+                  <Progress value={f.progressPercentage} className="h-1.5 mt-1" indicatorClassName="bg-primary" />
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />
               </button>
@@ -136,7 +136,7 @@ export function FinancingsPage({ api }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <TrendingDown className="h-4 w-4 text-indigo-500" />
+            <TrendingDown className="h-4 w-4 text-primary" />
             Comparar SAC vs Price
           </CardTitle>
         </CardHeader>
@@ -191,14 +191,12 @@ export function FinancingsPage({ api }) {
 
 function MetricCard({ label, value, tone }) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className={`text-lg font-bold tabular-nums mt-0.5 ${tone === 'bad' ? 'text-destructive' : tone === 'good' ? 'text-emerald-600' : ''}`}>
-          {value}
-        </p>
-      </CardContent>
-    </Card>
+    <div className="rounded-[14px] border border-border bg-card p-5">
+      <p className="text-xs font-medium text-mut2">{label}</p>
+      <p className={`mt-1 font-numeral text-[28px] leading-none ${tone === 'bad' ? 'text-expense' : tone === 'good' ? 'text-income' : 'text-foreground'}`}>
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -207,13 +205,13 @@ function ComparisonResult({ comparison }) {
     <div className="grid gap-4 sm:grid-cols-3 mt-2">
       <ComparisonCard title="SAC" simulation={comparison.sac} />
       <ComparisonCard title="Price" simulation={comparison.price} />
-      <Card className="bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800">
+      <Card className="border-income/30 bg-income-soft">
         <CardContent className="p-4 space-y-1">
-          <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Economia no SAC</p>
-          <p className="text-xl font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
+          <p className="text-xs font-semibold text-income">Economia no SAC</p>
+          <p className="font-numeral text-2xl text-income">
             {formatCurrency(comparison.sacInterestSavings)}
           </p>
-          <p className="text-xs text-emerald-600 dark:text-emerald-500">
+          <p className="text-xs text-income/80">
             {comparison.sacTotalSavingsPercentage}% do total pago no Price
           </p>
         </CardContent>

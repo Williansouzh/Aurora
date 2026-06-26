@@ -38,24 +38,55 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        faint: 'hsl(var(--faint))',
+        ink2: 'hsl(var(--ink2))',
+        mut2: 'hsl(var(--mut2))',
+        line2: 'hsl(var(--line2))',
+        chipline: 'hsl(var(--chipline))',
+        track: 'hsl(var(--track))',
+        income: {
+          DEFAULT: 'hsl(var(--income))',
+          soft: 'hsl(var(--income-soft))',
+        },
+        expense: {
+          DEFAULT: 'hsl(var(--expense))',
+          soft: 'hsl(var(--expense-soft))',
+        },
+        pending: {
+          DEFAULT: 'hsl(var(--pending))',
+          soft: 'hsl(var(--pending-soft))',
+        },
+        transfer: 'hsl(var(--transfer))',
+        // Quiet semantic palette (raw hex, mirrors CSS tokens)
         aurora: {
-          income: '#10B981',
-          expense: '#EF4444',
-          pending: '#F59E0B',
-          transfer: '#6366F1',
+          income: '#6f8f6a',
+          expense: '#c1796a',
+          pending: '#c1976a',
+          transfer: '#3d4eac',
+        },
+        // Account "color tags" — fixed extra palette (README)
+        tag: {
+          purple: '#7b5cd6',
+          green: '#6f8f6a',
+          indigo: '#3d4eac',
+          amber: '#c1976a',
+          red: '#c1796a',
         },
       },
       borderRadius: {
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 3px)',
+        sm: 'calc(var(--radius) - 6px)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Hanken Grotesk', 'system-ui', 'sans-serif'],
+        serif: ['Newsreader', 'Georgia', 'serif'],
+        display: ['Newsreader', 'Georgia', 'serif'],
       },
       boxShadow: {
-        card: '0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07)',
-        'card-hover': '0 4px 12px 0 rgb(0 0 0 / 0.10)',
+        card: '0 1px 2px 0 rgb(38 36 31 / 0.04), 0 1px 3px 0 rgb(38 36 31 / 0.05)',
+        'card-hover': '0 6px 20px -4px rgb(38 36 31 / 0.10)',
+        fab: '0 4px 14px rgba(61, 78, 172, 0.35)',
       },
       keyframes: {
         'accordion-down': {

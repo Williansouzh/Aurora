@@ -18,15 +18,15 @@ const AREA_LABELS = {
 const DIFFICULTY_LABELS = { 1: 'Fácil', 2: 'Médio', 3: 'Difícil' };
 const FREQ_LABELS = { 1: 'Diário', 2: 'Semanal' };
 const AREA_COLORS = {
-  1: 'bg-emerald-100 text-emerald-700',
-  2: 'bg-blue-100 text-blue-700',
-  3: 'bg-violet-100 text-violet-700',
-  4: 'bg-amber-100 text-amber-700',
-  5: 'bg-pink-100 text-pink-700',
-  6: 'bg-orange-100 text-orange-700',
-  7: 'bg-cyan-100 text-cyan-700',
-  8: 'bg-indigo-100 text-indigo-700',
-  9: 'bg-slate-100 text-slate-700',
+  1: 'bg-income-soft text-income',
+  2: 'bg-accent text-primary',
+  3: 'bg-accent text-primary',
+  4: 'bg-pending-soft text-pending',
+  5: 'bg-accent text-primary',
+  6: 'bg-pending-soft text-pending',
+  7: 'bg-accent text-primary',
+  8: 'bg-accent text-primary',
+  9: 'bg-secondary text-mut2',
 };
 
 export function HabitsPage({ api }) {
@@ -42,7 +42,7 @@ export function HabitsPage({ api }) {
   const remove = async (id) => { await api.delete(`/api/habits/${id}`); reload(); };
 
   if (habits.loading) return <HabitsSkeleton />;
-  if (habits.error) return <p className="text-red-600 text-sm">{habits.error}</p>;
+  if (habits.error) return <p className="text-expense text-sm">{habits.error}</p>;
 
   const list = habits.data ?? [];
 
@@ -134,8 +134,8 @@ function HabitCard({ habit, onCheckIn, onPause, onResume, onDelete }) {
       <CardContent>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
-            <StreakBadge label="Atual" value={habit.currentStreak} icon={Flame} color="text-orange-500" />
-            <StreakBadge label="Recorde" value={habit.bestStreak} icon={Award} color="text-violet-500" />
+            <StreakBadge label="Atual" value={habit.currentStreak} icon={Flame} color="text-pending" />
+            <StreakBadge label="Recorde" value={habit.bestStreak} icon={Award} color="text-primary" />
           </div>
           <Badge variant="outline" className="text-[11px]">
             +{habit.xpReward} XP
@@ -329,7 +329,7 @@ function CheckInModal({ api, habit, onClose, onDone }) {
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex gap-2 pt-1">
             <Button
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+              className="flex-1 bg-income hover:bg-income"
               onClick={() => submit(1)}
               disabled={saving}
             >

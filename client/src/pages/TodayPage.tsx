@@ -12,9 +12,9 @@ import { cn, formatDate } from '../lib/utils';
 
 const PRIORITY_LABEL = { 1: 'Baixa', 2: 'Média', 3: 'Alta' };
 const PRIORITY_COLOR = {
-  1: 'text-slate-500',
-  2: 'text-amber-500',
-  3: 'text-red-500',
+  1: 'text-mut2',
+  2: 'text-pending',
+  3: 'text-expense',
 };
 
 export function TodayPage({ api }) {
@@ -41,7 +41,7 @@ export function TodayPage({ api }) {
   };
 
   if (tasks.loading) return <TodaySkeleton />;
-  if (tasks.error) return <p className="text-red-600 text-sm">{tasks.error}</p>;
+  if (tasks.error) return <p className="text-expense text-sm">{tasks.error}</p>;
 
   const { pending = [], completed = [], overdue = [] } = tasks.data ?? {};
 
@@ -63,9 +63,9 @@ export function TodayPage({ api }) {
       </div>
 
       {overdue.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+        <Card className="border-pending/40 bg-pending-soft dark:bg-pending/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-amber-700 flex items-center gap-2">
+            <CardTitle className="text-sm font-semibold text-pending flex items-center gap-2">
               <Clock className="h-4 w-4" />
               Pendentes de dias anteriores ({overdue.length})
             </CardTitle>
@@ -121,7 +121,7 @@ function TaskItem({ task, onComplete, onReopen, onDelete, muted }) {
         onClick={() => done ? onReopen(task.id) : onComplete(task.id)}
       >
         {done
-          ? <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          ? <CheckCircle2 className="h-4 w-4 text-income" />
           : <Circle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />}
       </button>
       <div className="flex-1 min-w-0">

@@ -10,7 +10,7 @@ export function BudgetBar({ spentAmount = 0, limitAmount = 0 }) {
       <div
         className={cn(
           'h-full rounded-full transition-all',
-          usage > 100 ? 'bg-red-500' : usage >= 70 ? 'bg-amber-500' : 'bg-emerald-500'
+          usage > 100 ? 'bg-expense-soft0' : usage >= 70 ? 'bg-pending-soft0' : 'bg-income-soft0'
         )}
         style={{ width: `${cappedUsage}%` }}
       />

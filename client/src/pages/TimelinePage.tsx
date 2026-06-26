@@ -26,16 +26,16 @@ const EVENT_TYPE_ICONS = {
 };
 
 const EVENT_TYPE_COLORS = {
-  1: 'bg-orange-100 text-orange-700',
-  2: 'bg-emerald-100 text-emerald-700',
-  3: 'bg-blue-100 text-blue-700',
-  4: 'bg-violet-100 text-violet-700',
-  5: 'bg-pink-100 text-pink-700',
-  6: 'bg-cyan-100 text-cyan-700',
-  7: 'bg-amber-100 text-amber-700',
-  8: 'bg-indigo-100 text-indigo-700',
-  9: 'bg-yellow-100 text-yellow-700',
-  10: 'bg-slate-100 text-slate-700',
+  1: 'bg-pending-soft text-pending',
+  2: 'bg-income-soft text-income',
+  3: 'bg-accent text-primary',
+  4: 'bg-accent text-primary',
+  5: 'bg-accent text-primary',
+  6: 'bg-accent text-primary',
+  7: 'bg-pending-soft text-pending',
+  8: 'bg-accent text-primary',
+  9: 'bg-pending-soft text-pending',
+  10: 'bg-secondary text-mut2',
 };
 
 const AREA_LABELS = {
@@ -146,7 +146,7 @@ export function TimelinePage({ api }) {
 
 function TimelineEventCard({ event, onHide, onFavorite }) {
   const Icon = EVENT_TYPE_ICONS[event.type] ?? Zap;
-  const colorClass = EVENT_TYPE_COLORS[event.type] ?? 'bg-slate-100 text-slate-700';
+  const colorClass = EVENT_TYPE_COLORS[event.type] ?? 'bg-secondary text-mut2';
 
   return (
     <Card className="hover:shadow-sm transition-shadow">
@@ -160,7 +160,7 @@ function TimelineEventCard({ event, onHide, onFavorite }) {
               <p className="text-sm font-medium text-foreground">{event.title}</p>
               <div className="flex items-center gap-1 shrink-0">
                 <button
-                  className={cn('p-1 rounded transition-colors', event.isFavorite ? 'text-red-500' : 'text-muted-foreground hover:text-red-400')}
+                  className={cn('p-1 rounded transition-colors', event.isFavorite ? 'text-expense' : 'text-muted-foreground hover:text-expense')}
                   onClick={onFavorite}
                   title={event.isFavorite ? 'Remover dos favoritos' : 'Favoritar'}
                 >
