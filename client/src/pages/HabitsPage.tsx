@@ -1,5 +1,5 @@
 import { Award, CheckCircle2, Flame, Pause, Play, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -8,6 +8,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select';
 import { Skeleton } from '../components/ui/Skeleton';
+import { Fab } from '../components/ui/Fab';
 import { useData } from '../hooks/useData';
 import { cn } from '../lib/utils';
 
@@ -37,6 +38,25 @@ export function HabitsPage({ api }) {
   const habits = useData(() => api.get(`/api/habits?activeOnly=${!showAll}`), [showAll]);
   const reload = () => habits.reload();
 
+  // Weekly grid — fetch each active habit's check-in calendar for the current month.
+  const [weekly, setWeekly] = useState({});
+  useEffect(() => {
+    const active = (habits.data ?? []).filter((h) => h.isActive);
+    if (!active.length) { setWeekly({}); return; }
+    let cancelled = false;
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth() + 1;
+    Promise.all(
+      active.map((h) =>
+        api.get(`/api/habits/${h.id}/stats?year=${y}&month=${m}`)
+          .then((s) => [h.id, new Set((s.calendar ?? []).filter((d) => d.status === 1).map((d) => (d.date ?? '').slice(0, 10)))])
+          .catch(() => [h.id, new Set()])
+      )
+    ).then((entries) => { if (!cancelled) setWeekly(Object.fromEntries(entries)); });
+    return () => { cancelled = true; };
+  }, [habits.data]);
+
   const pause = async (id) => { await api.patch(`/api/habits/${id}/pause`); reload(); };
   const resume = async (id) => { await api.patch(`/api/habits/${id}/resume`); reload(); };
   const remove = async (id) => { await api.delete(`/api/habits/${id}`); reload(); };
@@ -48,22 +68,31 @@ export function HabitsPage({ api }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-            <Flame className="h-5 w-5 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Rituais</h1>
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-foreground">Rituais</h1>
+          <p className="mt-1 text-sm text-mut2">Pequenos hábitos, repetidos — sua consistência ao longo do tempo.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowAll((v) => !v)}>
+          <Button variant="outline" onClick={() => setShowAll((v) => !v)}>
             {showAll ? 'Só ativos' : 'Ver todos'}
           </Button>
-          <Button size="sm" onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Novo hábito
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4" /> Novo hábito
           </Button>
         </div>
       </div>
+
+      {list.length > 0 && (
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <HabitKpi label="Rituais ativos" value={list.filter((h) => h.isActive).length} />
+          <HabitKpi label="Em sequência" value={list.filter((h) => h.currentStreak > 0).length} />
+          <HabitKpi label="Maior recorde" value={Math.max(0, ...list.map((h) => h.bestStreak ?? 0))} />
+          <HabitKpi label="XP por dia" value={list.filter((h) => h.isActive).reduce((s, h) => s + (h.xpReward ?? 0), 0)} />
+        </div>
+      )}
+
+      <WeeklyGrid habits={list.filter((h) => h.isActive)} weekly={weekly} />
 
       {list.length === 0 && (
         <EmptyHabitsState onAdd={() => setShowForm(true)} />
@@ -94,6 +123,8 @@ export function HabitsPage({ api }) {
           onDone={reload}
         />
       )}
+
+      <Fab onClick={() => setShowForm(true)} label="Novo hábito" />
     </div>
   );
 }
@@ -149,6 +180,51 @@ function HabitCard({ habit, onCheckIn, onPause, onResume, onDelete }) {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+const DOW = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+function WeeklyGrid({ habits, weekly }) {
+  if (!habits.length) return null;
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - (6 - i));
+    return d;
+  });
+
+  return (
+    <div className="rounded-[14px] border border-border bg-card p-5">
+      <p className="text-overline mb-4">Semana</p>
+      <div className="space-y-2.5">
+        <div className="grid grid-cols-[1fr_repeat(7,22px)] items-center gap-2">
+          <span />
+          {last7.map((d, i) => (
+            <span key={i} className="text-center text-[10px] text-faint">{DOW[d.getDay()]}</span>
+          ))}
+        </div>
+        {habits.map((h) => (
+          <div key={h.id} className="grid grid-cols-[1fr_repeat(7,22px)] items-center gap-2">
+            <span className="truncate pr-2 text-sm text-ink2">{h.name}</span>
+            {last7.map((d, i) => {
+              const done = weekly[h.id]?.has(isoDay(d));
+              return <span key={i} className={cn('h-[22px] w-[22px] rounded-md', done ? 'bg-primary' : 'bg-track')} />;
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HabitKpi({ label, value }) {
+  return (
+    <div className="rounded-[14px] border border-border bg-card p-5">
+      <p className="text-xs font-medium text-mut2">{label}</p>
+      <p className="mt-1 font-numeral text-[30px] leading-none text-foreground">{value}</p>
+    </div>
   );
 }
 

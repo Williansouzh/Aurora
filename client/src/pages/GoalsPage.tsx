@@ -18,6 +18,11 @@ const AREA_LABELS = {
   1:'Saúde',2:'Trabalho',3:'Estudos',4:'Dinheiro',
   5:'Relacionamentos',6:'Casa',7:'Lazer',8:'Espiritualidade',9:'Projetos',
 };
+// Muted, Quiet-harmonious per-area palette (goal progress bars + dots)
+const AREA_COLORS = {
+  1:'#6f8f6a', 2:'#3d4eac', 3:'#7b5cd6', 4:'#c1976a', 5:'#c1796a',
+  6:'#5b8a8a', 7:'#b08968', 8:'#8a7fb0', 9:'#6b7280',
+};
 const STATUS_LABELS = { 1:'Ativa',2:'Pausada',3:'Concluída',4:'Cancelada' };
 const STATUS_COLORS = {
   1:'bg-income-soft text-income',
@@ -29,6 +34,7 @@ const METRIC_LABELS = { 0:'Sem métrica',1:'Numérico',2:'Percentual' };
 
 export function GoalsPage({ api }) {
   const [statusFilter, setStatusFilter] = useState('1');
+  const [areaFilter, setAreaFilter] = useState('_all');
   const [showForm, setShowForm] = useState(false);
   const [detail, setDetail] = useState(null);
 
@@ -42,20 +48,20 @@ export function GoalsPage({ api }) {
 
   if (goals.loading) return <GoalsSkeleton />;
 
-  const list = goals.data ?? [];
+  const all = goals.data ?? [];
+  const areas = [...new Set(all.map((g) => g.area))];
+  const list = areaFilter === '_all' ? all : all.filter((g) => String(g.area) === areaFilter);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-            <Target className="h-5 w-5 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">Minha Jornada</h1>
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-foreground">Minha Jornada</h1>
+          <p className="mt-1 text-sm text-mut2">Seus objetivos de vida, por área — e o quanto você já caminhou.</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-36 h-8 text-sm"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-36 h-9 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="_all">Todas</SelectItem>
               <SelectItem value="1">Ativas</SelectItem>
@@ -63,11 +69,27 @@ export function GoalsPage({ api }) {
               <SelectItem value="3">Concluídas</SelectItem>
             </SelectContent>
           </Select>
-          <Button size="sm" onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Nova meta
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4" /> Nova meta
           </Button>
         </div>
       </div>
+
+      {/* Area filter chips */}
+      {areas.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          <AreaChip label="Todas" active={areaFilter === '_all'} onClick={() => setAreaFilter('_all')} />
+          {areas.map((a) => (
+            <AreaChip
+              key={a}
+              label={AREA_LABELS[a]}
+              color={AREA_COLORS[a]}
+              active={areaFilter === String(a)}
+              onClick={() => setAreaFilter(String(a))}
+            />
+          ))}
+        </div>
+      )}
 
       {list.length === 0 && <EmptyGoals onAdd={() => setShowForm(true)} />}
 
@@ -95,54 +117,67 @@ export function GoalsPage({ api }) {
   );
 }
 
+function AreaChip({ label, color, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium transition-colors',
+        active ? 'border-transparent bg-foreground text-background' : 'border-chipline text-mut2 hover:text-foreground'
+      )}
+    >
+      {color && <span className="h-2 w-2 rounded-full" style={{ background: color }} />}
+      {label}
+    </button>
+  );
+}
+
 function GoalCard({ goal, onOpen, onDelete }) {
-  const progress = goal.progress ?? 0;
-  const progressColor = progress >= 100 ? 'bg-accent0' : progress >= 60 ? 'bg-income-soft0' : 'bg-accent0';
+  const progress = Math.min(100, goal.progress ?? 0);
+  const color = AREA_COLORS[goal.area] ?? '#3d4eac';
+  const doneMs = goal.milestones.filter((m) => m.isCompleted).length;
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={onOpen}>
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0 pr-2">
-            <CardTitle className="text-base font-semibold truncate">{goal.title}</CardTitle>
-            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-              <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded-full', STATUS_COLORS[goal.status])}>
-                {STATUS_LABELS[goal.status]}
-              </span>
-              <span className="text-[11px] text-muted-foreground">{AREA_LABELS[goal.area]}</span>
-              {goal.targetDate && (
-                <span className="text-[11px] text-muted-foreground">
-                  até {new Date(goal.targetDate).toLocaleDateString('pt-BR')}
-                </span>
-              )}
-            </div>
+    <div
+      onClick={onOpen}
+      className="group cursor-pointer rounded-[14px] border border-border bg-card p-5 transition-shadow hover:shadow-card-hover"
+    >
+      <div className="flex items-start justify-between">
+        <div className="min-w-0 pr-2">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
+            <span className="text-overline" style={{ color }}>{AREA_LABELS[goal.area]}</span>
+            {goal.targetDate && (
+              <span className="text-[11px] text-faint">· até {new Date(goal.targetDate).toLocaleDateString('pt-BR')}</span>
+            )}
           </div>
-          <button
-            className="text-muted-foreground hover:text-destructive p-1 shrink-0"
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+          <p className="mt-2 truncate text-[17px] font-semibold text-ink2">{goal.title}</p>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Progresso</span>
-            <span className="font-semibold tabular-nums">{progress.toFixed(0)}%</span>
-          </div>
-          <Progress value={progress} indicatorClassName={progressColor} className="h-2" />
+        <button
+          className="p-1 text-faint opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      <div className="mt-4 space-y-1.5">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-mut2">Progresso</span>
+          <span className="font-numeral text-base text-foreground">{progress.toFixed(0)}%</span>
         </div>
+        <div className="h-2 overflow-hidden rounded-full bg-track">
+          <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: color }} />
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center gap-3 text-xs text-faint">
+        <span className={cn('rounded-full px-2 py-0.5 font-medium', STATUS_COLORS[goal.status])}>{STATUS_LABELS[goal.status]}</span>
         {goal.milestones.length > 0 && (
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Flag className="h-3 w-3" />
-            <span>
-              {goal.milestones.filter((m) => m.isCompleted).length}/{goal.milestones.length} milestones
-            </span>
-          </div>
+          <span className="flex items-center gap-1.5"><Flag className="h-3 w-3" /> {doneMs}/{goal.milestones.length} marcos</span>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -222,7 +257,7 @@ function GoalDetailModal({ api, goal, onClose, onUpdated }) {
                   <button onClick={() => completeMilestone(m.id, m.isCompleted)}>
                     <div className={cn(
                       'w-4 h-4 rounded border-2 flex items-center justify-center transition-colors',
-                      m.isCompleted ? 'bg-income-soft0 border-income/40' : 'border-muted-foreground'
+                      m.isCompleted ? 'bg-income border-income/40' : 'border-muted-foreground'
                     )}>
                       {m.isCompleted && <span className="text-white text-[10px]">✓</span>}
                     </div>

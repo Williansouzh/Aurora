@@ -5,6 +5,7 @@ import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu';
+import { Fab } from '../components/ui/Fab';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Screen } from '../components/ui/Screen';
@@ -176,6 +177,8 @@ export function CategoriesPage({ api }) {
           onConfirm={deleteCategory}
         />
       )}
+
+      <Fab onClick={() => openNew()} label="Nova categoria" />
     </Screen>
   );
 }

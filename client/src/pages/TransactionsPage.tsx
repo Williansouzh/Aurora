@@ -4,8 +4,10 @@ import { clientDaysUntilDue } from '../components/alerts/AlertsDropdown';
 import { FilterChips } from '../components/transactions/FilterChips';
 import { TransactionFilters } from '../components/transactions/TransactionFilters';
 import { TransactionTable } from '../components/transactions/TransactionTable';
+import { TransactionDayList } from '../components/transactions/TransactionDayList';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { EmptyState } from '../components/ui/EmptyState';
+import { Fab } from '../components/ui/Fab';
 import { Pagination } from '../components/ui/Pagination';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
@@ -361,21 +363,34 @@ export function TransactionsPage({ api }) {
               onAction={() => setFormOpen(true)}
             />
           ) : (
-            <TransactionTable
-              transactions={movementRows}
-              accounts={accounts.data || []}
-              categories={categories.data || []}
-              onEdit={editTransaction}
-              onDelete={deleteTransaction}
-              onPaid={async (id) => {
-                try { await api.patch(`/api/transactions/${id}/mark-as-paid`); await reloadAll(); toast.success('Atualizado'); }
-                catch (err) { toast.error(err.message); }
-              }}
-              onPending={async (id) => {
-                try { await api.patch(`/api/transactions/${id}/mark-as-pending`); await reloadAll(); toast.success('Atualizado'); }
-                catch (err) { toast.error(err.message); }
-              }}
-            />
+            <>
+              {/* Desktop table */}
+              <div className="hidden sm:block">
+                <TransactionTable
+                  transactions={movementRows}
+                  accounts={accounts.data || []}
+                  categories={categories.data || []}
+                  onEdit={editTransaction}
+                  onDelete={deleteTransaction}
+                  onPaid={async (id) => {
+                    try { await api.patch(`/api/transactions/${id}/mark-as-paid`); await reloadAll(); toast.success('Atualizado'); }
+                    catch (err) { toast.error(err.message); }
+                  }}
+                  onPending={async (id) => {
+                    try { await api.patch(`/api/transactions/${id}/mark-as-pending`); await reloadAll(); toast.success('Atualizado'); }
+                    catch (err) { toast.error(err.message); }
+                  }}
+                />
+              </div>
+              {/* Mobile — grouped by day */}
+              <div className="sm:hidden">
+                <TransactionDayList
+                  transactions={movementRows}
+                  categories={categories.data || []}
+                  onSelect={editTransaction}
+                />
+              </div>
+            </>
           )}
           {!quickDueFilter && (
             <div className="px-4">
@@ -574,6 +589,8 @@ export function TransactionsPage({ api }) {
           onConfirm={handleExport}
         />
       )}
+
+      <Fab onClick={() => { setEditing(null); setForm(buildInitialForm(accounts.data, categories.data)); setFormOpen(true); }} label="Nova transação" />
     </Screen>
   );
 }

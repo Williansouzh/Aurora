@@ -40,7 +40,7 @@ export function FinancingSummaryCard({ summary }) {
           <div>
             <p className="text-xs text-muted-foreground mb-2">Progresso geral</p>
             <div className="flex items-center gap-2">
-              <Progress value={progress} indicatorClassName="bg-accent0" className="flex-1 bg-accent" />
+              <Progress value={progress} indicatorClassName="bg-primary" className="flex-1 bg-accent" />
               <span className="text-xs font-semibold text-primary tabular-nums shrink-0">{progress.toFixed(1)}%</span>
             </div>
           </div>

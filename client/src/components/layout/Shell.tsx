@@ -127,6 +127,17 @@ export function Shell({ children, user, onSignOut, access }) {
     }))
     .filter((section) => section.items.length > 0);
 
+  // Mobile bottom tab bar — up to 4 primary destinations (filtered by access) + Menu
+  const bottomNavCandidates = [
+    { moduleKey: 'home', to: '/', end: true, icon: LayoutDashboard, label: 'Home' },
+    { moduleKey: 'today', to: '/today', icon: CalendarCheck, label: 'Meu Dia' },
+    { moduleKey: 'habits', to: '/habits', icon: Flame, label: 'Rituais' },
+    { moduleKey: 'finances', to: '/finance', icon: Wallet, label: 'Dinheiro' },
+  ];
+  const bottomNavItems = bottomNavCandidates.filter(
+    (item) => !access || allowedModules.has(item.moduleKey)
+  );
+
   const sidebarContent = (isMobile = false) => (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2.5 px-4 py-5">
@@ -252,10 +263,37 @@ export function Shell({ children, user, onSignOut, access }) {
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
+        <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6 lg:p-8 lg:pb-8">
           {children}
         </main>
       </div>
+
+      {/* Mobile bottom tab bar — accent active state (Quiet DS) */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around border-t border-border bg-card/95 backdrop-blur-sm md:hidden">
+        {bottomNavItems.map(({ to, end, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={({ isActive }) =>
+              cn(
+                'flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors',
+                isActive ? 'text-primary' : 'text-faint'
+              )
+            }
+          >
+            <Icon className="h-5 w-5" />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium text-faint"
+        >
+          <Menu className="h-5 w-5" />
+          <span>Menu</span>
+        </button>
+      </nav>
     </div>
   );
 }

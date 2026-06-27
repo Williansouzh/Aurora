@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../components/ui/dropdown-menu';
 import { EmptyState } from '../components/ui/EmptyState';
+import { Fab } from '../components/ui/Fab';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Screen } from '../components/ui/Screen';
@@ -276,6 +277,8 @@ export function AccountsPage({ api }) {
           onConfirm={deleteAccount}
         />
       )}
+
+      <Fab onClick={openNew} label="Nova conta" />
     </Screen>
   );
 }

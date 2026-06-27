@@ -32,7 +32,7 @@ export function ForgotPasswordPage({ api }) {
           <Label htmlFor="email">E-mail</Label>
           <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
-        {message && <div className="rounded-md border border-income/40/30 bg-income-soft0/10 px-3 py-2 text-sm text-income">{message}</div>}
+        {message && <div className="rounded-md border border-income/40/30 bg-income/10 px-3 py-2 text-sm text-income">{message}</div>}
         {error && <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>}
         <Button className="w-full" disabled={loading}>{loading ? 'Aguarde...' : 'Enviar token'}</Button>
         <button type="button" onClick={() => navigate('/reset-password')} className="w-full text-sm font-medium text-primary hover:underline border-0 bg-transparent p-0 min-h-0">Ja tenho um token</button>

@@ -1,7 +1,8 @@
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
+import { Fab } from '../components/ui/Fab';
 import { Skeleton } from '../components/ui/Skeleton';
 import { useData } from '../hooks/useData';
 import { cn, formatCurrency } from '../lib/utils';
@@ -22,6 +23,7 @@ const MONTH_ABBR = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set
 
 export function FinanceOverviewPage({ api }) {
   const now = new Date();
+  const navigate = useNavigate();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
 
@@ -75,10 +77,32 @@ export function FinanceOverviewPage({ api }) {
 
       {summary.error && <p className="text-sm text-destructive">{summary.error}</p>}
 
+      {/* Mobile lead — dark balance card (Finance Mobile design) */}
+      {data && (
+        <div className="rounded-[16px] bg-[#26241f] p-5 text-[#f1efe8] sm:hidden">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#a8a299]">Saldo total</p>
+          <p className="mt-1 font-numeral text-[34px] leading-none">{formatCurrency(data.totalBalance)}</p>
+          <div className="mt-4 grid grid-cols-3 gap-3 border-t border-white/10 pt-4 text-center">
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-[#a8a299]">Entrou</p>
+              <p className="mt-0.5 font-numeral text-base text-[#8fae89]">{formatCurrency(data.monthlyIncome)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-[#a8a299]">Saiu</p>
+              <p className="mt-0.5 font-numeral text-base text-[#d18f86]">{formatCurrency(data.monthlyExpense)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-[#a8a299]">Resultado</p>
+              <p className="mt-0.5 font-numeral text-base text-[#8c93e8]">{data.monthlyResult >= 0 ? '+' : ''}{formatCurrency(data.monthlyResult)}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {summary.loading ? (
         <KpiSkeleton />
       ) : data ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4">
           <Kpi label="Saldo total" value={formatCurrency(data.totalBalance)} />
           <Kpi
             label="Receitas pagas"
@@ -116,6 +140,8 @@ export function FinanceOverviewPage({ api }) {
           <UpcomingCard upcoming={upcoming} />
         </div>
       </div>
+
+      <Fab onClick={() => navigate('/transactions')} label="Nova transação" />
     </div>
   );
 }

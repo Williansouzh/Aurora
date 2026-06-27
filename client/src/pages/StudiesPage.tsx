@@ -156,15 +156,10 @@ export function StudiesPage({ api }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-            <BookOpen className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Estudos</h1>
-            <p className="text-sm text-muted-foreground">Priorize 3 habilidades e estude com metodo.</p>
-          </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-foreground">Estudos</h1>
+          <p className="mt-1 text-sm text-mut2">Priorize 3 habilidades e estude com método — obter, organizar, memorizar, aplicar, ensinar.</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -329,7 +324,7 @@ function MetricCard({ icon: Icon, label, value }) {
           <p className="text-xs font-medium text-muted-foreground">{label}</p>
           <Icon className="h-4 w-4 text-primary" />
         </div>
-        <p className="text-2xl font-bold tabular-nums">{value}</p>
+        <p className="font-numeral text-[28px] leading-none">{value}</p>
       </CardContent>
     </Card>
   );
@@ -376,7 +371,7 @@ function StudySkillCard({ skill, onAssess, onActivate, onPause }) {
             <span>Score de prioridade</span>
             <span className="font-semibold tabular-nums">{Number(skill.priorityScore ?? 0).toFixed(1)}</span>
           </div>
-          <Progress value={scorePct} className="h-2" indicatorClassName={scorePct >= 70 ? 'bg-income-soft0' : 'bg-accent0'} />
+          <Progress value={scorePct} className="h-2" indicatorClassName={scorePct >= 70 ? 'bg-income' : 'bg-primary'} />
         </div>
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           <span>{Math.round((skill.weeklyTimeBudgetMinutes ?? 0) / 60)}h/semana</span>
@@ -675,7 +670,7 @@ function StudySessionCard({ session, onFinish }) {
             <span>Tempo</span>
             <span>{completed ? `${actual}/${planned} min` : `${planned} min planejados`}</span>
           </div>
-          <Progress value={completed ? pct : 0} className="h-2" indicatorClassName={completed ? 'bg-income-soft0' : 'bg-accent0'} />
+          <Progress value={completed ? pct : 0} className="h-2" indicatorClassName={completed ? 'bg-income' : 'bg-primary'} />
         </div>
         {completed && (
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">

@@ -7,6 +7,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select';
 import { Skeleton } from '../components/ui/Skeleton';
+import { Fab } from '../components/ui/Fab';
 import { useData } from '../hooks/useData';
 import { cn, formatDate } from '../lib/utils';
 
@@ -47,20 +48,46 @@ export function TodayPage({ api }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-            <CalendarCheck className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Meu Dia</h1>
-            <p className="text-sm text-muted-foreground">{formatDate(today)}</p>
-          </div>
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-foreground">Meu Dia</h1>
+          <p className="mt-1 text-sm text-mut2 capitalize">{formatDate(today)}</p>
         </div>
-        <Button onClick={() => setShowForm(true)} size="sm">
-          <Plus className="h-4 w-4 mr-1" /> Nova tarefa
+        <Button onClick={() => setShowForm(true)}>
+          <Plus className="h-4 w-4" /> Nova tarefa
         </Button>
       </div>
+
+      {/* Top 3 — prioridades do dia, com numeral serif de marca d'água */}
+      {pending.length > 0 && (
+        <div>
+          <p className="text-overline mb-3">Top 3 do dia</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {[...pending]
+              .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
+              .slice(0, 3)
+              .map((task, i) => (
+                <div key={task.id} className="relative overflow-hidden rounded-[14px] border border-border bg-card p-5">
+                  <span className="pointer-events-none absolute -right-2 -top-4 select-none font-display text-[92px] leading-none text-primary/[0.07]">
+                    {i + 1}
+                  </span>
+                  <div className="relative flex h-full flex-col">
+                    <span className={cn('text-[11px] font-semibold uppercase tracking-[0.12em]', PRIORITY_COLOR[task.priority])}>
+                      {PRIORITY_LABEL[task.priority]}
+                    </span>
+                    <p className="mt-2 flex-1 text-[15px] font-semibold leading-snug text-ink2">{task.title}</p>
+                    <button
+                      onClick={() => complete(task.id)}
+                      className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary hover:underline"
+                    >
+                      <CheckCircle2 className="h-4 w-4" /> Concluir
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {overdue.length > 0 && (
         <Card className="border-pending/40 bg-pending-soft dark:bg-pending/20">
@@ -105,6 +132,8 @@ export function TodayPage({ api }) {
       {showForm && (
         <TaskFormModal api={api} onClose={() => setShowForm(false)} onCreated={reload} />
       )}
+
+      <Fab onClick={() => setShowForm(true)} label="Nova tarefa" />
     </div>
   );
 }
