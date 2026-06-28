@@ -23,6 +23,15 @@ public class GetMonthlySummaryHandler(
 
         var total = await accounts.GetTotalBalanceAsync(query.UserId);
 
+        var userAccounts = await accounts.GetByUserAsync(query.UserId);
+        var savingsBalance = userAccounts
+            .Where(a => !a.IsArchived && a.Type == AccountType.Savings)
+            .Sum(a => a.CurrentBalance);
+        // Credit cards carry the outstanding bill as a negative balance; the amount due is its absolute value.
+        var cardDue = userAccounts
+            .Where(a => !a.IsArchived && a.Type == AccountType.CreditCard)
+            .Sum(a => Math.Max(0m, -a.CurrentBalance));
+
         var income = await transactions.SumAsync(query.UserId, query.Month, query.Year, TransactionType.Income, TransactionStatus.Paid);
         var expense = await transactions.SumAsync(query.UserId, query.Month, query.Year, TransactionType.Expense, TransactionStatus.Paid);
 
@@ -45,7 +54,8 @@ public class GetMonthlySummaryHandler(
         var dto = new MonthlySummaryDto(
             total, income, expense, income - expense,
             pendingIncome, pendingExpense, paidCount, pendingCount,
-            recent, prevIncome, prevExpense, incomeVar, expenseVar, savings, upcoming);
+            recent, prevIncome, prevExpense, incomeVar, expenseVar, savings, upcoming,
+            savingsBalance, cardDue);
 
         await cache.SetAsync(key, dto, TimeSpan.FromMinutes(5), ct);
         return dto;

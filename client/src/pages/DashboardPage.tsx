@@ -13,7 +13,6 @@ import {
   LayoutDashboard,
   Receipt,
   Scroll,
-  Star,
   Target,
   TrendingUp,
   Wallet,
@@ -30,11 +29,38 @@ import { cn, formatCurrency } from '../lib/utils';
 
 const MOOD_EMOJI = { 1: ':(', 2: ':/', 3: ':|', 4: ':)', 5: ':D' };
 
+const AREA_LABELS = {
+  1: 'Saúde', 2: 'Trabalho', 3: 'Estudos', 4: 'Dinheiro',
+  5: 'Relacionamentos', 6: 'Casa', 7: 'Lazer', 8: 'Espiritualidade', 9: 'Projetos',
+};
+// Muted, Quiet-harmonious per-area palette (shared with Goals)
+const AREA_COLORS = {
+  1: '#6f8f6a', 2: '#3d4eac', 3: '#7b5cd6', 4: '#c1976a', 5: '#c1796a',
+  6: '#5b8a8a', 7: '#b08968', 8: '#8a7fb0', 9: '#6b7280',
+};
+
 function greeting() {
   const h = new Date().getHours();
   if (h < 12) return 'Bom dia';
   if (h < 18) return 'Boa tarde';
   return 'Boa noite';
+}
+
+function todaySubtitle() {
+  return new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+function relTime(value) {
+  const d = new Date(value);
+  const diffMin = Math.round((Date.now() - d.getTime()) / 60000);
+  if (diffMin < 1) return 'agora';
+  if (diffMin < 60) return `há ${diffMin} min`;
+  const diffH = Math.round(diffMin / 60);
+  if (diffH < 24) return `há ${diffH} h`;
+  const diffD = Math.round(diffH / 24);
+  if (diffD === 1) return 'ontem';
+  if (diffD < 7) return `há ${diffD} dias`;
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 }
 
 const MODULE_FILTERS = [
@@ -78,20 +104,26 @@ export function DashboardPage({ api, access }) {
   const overview = active === 'overview';
   const show = (moduleKey) => overview ? can(moduleKey) : active === moduleKey;
   const monthLabel = new Date(year, month - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const levelPct = data?.xpToNextLevel > 0 ? Math.round((data.totalXp / (data.totalXp + data.xpToNextLevel)) * 100) : 100;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="font-display text-3xl text-foreground">{greeting()}</h1>
-          <p className="mt-1 text-sm text-mut2">Seu dia, seus rituais e sua evolução em um só lugar.</p>
+          <p className="mt-1 text-sm capitalize text-mut2">{todaySubtitle()} · sua vida em um olhar</p>
         </div>
 
         <div className="flex items-center gap-2">
           {overview && data?.level != null && (
-            <span className="flex items-center gap-2 rounded-full border border-chipline bg-card px-3 py-1.5 text-sm">
-              <Star className="h-3.5 w-3.5 text-primary" />
+            <span className="flex items-center gap-2.5 rounded-full border border-chipline bg-card px-3 py-1.5 text-sm">
               <span className="font-semibold text-ink2">Nível {data.level}</span>
+              <span className="relative inline-block h-[5px] w-[54px] overflow-hidden rounded-full bg-track">
+                <span
+                  className="absolute inset-y-0 left-0 rounded-full bg-primary"
+                  style={{ width: `${levelPct}%` }}
+                />
+              </span>
             </span>
           )}
           <div className="flex items-center gap-1 rounded-lg border border-chipline bg-card px-1 py-1">
@@ -108,44 +140,331 @@ export function DashboardPage({ api, access }) {
 
       <ModuleFilterBar filters={filters} selected={active} onSelect={setSelectedModule} />
 
-      {overview && <XpCard data={data} />}
+      {overview ? (
+        <OverviewDashboard data={data} can={can} />
+      ) : (
+        <>
+          {(show('today') || show('habits')) && (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              {show('today') && <TodayCard tasks={data} />}
+              {show('habits') && <HabitsCard habits={data.todayHabits} />}
+            </div>
+          )}
 
-      {(show('today') || show('habits')) && (
-        <DashboardSection title={overview ? 'Execucao' : null}>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {show('today') && <TodayCard tasks={data} />}
-            {show('habits') && <HabitsCard habits={data.todayHabits} />}
-          </div>
-        </DashboardSection>
+          {show('finances') && <FinanceDashboard data={data} />}
+
+          {(show('goals') || show('diary')) && (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              {show('goals') && (
+                <div className="lg:col-span-2">
+                  <GoalsCard goals={data.featuredGoals} />
+                </div>
+              )}
+              {show('diary') && <MoodCard moodHistory={data.moodHistory} todayMood={data.todayMood} />}
+            </div>
+          )}
+
+          {(show('weekly-planning') || show('evolution') || show('studies') || show('retrospectives')) && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {show('weekly-planning') && <ModuleShortcutCard to="/weekly" icon={CalendarDays} title="Minha Semana" />}
+              {show('evolution') && <ModuleShortcutCard to="/evolution" icon={Camera} title="Evolucao" />}
+              {show('studies') && <ModuleShortcutCard to="/studies" icon={BookOpen} title="Estudos" />}
+              {show('retrospectives') && <ModuleShortcutCard to="/retrospectives" icon={TrendingUp} title="Retrospectiva" />}
+            </div>
+          )}
+
+          {show('timeline') && <TimelineCard events={data.recentEvents} />}
+        </>
       )}
+    </div>
+  );
+}
 
-      {show('finances') && <FinanceDashboard data={data} />}
+// ===================== Overview (Quiet dashboard) =====================
 
-      {(show('goals') || show('diary')) && (
-        <DashboardSection title={overview ? 'Evolucao pessoal' : null}>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {show('goals') && (
-              <div className="lg:col-span-2">
-                <GoalsCard goals={data.featuredGoals} />
+function OverviewDashboard({ data, can }) {
+  return (
+    <div className="space-y-[18px]">
+      <KpiRow data={data} can={can} />
+      <div className="flex flex-col gap-[18px] lg:flex-row lg:items-start">
+        <div className="flex min-w-0 flex-1 flex-col gap-[18px] lg:flex-[1.55]">
+          {(can('today') || can('habits')) && <WeeklyActivityChart data={data.weeklyActivity} />}
+          {can('goals') && <GoalsFocusCard goals={data.featuredGoals} />}
+          {can('timeline') && <RecentActivityCard events={data.recentEvents} />}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-[18px]">
+          {can('today') && <Top3Card data={data} />}
+          {can('finances') && <MoneySnapshotCard data={data} />}
+          {can('habits') && <RitualStreaksCard habits={data.todayHabits} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Kpi({ label, value, bar, foot, soft }) {
+  return (
+    <div className={cn('rounded-xl border p-[18px]', soft ? 'bg-accent' : 'bg-card')}>
+      <p className="text-xs text-faint">{label}</p>
+      <p className="mt-1 font-numeral text-[30px] leading-none">{value}</p>
+      {bar != null && (
+        <div className="mt-2.5 h-[5px] overflow-hidden rounded-full bg-track">
+          <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(bar, 100)}%` }} />
+        </div>
+      )}
+      {foot && <p className="mt-2.5 text-[11.5px]">{foot}</p>}
+    </div>
+  );
+}
+
+function KpiRow({ data, can }) {
+  const items = [];
+
+  if (can('today')) {
+    const total = data.pendingTasksCount + data.completedTasksCount;
+    const pct = total > 0 ? (data.completedTasksCount / total) * 100 : 0;
+    items.push(
+      <Kpi
+        key="tasks"
+        label="Tarefas de hoje"
+        value={<>{data.completedTasksCount}<span className="text-[15px] text-faint"> / {total}</span></>}
+        bar={pct}
+      />
+    );
+  }
+
+  if (can('habits')) {
+    const done = data.todayHabits.filter((h) => h.checkedInToday).length;
+    const total = data.todayHabits.length;
+    const best = data.todayHabits.reduce((m, h) => Math.max(m, h.currentStreak || 0), 0);
+    items.push(
+      <Kpi
+        key="rituals"
+        label="Rituais de hoje"
+        value={<span className="text-primary">{done}<span className="text-[15px] text-faint"> / {total}</span></span>}
+        foot={best > 0 ? <span className="text-income">▲ sequência de {best} dias</span> : <span className="text-mut2">comece um ritual</span>}
+      />
+    );
+  }
+
+  if (can('finances')) {
+    const net = data.monthlyIncome - data.monthlyExpense;
+    items.push(
+      <Kpi
+        key="net"
+        label="Resultado do mês"
+        value={<span className={net >= 0 ? 'text-income' : 'text-expense'}>{net >= 0 ? '+' : ''}{formatCurrency(net)}</span>}
+        foot={<span className="text-mut2">{formatCurrency(data.totalBalance)} de saldo</span>}
+      />
+    );
+  }
+
+  items.push(
+    <Kpi
+      key="xp"
+      soft
+      label="Experiência"
+      value={`${(data.totalXp ?? 0).toLocaleString('pt-BR')} XP`}
+      foot={<span className="text-mut2">Nível {data.level} · {data.levelName}</span>}
+    />
+  );
+
+  return <div className="grid grid-cols-2 gap-[14px] lg:grid-cols-4">{items}</div>;
+}
+
+const DOW = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+
+function WeeklyActivityChart({ data = [] }) {
+  const days = data.slice(-7);
+  const max = Math.max(1, ...days.map((d) => Math.max(d.tasksDone ?? 0, d.ritualsDone ?? 0)));
+  const todayStr = new Date().toDateString();
+  return (
+    <div className="rounded-xl border bg-card p-[22px]">
+      <div className="mb-5 flex items-baseline justify-between">
+        <span className="text-overline">Atividade da semana</span>
+        <span className="flex gap-3.5 text-xs text-mut2">
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-[2px] bg-primary" />Tarefas</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-[2px] bg-income" />Rituais</span>
+        </span>
+      </div>
+      {days.length === 0 ? (
+        <p className="py-10 text-center text-xs text-muted-foreground">Sem atividade registrada ainda.</p>
+      ) : (
+        <div className="flex h-[150px] items-end justify-between gap-2.5">
+          {days.map((day, index) => {
+            const d = new Date(day.date);
+            const isToday = d.toDateString() === todayStr;
+            const th = Math.max((day.tasksDone / max) * 118, day.tasksDone > 0 ? 4 : 0);
+            const rh = Math.max((day.ritualsDone / max) * 118, day.ritualsDone > 0 ? 4 : 0);
+            return (
+              <div key={index} className="flex flex-1 flex-col items-center gap-2">
+                <div className="flex h-[118px] items-end gap-1">
+                  <span className="w-[9px] rounded-[3px] bg-primary" style={{ height: `${th}px` }} />
+                  <span className="w-[9px] rounded-[3px] bg-income" style={{ height: `${rh}px` }} />
+                </div>
+                <span className={cn('text-[11px]', isToday ? 'font-bold text-primary' : 'text-faint')}>
+                  {DOW[d.getDay()]}
+                </span>
               </div>
-            )}
-            {show('diary') && <MoodCard moodHistory={data.moodHistory} todayMood={data.todayMood} />}
-          </div>
-        </DashboardSection>
+            );
+          })}
+        </div>
       )}
+    </div>
+  );
+}
 
-      {(show('weekly-planning') || show('evolution') || show('studies') || show('retrospectives')) && (
-        <DashboardSection title={overview ? 'Ciclos e memoria' : null}>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {show('weekly-planning') && <ModuleShortcutCard to="/weekly" icon={CalendarDays} title="Minha Semana" />}
-            {show('evolution') && <ModuleShortcutCard to="/evolution" icon={Camera} title="Evolucao" />}
-            {show('studies') && <ModuleShortcutCard to="/studies" icon={BookOpen} title="Estudos" />}
-            {show('retrospectives') && <ModuleShortcutCard to="/retrospectives" icon={TrendingUp} title="Retrospectiva" />}
-          </div>
-        </DashboardSection>
+function GoalsFocusCard({ goals = [] }) {
+  return (
+    <div className="rounded-xl border bg-card p-[22px]">
+      <div className="mb-[18px] flex items-baseline justify-between">
+        <span className="text-overline">Em foco · metas</span>
+        <Link to="/goals" className="text-[13px] font-semibold text-primary">Ver todas →</Link>
+      </div>
+      {goals.length === 0 ? (
+        <p className="py-3 text-center text-xs text-muted-foreground">
+          <Link to="/goals" className="underline">Defina seus objetivos de vida</Link>
+        </p>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {goals.map((goal) => {
+            const color = AREA_COLORS[goal.area] ?? '#3d4eac';
+            return (
+              <div key={goal.id}>
+                <div className="mb-[7px] flex items-center justify-between text-sm">
+                  <span className="truncate pr-2">
+                    {goal.title} <span className="text-xs text-faint">· {AREA_LABELS[goal.area]}</span>
+                  </span>
+                  <span className="shrink-0 tabular-nums text-mut2">{Math.round(goal.progress)}%</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-track">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${Math.min(goal.progress, 100)}%`, background: color }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
+    </div>
+  );
+}
 
-      {show('timeline') && <TimelineCard events={data.recentEvents} />}
+function RecentActivityCard({ events = [] }) {
+  return (
+    <div className="rounded-xl border bg-card p-[22px]">
+      <div className="mb-3.5 text-overline">Atividade recente</div>
+      {events.length === 0 ? (
+        <p className="py-4 text-center text-xs text-muted-foreground">Seus registros aparecem aqui.</p>
+      ) : (
+        <div className="flex flex-col">
+          {events.map((event, index) => (
+            <div
+              key={event.id}
+              className={cn('flex gap-3.5 py-[9px]', index < events.length - 1 && 'border-b border-line2')}
+            >
+              <span
+                className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                style={{ background: event.area ? AREA_COLORS[event.area] ?? '#cfccc4' : '#cfccc4' }}
+              />
+              <div className="min-w-0">
+                <p className="text-sm">{event.title}</p>
+                <p className="text-xs text-faint">
+                  {relTime(event.occurredAt)}{event.area ? ` · ${AREA_LABELS[event.area]}` : ''}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Top3Card({ data }) {
+  const tasks = (data.topPendingTasks ?? []).slice(0, 3);
+  return (
+    <div className="rounded-xl border bg-card p-[22px]">
+      <div className="mb-3.5 flex items-baseline justify-between">
+        <span className="text-overline">Hoje · Top 3</span>
+        <span className="text-[13px] text-mut2">{data.completedTasksCount} concluídas</span>
+      </div>
+      {tasks.length === 0 ? (
+        <p className="py-3 text-center text-xs text-muted-foreground">Nenhuma tarefa pendente. 🎉</p>
+      ) : (
+        <div className="flex flex-col">
+          {tasks.map((task, index) => (
+            <Link
+              key={task.id}
+              to="/today"
+              className={cn('flex items-center gap-3.5 py-2.5', index < tasks.length - 1 && 'border-b border-line2')}
+            >
+              <span className="h-[18px] w-[18px] shrink-0 rounded-[5px] border-[1.5px] border-track" />
+              <span className="flex-1 truncate text-[14.5px]">{task.title}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MoneySnapshotCard({ data }) {
+  const net = data.monthlyIncome - data.monthlyExpense;
+  return (
+    <div className="rounded-xl border bg-card p-[22px]">
+      <div className="mb-3 text-overline">Este mês · dinheiro</div>
+      <div className="font-numeral text-[32px] leading-none">{formatCurrency(data.totalBalance)}</div>
+      <div className="mb-4 mt-1.5 text-xs text-mut2">saldo total</div>
+      <div className="flex gap-2.5">
+        <SnapshotStat label="Entrou" value={formatCurrency(data.monthlyIncome)} className="border-income" />
+        <SnapshotStat label="Saiu" value={formatCurrency(data.monthlyExpense)} className="border-expense" />
+        <SnapshotStat label="Resultado" value={`${net >= 0 ? '+' : ''}${formatCurrency(net)}`} className="border-primary" />
+      </div>
+    </div>
+  );
+}
+
+function SnapshotStat({ label, value, className }) {
+  return (
+    <div className={cn('min-w-0 flex-1 border-t-2 pt-2', className)}>
+      <div className="text-[11px] text-faint">{label}</div>
+      <div className="truncate text-sm font-semibold tabular-nums">{value}</div>
+    </div>
+  );
+}
+
+function RitualStreaksCard({ habits = [] }) {
+  const sorted = [...habits].sort((a, b) => (b.currentStreak || 0) - (a.currentStreak || 0)).slice(0, 4);
+  return (
+    <div className="rounded-xl border bg-card p-[22px]">
+      <div className="mb-4 text-overline">Sequências de rituais</div>
+      {sorted.length === 0 ? (
+        <p className="py-3 text-center text-xs text-muted-foreground">
+          <Link to="/habits" className="underline">Crie seus primeiros rituais</Link>
+        </p>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          {sorted.map((habit) => {
+            const cold = (habit.currentStreak || 0) === 0;
+            return (
+              <Link
+                key={habit.id}
+                to="/habits"
+                className={cn('rounded-[10px] border p-3.5 text-center', cold && 'bg-secondary')}
+              >
+                <div className="truncate text-[13px] font-semibold">{habit.name}</div>
+                <div className={cn('mt-1 font-numeral text-2xl', cold ? 'text-track' : 'text-primary')}>
+                  {habit.currentStreak || 0}
+                </div>
+                <div className="text-[11px] text-faint">{cold ? 'comece →' : 'dias'}</div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -183,37 +502,6 @@ function DashboardSection({ title, children }) {
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
       {children}
     </section>
-  );
-}
-
-function XpCard({ data }) {
-  const { totalXp, level, levelName, xpToNextLevel } = data;
-  const pct = xpToNextLevel > 0 ? Math.round((totalXp / (totalXp + xpToNextLevel)) * 100) : 100;
-
-  return (
-    <Card>
-      <CardContent className="p-5">
-        <div className="flex items-end justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-overline">
-              <Star className="h-3.5 w-3.5 text-primary" /> Nível {level} · {levelName}
-            </div>
-            <p className="mt-1 font-numeral text-[30px] leading-none text-foreground">{totalXp.toLocaleString('pt-BR')} XP</p>
-          </div>
-          {xpToNextLevel > 0 && (
-            <div className="text-right text-xs text-mut2">
-              <p>+{xpToNextLevel} XP</p>
-              <p>para o nível {level + 1}</p>
-            </div>
-          )}
-        </div>
-        {xpToNextLevel > 0 && (
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-track">
-            <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 

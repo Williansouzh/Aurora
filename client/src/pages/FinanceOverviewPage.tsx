@@ -99,6 +99,20 @@ export function FinanceOverviewPage({ api }) {
         </div>
       )}
 
+      {/* Mobile — savings & card due (Finance Mobile design) */}
+      {data && (
+        <div className="grid grid-cols-2 gap-2.5 sm:hidden">
+          <div className="rounded-[14px] border bg-card p-3.5">
+            <p className="text-[11px] text-faint">Poupança</p>
+            <p className="mt-0.5 font-numeral text-xl text-income">{formatCurrency(data.savingsBalance ?? 0)}</p>
+          </div>
+          <div className="rounded-[14px] border bg-card p-3.5">
+            <p className="text-[11px] text-faint">Fatura do cartão</p>
+            <p className="mt-0.5 font-numeral text-xl text-expense">{formatCurrency(data.cardDue ?? 0)}</p>
+          </div>
+        </div>
+      )}
+
       {summary.loading ? (
         <KpiSkeleton />
       ) : data ? (

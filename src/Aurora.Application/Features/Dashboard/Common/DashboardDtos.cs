@@ -17,7 +17,9 @@ public record MonthlySummaryDto(
     decimal IncomeVariation,
     decimal ExpenseVariation,
     decimal SavingsRate,
-    List<UpcomingDueDto> UpcomingDueTransactions);
+    List<UpcomingDueDto> UpcomingDueTransactions,
+    decimal SavingsBalance,
+    decimal CardDue);
 
 public record CategoryExpenseDto(
     string CategoryId,

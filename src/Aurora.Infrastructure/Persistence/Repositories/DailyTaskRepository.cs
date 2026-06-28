@@ -19,6 +19,14 @@ public class DailyTaskRepository(MongoContext context, MongoUnitOfWork unitOfWor
             .ToListAsync();
     }
 
+    public Task<List<DailyTask>> GetByDateRangeAsync(string userId, DateTime from, DateTime to)
+    {
+        var end = to.Date.AddDays(1);
+        return Collection
+            .Find(x => x.UserId == userId && !x.IsBacklog && x.Date >= from.Date && x.Date < end)
+            .ToListAsync();
+    }
+
     public Task<List<DailyTask>> GetOverdueAsync(string userId, DateTime before)
     {
         return Collection

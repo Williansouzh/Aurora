@@ -9,6 +9,7 @@ using Aurora.Application.Features.Goals.GetAll;
 using Aurora.Application.Features.Goals.GetById;
 using Aurora.Application.Features.Goals.Milestones;
 using Aurora.Application.Features.Goals.Update;
+using Aurora.Application.Features.Goals.UpdateLinks;
 using Aurora.Application.Features.Goals.UpdateProgress;
 using Aurora.Domain.Enums;
 using MediatR;
@@ -53,6 +54,11 @@ public class GoalsController(ISender sender, IUserContext user) : ControllerBase
         Ok(new ApiResponse<GoalDto>(true,
             await sender.Send(new ChangeGoalStatusCommand(user.UserId, id, req.Action, req.Reason))));
 
+    [HttpPut("{id}/links")]
+    public async Task<IActionResult> UpdateLinks(string id, [FromBody] UpdateLinksRequest req) =>
+        Ok(new ApiResponse<GoalDto>(true,
+            await sender.Send(new UpdateGoalLinksCommand(user.UserId, id, req.HabitIds ?? [], req.SkillIds ?? []))));
+
     // Milestones
     [HttpPost("{id}/milestones")]
     public async Task<IActionResult> AddMilestone(string id, [FromBody] AddMilestoneRequest req) =>
@@ -78,3 +84,4 @@ public class GoalsController(ISender sender, IUserContext user) : ControllerBase
 public record UpdateProgressRequest(decimal CurrentValue);
 public record ChangeStatusRequest(string Action, string? Reason);
 public record AddMilestoneRequest(string Title, bool IsRequired);
+public record UpdateLinksRequest(List<string>? HabitIds, List<string>? SkillIds);

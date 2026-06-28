@@ -33,4 +33,12 @@ public class HabitCheckInRepository(MongoContext context, MongoUnitOfWork unitOf
             .Find(x => x.UserId == userId && x.Date >= date.Date && x.Date < next)
             .ToListAsync();
     }
+
+    public Task<List<HabitCheckIn>> GetByUserAndDateRangeAsync(string userId, DateTime from, DateTime to)
+    {
+        var end = to.Date.AddDays(1);
+        return Collection
+            .Find(x => x.UserId == userId && x.Date >= from.Date && x.Date < end)
+            .ToListAsync();
+    }
 }

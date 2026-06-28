@@ -1,14 +1,11 @@
 import {
-  Award, ChevronRight, Flag, Loader2, Plus, Target, Trash2, TrendingUp,
+  Award, Flag, Loader2, Plus, Target, Trash2, X,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Progress } from '../components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select';
 import { Skeleton } from '../components/ui/Skeleton';
 import { useData } from '../hooks/useData';
@@ -36,21 +33,31 @@ export function GoalsPage({ api }) {
   const [statusFilter, setStatusFilter] = useState('1');
   const [areaFilter, setAreaFilter] = useState('_all');
   const [showForm, setShowForm] = useState(false);
-  const [detail, setDetail] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
 
   const goals = useData(
     () => api.get(`/api/goals${statusFilter !== '_all' ? `?status=${statusFilter}` : ''}`),
     [statusFilter],
   );
+  // Options for the "Vinculados" editor — degrade gracefully if a module isn't accessible.
+  const habitsData = useData(() => api.get('/api/habits').catch(() => []), []);
+  const skillsData = useData(() => api.get('/api/studies/skills').catch(() => []), []);
+  const habitOptions = (habitsData.data ?? []).map((h) => ({ id: h.id, name: h.name }));
+  const skillOptions = (skillsData.data ?? []).map((s) => ({ id: s.id, name: s.title }));
   const reload = () => goals.reload();
 
-  const remove = async (id) => { await api.delete(`/api/goals/${id}`); reload(); };
+  const remove = async (id) => {
+    await api.delete(`/api/goals/${id}`);
+    if (selectedId === id) setSelectedId(null);
+    reload();
+  };
 
   if (goals.loading) return <GoalsSkeleton />;
 
   const all = goals.data ?? [];
   const areas = [...new Set(all.map((g) => g.area))];
   const list = areaFilter === '_all' ? all : all.filter((g) => String(g.area) === areaFilter);
+  const selected = list.find((g) => g.id === selectedId) ?? list[0] ?? null;
 
   return (
     <div className="space-y-6">
@@ -91,28 +98,38 @@ export function GoalsPage({ api }) {
         </div>
       )}
 
-      {list.length === 0 && <EmptyGoals onAdd={() => setShowForm(true)} />}
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {list.map((g) => (
-          <GoalCard
-            key={g.id}
-            goal={g}
-            onOpen={() => setDetail(g)}
-            onDelete={() => remove(g.id)}
-          />
-        ))}
-      </div>
+      {list.length === 0 ? (
+        <EmptyGoals onAdd={() => setShowForm(true)} />
+      ) : (
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+          {/* goal grid */}
+          <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:flex-[1.25]">
+            {list.map((g) => (
+              <GoalCard
+                key={g.id}
+                goal={g}
+                selected={selected?.id === g.id}
+                onOpen={() => setSelectedId(g.id)}
+                onDelete={() => remove(g.id)}
+              />
+            ))}
+          </div>
+          {/* inline detail panel */}
+          {selected && (
+            <div className="lg:flex-1 lg:sticky lg:top-4">
+              <GoalDetailPanel
+                api={api}
+                goal={selected}
+                habitOptions={habitOptions}
+                skillOptions={skillOptions}
+                onUpdated={(updated) => { setSelectedId(updated.id); reload(); }}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {showForm && <GoalFormModal api={api} onClose={() => setShowForm(false)} onCreated={reload} />}
-      {detail && (
-        <GoalDetailModal
-          api={api}
-          goal={detail}
-          onClose={() => setDetail(null)}
-          onUpdated={(updated) => { setDetail(updated); reload(); }}
-        />
-      )}
     </div>
   );
 }
@@ -132,7 +149,7 @@ function AreaChip({ label, color, active, onClick }) {
   );
 }
 
-function GoalCard({ goal, onOpen, onDelete }) {
+function GoalCard({ goal, selected, onOpen, onDelete }) {
   const progress = Math.min(100, goal.progress ?? 0);
   const color = AREA_COLORS[goal.area] ?? '#3d4eac';
   const doneMs = goal.milestones.filter((m) => m.isCompleted).length;
@@ -140,7 +157,10 @@ function GoalCard({ goal, onOpen, onDelete }) {
   return (
     <div
       onClick={onOpen}
-      className="group cursor-pointer rounded-[14px] border border-border bg-card p-5 transition-shadow hover:shadow-card-hover"
+      className={cn(
+        'group cursor-pointer rounded-[14px] border bg-card p-5 transition-shadow hover:shadow-card-hover',
+        selected ? 'border-primary' : 'border-border'
+      )}
     >
       <div className="flex items-start justify-between">
         <div className="min-w-0 pr-2">
@@ -181,10 +201,33 @@ function GoalCard({ goal, onOpen, onDelete }) {
   );
 }
 
-function GoalDetailModal({ api, goal, onClose, onUpdated }) {
+function LinkChip({ label, onRemove }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-chipline px-3 py-1 text-[12.5px] text-mut">
+      {label}
+      <button onClick={onRemove} className="text-faint hover:text-destructive">
+        <X className="h-3 w-3" />
+      </button>
+    </span>
+  );
+}
+
+function GoalDetailPanel({ api, goal, habitOptions = [], skillOptions = [], onUpdated }) {
   const [newMilestone, setNewMilestone] = useState('');
   const [progressVal, setProgressVal] = useState(String(goal.currentValue ?? 0));
   const [saving, setSaving] = useState(false);
+
+  // Reset the editable progress field whenever a different goal is selected.
+  const [lastId, setLastId] = useState(goal.id);
+  if (lastId !== goal.id) {
+    setLastId(goal.id);
+    setProgressVal(String(goal.currentValue ?? 0));
+    setNewMilestone('');
+  }
+
+  const color = AREA_COLORS[goal.area] ?? '#3d4eac';
+  const progress = Math.min(100, goal.progress ?? 0);
+  const doneMs = goal.milestones.filter((m) => m.isCompleted).length;
 
   const completeMilestone = async (milestoneId, isCompleted) => {
     const action = isCompleted ? 'reopen' : 'complete';
@@ -212,89 +255,154 @@ function GoalDetailModal({ api, goal, onClose, onUpdated }) {
     onUpdated(updated);
   };
 
+  const linkedHabits = goal.linkedHabits ?? [];
+  const linkedSkills = goal.linkedSkills ?? [];
+
+  const saveLinks = async (habitIds, skillIds) => {
+    const updated = await api.put(`/api/goals/${goal.id}/links`, { habitIds, skillIds });
+    onUpdated(updated);
+  };
+  const addHabit = (id) => {
+    if (!id || linkedHabits.some((h) => h.id === id)) return;
+    saveLinks([...linkedHabits.map((h) => h.id), id], linkedSkills.map((s) => s.id));
+  };
+  const addSkill = (id) => {
+    if (!id || linkedSkills.some((s) => s.id === id)) return;
+    saveLinks(linkedHabits.map((h) => h.id), [...linkedSkills.map((s) => s.id), id]);
+  };
+  const removeHabit = (id) => saveLinks(linkedHabits.filter((h) => h.id !== id).map((h) => h.id), linkedSkills.map((s) => s.id));
+  const removeSkill = (id) => saveLinks(linkedHabits.map((h) => h.id), linkedSkills.filter((s) => s.id !== id).map((s) => s.id));
+
+  const availableHabits = habitOptions.filter((o) => !linkedHabits.some((h) => h.id === o.id));
+  const availableSkills = skillOptions.filter((o) => !linkedSkills.some((s) => s.id === o.id));
+
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{goal.title}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-5 mt-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={cn('text-xs font-medium px-2 py-1 rounded-full', STATUS_COLORS[goal.status])}>
-              {STATUS_LABELS[goal.status]}
-            </span>
-            <span className="text-xs text-muted-foreground">{AREA_LABELS[goal.area]}</span>
-          </div>
+    <div className="rounded-[14px] border bg-card p-6">
+      <div className="text-overline" style={{ color }}>
+        {AREA_LABELS[goal.area]}
+        {goal.targetDate
+          ? ` · alvo ${new Date(goal.targetDate).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`
+          : ' · em andamento'}
+      </div>
+      <h2 className="mt-1.5 font-display text-2xl leading-tight text-foreground">{goal.title}</h2>
+      {goal.description && (
+        <p className="mt-2 text-sm leading-relaxed text-mut">{goal.description}</p>
+      )}
 
-          {goal.metricType !== 0 && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Progresso</p>
-              <Progress value={goal.progress} className="h-2" />
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  value={progressVal}
-                  onChange={(e) => setProgressVal(e.target.value)}
-                  className="h-8 w-28"
-                />
-                <span className="text-sm text-muted-foreground">
-                  {goal.metricType === 2 ? '%' : `/ ${goal.targetValue}`}
-                </span>
-                <Button size="sm" onClick={updateProgress} disabled={saving}>
-                  {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Salvar'}
-                </Button>
-              </div>
-            </div>
-          )}
+      <div className="mt-5 flex items-center gap-3">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-track">
+          <div className="h-full rounded-full" style={{ width: `${progress}%`, background: color }} />
+        </div>
+        <span className="font-numeral text-[22px]" style={{ color }}>{progress.toFixed(0)}%</span>
+      </div>
 
-          <div className="space-y-2">
-            <p className="text-sm font-medium flex items-center gap-1.5">
-              <Flag className="h-3.5 w-3.5" /> Milestones
-            </p>
-            <div className="space-y-1.5">
-              {goal.milestones.map((m) => (
-                <div key={m.id} className="flex items-center gap-2">
-                  <button onClick={() => completeMilestone(m.id, m.isCompleted)}>
-                    <div className={cn(
-                      'w-4 h-4 rounded border-2 flex items-center justify-center transition-colors',
-                      m.isCompleted ? 'bg-income border-income/40' : 'border-muted-foreground'
-                    )}>
-                      {m.isCompleted && <span className="text-white text-[10px]">✓</span>}
-                    </div>
-                  </button>
-                  <span className={cn('text-sm flex-1', m.isCompleted && 'line-through text-muted-foreground')}>
-                    {m.title}
-                    {m.isRequired && <span className="text-[10px] text-muted-foreground ml-1">(obrigatório)</span>}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2 mt-2">
-              <Input
-                placeholder="Novo milestone..."
-                value={newMilestone}
-                onChange={(e) => setNewMilestone(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addMilestone()}
-                className="h-8 text-sm"
-              />
-              <Button size="sm" variant="outline" onClick={addMilestone} disabled={!newMilestone.trim()}>
-                <Plus className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
+      {goal.metricType !== 0 && (
+        <div className="mt-4 flex items-center gap-2">
+          <Input
+            type="number"
+            value={progressVal}
+            onChange={(e) => setProgressVal(e.target.value)}
+            className="h-8 w-28"
+          />
+          <span className="text-sm text-mut2">{goal.metricType === 2 ? '%' : `/ ${goal.targetValue}`}</span>
+          <Button size="sm" onClick={updateProgress} disabled={saving}>
+            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Salvar'}
+          </Button>
+        </div>
+      )}
 
-          <div className="flex gap-2 flex-wrap pt-1 border-t">
-            {goal.status === 1 && <Button size="sm" variant="outline" onClick={() => changeStatus('pause')}>Pausar</Button>}
-            {goal.status === 2 && <Button size="sm" variant="outline" onClick={() => changeStatus('resume')}>Retomar</Button>}
-            {goal.status !== 3 && (
-              <Button size="sm" className="bg-primary hover:bg-primary" onClick={() => changeStatus('complete')}>
-                <Award className="h-3.5 w-3.5 mr-1" /> Concluir
-              </Button>
+      <div className="mt-6 flex items-center justify-between">
+        <span className="text-overline">Marcos</span>
+        {goal.milestones.length > 0 && (
+          <span className="text-xs text-faint">{doneMs} / {goal.milestones.length}</span>
+        )}
+      </div>
+      <div className="mt-3 flex flex-col">
+        {goal.milestones.map((m, i) => (
+          <div
+            key={m.id}
+            className={cn('flex items-center gap-3 py-2.5', i < goal.milestones.length - 1 && 'border-b border-line2')}
+          >
+            <button onClick={() => completeMilestone(m.id, m.isCompleted)} className="shrink-0">
+              <span
+                className={cn(
+                  'flex h-[18px] w-[18px] items-center justify-center rounded-full border-[1.5px] transition-colors',
+                  m.isCompleted ? 'border-transparent bg-income text-white' : 'border-track text-transparent'
+                )}
+              >
+                <span className="text-[10px] leading-none">✓</span>
+              </span>
+            </button>
+            <span className={cn('flex-1 text-[14.5px]', m.isCompleted && 'text-faint line-through')}>{m.title}</span>
+            {m.isRequired && !m.isCompleted && (
+              <span className="rounded-[5px] bg-track px-1.5 py-0.5 text-[11px] text-mut2">obrigatório</span>
             )}
           </div>
+        ))}
+        {goal.milestones.length === 0 && (
+          <p className="py-2 text-xs text-muted-foreground">Sem marcos ainda — adicione o primeiro abaixo.</p>
+        )}
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Input
+          placeholder="Novo marco..."
+          value={newMilestone}
+          onChange={(e) => setNewMilestone(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addMilestone()}
+          className="h-8 text-sm"
+        />
+        <Button size="sm" variant="outline" onClick={addMilestone} disabled={!newMilestone.trim()}>
+          <Plus className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+
+      <div className="mt-6 text-overline">Vinculados</div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {linkedHabits.map((h) => (
+          <LinkChip key={h.id} label={`Ritual · ${h.name}`} onRemove={() => removeHabit(h.id)} />
+        ))}
+        {linkedSkills.map((s) => (
+          <LinkChip key={s.id} label={`Habilidade · ${s.name}`} onRemove={() => removeSkill(s.id)} />
+        ))}
+        {linkedHabits.length === 0 && linkedSkills.length === 0 && (
+          <span className="text-xs text-faint">Vincule rituais e habilidades que sustentam esta meta.</span>
+        )}
+      </div>
+      {(availableHabits.length > 0 || availableSkills.length > 0) && (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {availableHabits.length > 0 && (
+            <Select value="" onValueChange={addHabit}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="+ Ritual" /></SelectTrigger>
+              <SelectContent>
+                {availableHabits.map((o) => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
+          {availableSkills.length > 0 && (
+            <Select value="" onValueChange={addSkill}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="+ Habilidade" /></SelectTrigger>
+              <SelectContent>
+                {availableSkills.map((o) => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
         </div>
-      </DialogContent>
-    </Dialog>
+      )}
+
+      <div className="mt-6 flex flex-wrap items-center gap-2 border-t pt-4">
+        <span className={cn('rounded-full px-2.5 py-1 text-xs font-medium', STATUS_COLORS[goal.status])}>
+          {STATUS_LABELS[goal.status]}
+        </span>
+        <div className="flex-1" />
+        {goal.status === 1 && <Button size="sm" variant="outline" onClick={() => changeStatus('pause')}>Pausar</Button>}
+        {goal.status === 2 && <Button size="sm" variant="outline" onClick={() => changeStatus('resume')}>Retomar</Button>}
+        {goal.status !== 3 && (
+          <Button size="sm" onClick={() => changeStatus('complete')}>
+            <Award className="mr-1 h-3.5 w-3.5" /> Concluir
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }
 

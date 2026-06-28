@@ -18,6 +18,8 @@ public class Goal : EntityBase, IUserOwned
     public decimal CurrentValue { get; set; }
     public string? CoverImage { get; set; }
     public string? LinkedCategoryId { get; set; }
+    public List<string> LinkedHabitIds { get; set; } = [];
+    public List<string> LinkedSkillIds { get; set; } = [];
     public List<Milestone> Milestones { get; set; } = [];
 
     public decimal Progress => MetricType switch
@@ -66,6 +68,13 @@ public class Goal : EntityBase, IUserOwned
         if (string.IsNullOrWhiteSpace(reason))
             throw new ValidationException("Motivo obrigatório para conclusão forçada.");
         Status = GoalStatus.Completed;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetLinks(IEnumerable<string> habitIds, IEnumerable<string> skillIds)
+    {
+        LinkedHabitIds = habitIds?.Distinct().ToList() ?? [];
+        LinkedSkillIds = skillIds?.Distinct().ToList() ?? [];
         UpdatedAt = DateTime.UtcNow;
     }
 

@@ -17,6 +17,8 @@ public record HabitTodayDto(
 
 public record MoodHistoryDto(DateTime Date, int Mood);
 
+public record DayActivityDto(DateTime Date, int TasksDone, int RitualsDone);
+
 public record HomeDto(
     int PendingTasksCount,
     int CompletedTasksCount,
@@ -33,7 +35,8 @@ public record HomeDto(
     int Level,
     string LevelName,
     int XpToNextLevel,
-    List<string> Achievements);
+    List<string> Achievements,
+    List<DayActivityDto> WeeklyActivity);
 
 public class GetHomeHandler(
     IDailyTaskRepository taskRepo,
@@ -50,10 +53,13 @@ public class GetHomeHandler(
     public async Task<HomeDto> Handle(GetHomeQuery q, CancellationToken ct)
     {
         var today = DateTime.UtcNow.Date;
+        var weekStart = today.AddDays(-6);
 
         var tTasks     = taskRepo.GetByDateAsync(q.UserId, today);
         var tHabits    = habitRepo.GetActiveAsync(q.UserId);
         var tCheckIns  = checkInRepo.GetByUserAndDateAsync(q.UserId, today);
+        var tWeekTasks = taskRepo.GetByDateRangeAsync(q.UserId, weekStart, today);
+        var tWeekChk   = checkInRepo.GetByUserAndDateRangeAsync(q.UserId, weekStart, today);
         var tGoals     = goalRepo.GetByStatusAsync(q.UserId, GoalStatus.Active);
         var tEvents    = timelineRepo.GetRecentAsync(q.UserId, 5);
         var tDiary     = diaryRepo.GetRecentAsync(q.UserId, 7);
@@ -62,7 +68,7 @@ public class GetHomeHandler(
         var tExpense   = txRepo.SumAsync(q.UserId, q.Month, q.Year, TransactionType.Expense, TransactionStatus.Paid);
         var tUser      = userRepo.GetByIdAsync(q.UserId);
 
-        await Task.WhenAll(tTasks, tHabits, tCheckIns, tGoals, tEvents, tDiary, tBalance, tIncome, tExpense, tUser);
+        await Task.WhenAll(tTasks, tHabits, tCheckIns, tGoals, tEvents, tDiary, tBalance, tIncome, tExpense, tUser, tWeekTasks, tWeekChk);
 
         var tasks     = tTasks.Result;
         var habits    = tHabits.Result;
@@ -80,6 +86,21 @@ public class GetHomeHandler(
 
         var pending = tasks.Where(t => t.Status == DailyTaskStatus.Pending).ToList();
 
+        var weekTasks = tWeekTasks.Result;
+        var weekChk = tWeekChk.Result;
+        var tasksByDay = weekTasks
+            .Where(t => t.Status == DailyTaskStatus.Completed)
+            .GroupBy(t => t.Date.Date)
+            .ToDictionary(g => g.Key, g => g.Count());
+        var ritualsByDay = weekChk
+            .Where(c => c.Status == HabitCheckInStatus.Done)
+            .GroupBy(c => c.Date.Date)
+            .ToDictionary(g => g.Key, g => g.Count());
+        var weeklyActivity = Enumerable.Range(0, 7)
+            .Select(i => weekStart.AddDays(i))
+            .Select(d => new DayActivityDto(d, tasksByDay.GetValueOrDefault(d), ritualsByDay.GetValueOrDefault(d)))
+            .ToList();
+
         return new HomeDto(
             pending.Count,
             tasks.Count(t => t.Status == DailyTaskStatus.Completed),
@@ -96,6 +117,7 @@ public class GetHomeHandler(
             user?.Level ?? 1,
             LevelCalculator.LevelName(user?.Level ?? 1),
             LevelCalculator.XpToNext(user?.TotalXp ?? 0),
-            user?.Achievements ?? []);
+            user?.Achievements ?? [],
+            weeklyActivity);
     }
 }

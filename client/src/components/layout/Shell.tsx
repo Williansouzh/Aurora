@@ -127,16 +127,18 @@ export function Shell({ children, user, onSignOut, access }) {
     }))
     .filter((section) => section.items.length > 0);
 
-  // Mobile bottom tab bar — up to 4 primary destinations (filtered by access) + Menu
+  // Mobile bottom tab bar — primary destinations from the Quiet design (filtered by
+  // access), capped at 5 to keep tap targets comfortable. Menu (☰) covers the rest.
   const bottomNavCandidates = [
     { moduleKey: 'home', to: '/', end: true, icon: LayoutDashboard, label: 'Home' },
     { moduleKey: 'today', to: '/today', icon: CalendarCheck, label: 'Meu Dia' },
-    { moduleKey: 'habits', to: '/habits', icon: Flame, label: 'Rituais' },
+    { moduleKey: 'goals', to: '/goals', icon: Target, label: 'Jornada' },
+    { moduleKey: 'studies', to: '/studies', icon: BookOpen, label: 'Estudos' },
     { moduleKey: 'finances', to: '/finance', icon: Wallet, label: 'Dinheiro' },
   ];
-  const bottomNavItems = bottomNavCandidates.filter(
-    (item) => !access || allowedModules.has(item.moduleKey)
-  );
+  const bottomNavItems = bottomNavCandidates
+    .filter((item) => !access || allowedModules.has(item.moduleKey))
+    .slice(0, 5);
 
   const sidebarContent = (isMobile = false) => (
     <div className="flex h-full flex-col">
