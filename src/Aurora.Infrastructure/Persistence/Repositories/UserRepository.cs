@@ -26,4 +26,16 @@ public class UserRepository(MongoContext context) : IUserRepository
 
     public Task<List<User>> GetAllAsync() =>
         context.Users.Find(x => x.DeletedAt == null).ToListAsync();
+
+    public Task<List<User>> GetHabitReminderCandidatesAsync(int hour) =>
+        context.Users.Find(x =>
+            x.DeletedAt == null &&
+            x.Notifications.HabitReminderEnabled &&
+            x.Notifications.HabitReminderHour == hour).ToListAsync();
+
+    public Task<List<User>> GetWeeklyPlanningReminderCandidatesAsync(int hour) =>
+        context.Users.Find(x =>
+            x.DeletedAt == null &&
+            x.Notifications.WeeklyPlanningReminderEnabled &&
+            x.Notifications.WeeklyPlanningReminderHour == hour).ToListAsync();
 }

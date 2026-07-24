@@ -35,12 +35,10 @@ public class WeeklyPlanningReminderService(IServiceScopeFactory scopeFactory, IL
         var weeklyRepo  = scope.ServiceProvider.GetRequiredService<IWeeklyPlanRepository>();
         var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
-        var users = await userRepo.GetAllAsync();
+        var users = await userRepo.GetWeeklyPlanningReminderCandidatesAsync(nowUtc.Hour);
 
         foreach (var user in users.Where(u =>
-            u.Notifications.WeeklyPlanningReminderEnabled &&
-            nowUtc.Hour == u.Notifications.WeeklyPlanningReminderHour &&
-            (u.LastWeeklyReminderSentAt is null || u.LastWeeklyReminderSentAt.Value.Date < nowUtc.Date)))
+            u.LastWeeklyReminderSentAt is null || u.LastWeeklyReminderSentAt.Value.Date < nowUtc.Date))
         {
             var currentPlan = await weeklyRepo.GetCurrentAsync(user.Id);
             if (currentPlan is not null) continue;

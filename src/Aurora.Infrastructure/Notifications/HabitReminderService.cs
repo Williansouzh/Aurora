@@ -35,12 +35,10 @@ public class HabitReminderService(IServiceScopeFactory scopeFactory, ILogger<Hab
         var checkInRepo    = scope.ServiceProvider.GetRequiredService<IHabitCheckInRepository>();
         var emailSender    = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
-        var users = await userRepo.GetAllAsync();
+        var users = await userRepo.GetHabitReminderCandidatesAsync(nowUtc.Hour);
 
         foreach (var user in users.Where(u =>
-            u.Notifications.HabitReminderEnabled &&
-            nowUtc.Hour == u.Notifications.HabitReminderHour &&
-            (u.LastHabitReminderSentAt is null || u.LastHabitReminderSentAt.Value.Date < nowUtc.Date)))
+            u.LastHabitReminderSentAt is null || u.LastHabitReminderSentAt.Value.Date < nowUtc.Date))
         {
             var habits   = await habitRepo.GetActiveAsync(user.Id);
             var checkIns = await checkInRepo.GetByUserAndDateAsync(user.Id, nowUtc.Date);
