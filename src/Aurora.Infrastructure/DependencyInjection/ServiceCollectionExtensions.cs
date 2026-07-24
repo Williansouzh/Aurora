@@ -16,6 +16,7 @@ using Aurora.Infrastructure.Storage;
 using Aurora.Infrastructure.Time;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using StackExchange.Redis;
@@ -334,6 +335,7 @@ public static class ServiceCollectionExtensions
         var ctx = sp.GetRequiredService<MongoContext>();
         var encryption = sp.GetRequiredService<IEncryptionService>();
         var passwordHasher = sp.GetRequiredService<IPasswordHasher>();
-        await AccessControlSeeder.SeedAsync(ctx, configuration, encryption, passwordHasher);
+        var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("AccessControlSeeder");
+        await AccessControlSeeder.SeedAsync(ctx, configuration, encryption, passwordHasher, logger);
     }
 }

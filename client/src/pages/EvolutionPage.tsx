@@ -271,7 +271,9 @@ function PhotoFormModal({ api, album, onClose, onCreated }) {
       });
       if (!res.ok) throw new Error('Erro ao enviar imagem.');
       const body = await res.json();
-      const imageUrl = body.data?.url;
+      // Persist the storage object key (not the short-lived presigned preview URL); the API
+      // resolves it into a fresh signed URL on every read.
+      const imageUrl = body.data?.key ?? body.data?.url;
 
       await api.post(`/api/evolution/albums/${album.id}/photos`, {
         imageUrl, caption: caption || null, date,

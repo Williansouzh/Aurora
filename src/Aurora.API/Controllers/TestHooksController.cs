@@ -1,3 +1,7 @@
+// This controller exposes live MFA codes for e2e tests and must never exist in a shipped binary.
+// It is compiled only in DEBUG builds; all Release/production images (built with -c Release) omit it
+// entirely, so the runtime environment check below is defense-in-depth rather than the only guard.
+#if DEBUG
 using Aurora.Application.Abstractions.Security;
 using Aurora.Application.Features.Auth.Common;
 using Aurora.Infrastructure.Persistence.Mongo;
@@ -50,3 +54,4 @@ public class TestHooksController(
         return NotFound();
     }
 }
+#endif

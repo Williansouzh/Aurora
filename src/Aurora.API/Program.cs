@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Aurora.API.Extensions;
 using Aurora.API.Health;
 using Aurora.API.Middlewares;
@@ -47,6 +48,33 @@ if (jwtKeys.Any(x => string.IsNullOrWhiteSpace(x.Key) || x.Key.Length < 32))
     throw new InvalidOperationException("All JWT signing keys must have at least 32 characters.");
 }
 
+// A long-but-committed placeholder key still passes the length check above, which would let a
+// misconfigured deployment boot with a signing/encryption key that is public in source control.
+// Outside Development we refuse to start unless every secret has been overridden.
+if (!builder.Environment.IsDevelopment())
+{
+    var encryption = builder.Configuration.GetSection("Encryption").Get<EncryptionSettings>() ?? new EncryptionSettings();
+    var insecureSecrets = new (string Name, string Value)[]
+    {
+        ("Jwt:Key", jwt.Key),
+        ("Encryption:Key", encryption.Key),
+        ("Encryption:HashKey", encryption.HashKey),
+    }
+    .Concat(jwtKeys.Select(k => (Name: $"Jwt:Keys:{k.KeyId}", Value: k.Key)))
+    .Where(s => string.IsNullOrWhiteSpace(s.Value)
+        || s.Value.Contains("CHANGE_THIS", StringComparison.OrdinalIgnoreCase)
+        || s.Value.Contains("CHANGE_ME", StringComparison.OrdinalIgnoreCase))
+    .Select(s => s.Name)
+    .ToArray();
+
+    if (insecureSecrets.Length > 0)
+    {
+        throw new InvalidOperationException(
+            "Refusing to start with default placeholder secrets. Override these via environment/secret store: "
+            + string.Join(", ", insecureSecrets));
+    }
+}
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters
@@ -69,11 +97,21 @@ builder.Services.AddHealthChecks()
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddFixedWindowLimiter("global", limiter =>
+
+    // Partition per authenticated user, falling back to client IP for anonymous requests, so the
+    // limit is per-client rather than a single bucket shared across the whole API.
+    options.AddPolicy("per-user", httpContext =>
     {
-        limiter.PermitLimit = 120;
-        limiter.Window = TimeSpan.FromMinutes(1);
-        limiter.QueueLimit = 0;
+        var partitionKey = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? httpContext.Connection.RemoteIpAddress?.ToString()
+            ?? "anonymous";
+
+        return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 120,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        });
     });
 });
 
@@ -145,7 +183,7 @@ app.UseAuthorization();
 app.MapGet("/", () => Results.Redirect("/swagger"));
 app.MapHealthChecks("/health");
 app.MapHealthChecks("/health/ready");
-app.MapControllers().RequireRateLimiting("global");
+app.MapControllers().RequireRateLimiting("per-user");
 
 using (var scope = app.Services.CreateScope())
 {
