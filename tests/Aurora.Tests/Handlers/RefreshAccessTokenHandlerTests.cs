@@ -120,6 +120,27 @@ public class RefreshAccessTokenHandlerTests
     }
 
     [Fact]
+    public async Task Deve_revogar_todos_os_tokens_do_usuario_ao_detectar_reuso()
+    {
+        // Presenting an already-revoked token signals theft/replay: every token for that user
+        // must be revoked, not just the one presented.
+        var revokedToken = MakeToken(isRevoked: true);
+        _encryption.Setup(x => x.HashDeterministic(ValidRawToken)).Returns(ValidHash);
+        _audit.Setup(x => x.RecordAsync(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _refreshTokenRepo.Setup(r => r.GetByHashAsync(ValidHash)).ReturnsAsync(revokedToken);
+        _refreshTokenRepo.Setup(r => r.RevokeAllByUserAsync("user1")).Returns(Task.CompletedTask);
+
+        var act = () => CreateHandler().Handle(new RefreshTokenCommand(ValidRawToken), default);
+
+        await act.Should().ThrowAsync<UnauthorizedException>();
+        _refreshTokenRepo.Verify(r => r.RevokeAllByUserAsync("user1"), Times.Once);
+        _refreshTokenRepo.Verify(r => r.AddAsync(It.IsAny<RefreshToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Deve_retornar_erro_para_refresh_token_inexistente()
     {
         _refreshTokenRepo.Setup(r => r.GetByHashAsync(It.IsAny<string>()))
