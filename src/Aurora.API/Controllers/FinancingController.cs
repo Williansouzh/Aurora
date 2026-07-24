@@ -30,7 +30,7 @@ public class FinancingController(ISender sender, IUserContext user) : Controller
     public async Task<IActionResult> FinancingById(string id) =>
         Ok(new ApiResponse<FinancingDto>(true, await sender.Send(new GetFinancingByIdQuery(user.UserId, id))));
 
-    [HttpPost]
+    [HttpPost, Idempotency.Idempotent]
     public async Task<IActionResult> CreateFinancing(CreateFinancingCommand req) =>
         Ok(new ApiResponse<FinancingDto>(true, await sender.Send(req with { UserId = user.UserId })));
 

@@ -40,6 +40,16 @@ public class RedisCacheService(IDistributedCache cache, IConnectionMultiplexer? 
     public Task RemoveAsync(string key, CancellationToken ct = default) =>
         cache.RemoveAsync(key, ct);
 
+    public async Task<bool> AcquireLockAsync(string key, TimeSpan ttl, CancellationToken ct = default)
+    {
+        if (redis is null)
+        {
+            return true;
+        }
+
+        return await redis.GetDatabase().StringSetAsync(key, "1", ttl, When.NotExists);
+    }
+
     public async Task RemoveByPrefixAsync(string prefix, CancellationToken ct = default)
     {
         if (redis is null) return;

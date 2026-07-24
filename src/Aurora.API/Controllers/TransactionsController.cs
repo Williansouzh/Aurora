@@ -68,7 +68,7 @@ public class TransactionsController(ISender sender, IUserContext user) : Control
     public async Task<IActionResult> TransactionById(string id) =>
         Ok(new ApiResponse<TransactionDto>(true, await sender.Send(new GetTransactionByIdQuery(user.UserId, id))));
 
-    [HttpPost]
+    [HttpPost, Idempotency.Idempotent]
     public async Task<IActionResult> CreateTransaction(CreateTransactionCommand req) =>
         Ok(new ApiResponse<TransactionDto>(true, await sender.Send(req with { UserId = user.UserId })));
 

@@ -12,7 +12,7 @@ namespace Aurora.API.Controllers;
 [ApiController, Authorize, RequireModule(ModuleKeys.Finances), Route("api/invoices")]
 public class InvoicesController(ISender sender, IUserContext user) : ControllerBase
 {
-    [HttpPost("{id}/pay")]
+    [HttpPost("{id}/pay"), Idempotency.Idempotent]
     public async Task<IActionResult> PayInvoice(string id, PayInvoiceRequest req) =>
         Ok(new ApiResponse<CreditCardInvoiceDto>(true,
             await sender.Send(new PayCreditCardInvoiceCommand(user.UserId, id, req.SourceAccountId, req.Amount))));

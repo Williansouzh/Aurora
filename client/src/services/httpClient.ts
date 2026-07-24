@@ -56,6 +56,11 @@ async function parseResponse(response) {
   return body.data;
 }
 
+function newIdempotencyKey() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 async function rawRequest(path, options = {}, isRetry = false) {
   const token = getMemoryToken();
   const response = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
@@ -102,7 +107,13 @@ export function createHttpClient() {
 
   return {
     get: (path) => rawRequest(path),
-    post: (path, body) => rawRequest(path, { method: 'POST', body: JSON.stringify(body) }),
+    // A per-call Idempotency-Key rides along with POSTs; because the 401-refresh retry reuses the
+    // same options object, a retried create can't produce a duplicate server-side record.
+    post: (path, body) => rawRequest(path, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Idempotency-Key': newIdempotencyKey() },
+    }),
     put: (path, body) => rawRequest(path, { method: 'PUT', body: JSON.stringify(body) }),
     patch: (path, body) => rawRequest(path, { method: 'PATCH', ...(body ? { body: JSON.stringify(body) } : {}) }),
     delete: (path, body) => rawRequest(path, { method: 'DELETE', ...(body ? { body: JSON.stringify(body) } : {}) }),

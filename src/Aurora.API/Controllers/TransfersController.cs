@@ -18,7 +18,7 @@ public class TransfersController(ISender sender, IUserContext user) : Controller
     public async Task<IActionResult> GetTransfers([FromQuery] int? month, [FromQuery] int? year) =>
         Ok(new ApiResponse<List<TransferDto>>(true, await sender.Send(new GetTransfersQuery(user.UserId, month, year))));
 
-    [HttpPost]
+    [HttpPost, Idempotency.Idempotent]
     public async Task<IActionResult> CreateTransfer(CreateTransferCommand req) =>
         Ok(new ApiResponse<TransferDto>(true, await sender.Send(req with { UserId = user.UserId })));
 
