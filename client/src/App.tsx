@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Shell } from './components/layout/Shell';
 import { Onboarding } from './components/Onboarding';
@@ -5,29 +6,36 @@ import { useAuth } from './hooks/useAuth';
 import { useAccess } from './hooks/useAccess';
 import { useOnboarding } from './hooks/useOnboarding';
 import { useToast } from './hooks/useToast';
-import { AccountsPage } from './pages/AccountsPage';
-import { AdminPage } from './pages/AdminPage';
-import { AuthPage } from './pages/AuthPage';
-import { BudgetsPage } from './pages/BudgetsPage';
-import { CategoriesPage } from './pages/CategoriesPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { ConfirmEmailPage, ForgotPasswordPage, ResetPasswordPage } from './pages/ForgotPasswordPage';
-import { FinanceOverviewPage } from './pages/FinanceOverviewPage';
-import { FinancingDetailPage } from './pages/FinancingDetailPage';
-import { FinancingsPage } from './pages/FinancingsPage';
-import { BacklogPage } from './pages/BacklogPage';
-import { DiaryPage } from './pages/DiaryPage';
-import { EvolutionPage } from './pages/EvolutionPage';
-import { GoalsPage } from './pages/GoalsPage';
-import { HabitsPage } from './pages/HabitsPage';
-import { InvoicePage } from './pages/InvoicePage';
-import { SettingsPage } from './pages/SettingsPage';
-import { StudiesPage } from './pages/StudiesPage';
-import { TimelinePage } from './pages/TimelinePage';
-import { TodayPage } from './pages/TodayPage';
-import { RetrospectivesPage } from './pages/RetrospectivesPage';
-import { TransactionsPage } from './pages/TransactionsPage';
-import { WeeklyPlanningPage } from './pages/WeeklyPlanningPage';
+
+// Route components are code-split so each page ships in its own chunk and the initial bundle
+// (login screen) stays small. Named exports are mapped to the default React.lazy expects.
+const named = (loader, name) => lazy(() => loader().then((m) => ({ default: m[name] })));
+
+const AccountsPage = named(() => import('./pages/AccountsPage'), 'AccountsPage');
+const AdminPage = named(() => import('./pages/AdminPage'), 'AdminPage');
+const AuthPage = named(() => import('./pages/AuthPage'), 'AuthPage');
+const BudgetsPage = named(() => import('./pages/BudgetsPage'), 'BudgetsPage');
+const CategoriesPage = named(() => import('./pages/CategoriesPage'), 'CategoriesPage');
+const DashboardPage = named(() => import('./pages/DashboardPage'), 'DashboardPage');
+const ForgotPasswordPage = named(() => import('./pages/ForgotPasswordPage'), 'ForgotPasswordPage');
+const ResetPasswordPage = named(() => import('./pages/ForgotPasswordPage'), 'ResetPasswordPage');
+const ConfirmEmailPage = named(() => import('./pages/ForgotPasswordPage'), 'ConfirmEmailPage');
+const FinanceOverviewPage = named(() => import('./pages/FinanceOverviewPage'), 'FinanceOverviewPage');
+const FinancingDetailPage = named(() => import('./pages/FinancingDetailPage'), 'FinancingDetailPage');
+const FinancingsPage = named(() => import('./pages/FinancingsPage'), 'FinancingsPage');
+const BacklogPage = named(() => import('./pages/BacklogPage'), 'BacklogPage');
+const DiaryPage = named(() => import('./pages/DiaryPage'), 'DiaryPage');
+const EvolutionPage = named(() => import('./pages/EvolutionPage'), 'EvolutionPage');
+const GoalsPage = named(() => import('./pages/GoalsPage'), 'GoalsPage');
+const HabitsPage = named(() => import('./pages/HabitsPage'), 'HabitsPage');
+const InvoicePage = named(() => import('./pages/InvoicePage'), 'InvoicePage');
+const SettingsPage = named(() => import('./pages/SettingsPage'), 'SettingsPage');
+const StudiesPage = named(() => import('./pages/StudiesPage'), 'StudiesPage');
+const TimelinePage = named(() => import('./pages/TimelinePage'), 'TimelinePage');
+const TodayPage = named(() => import('./pages/TodayPage'), 'TodayPage');
+const RetrospectivesPage = named(() => import('./pages/RetrospectivesPage'), 'RetrospectivesPage');
+const TransactionsPage = named(() => import('./pages/TransactionsPage'), 'TransactionsPage');
+const WeeklyPlanningPage = named(() => import('./pages/WeeklyPlanningPage'), 'WeeklyPlanningPage');
 
 function App() {
   const { api, ready, user, signIn, signOut, updateUser } = useAuth();
@@ -45,6 +53,7 @@ function App() {
 
   return (
     <>
+      <Suspense fallback={<div className="app-loading">Carregando...</div>}>
       <Routes>
         <Route path="/login" element={<AuthPage mode="login" api={api} onAuth={signIn} />} />
         <Route path="/register" element={<AuthPage mode="register" api={api} onAuth={signIn} />} />
@@ -96,6 +105,7 @@ function App() {
           }
         />
       </Routes>
+      </Suspense>
 
       {user && <Onboarding onboarding={onboarding} onCompleted={completeOnboarding} />}
     </>
