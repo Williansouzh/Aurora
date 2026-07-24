@@ -5,6 +5,7 @@ using Aurora.Domain.Entities;
 using Aurora.Domain.Enums;
 using Aurora.Infrastructure.Persistence.Mongo;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -16,12 +17,13 @@ public static class AccessControlSeeder
         MongoContext ctx,
         IConfiguration configuration,
         IEncryptionService encryption,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        ILogger logger)
     {
         await SeedModulesAsync(ctx);
         await SeedLifeAreasAsync(ctx);
         var plans = await SeedPlansAsync(ctx);
-        await EnsureDefaultSuperAdminAsync(ctx, configuration, plans, encryption, passwordHasher);
+        await EnsureDefaultSuperAdminAsync(ctx, configuration, plans, encryption, passwordHasher, logger);
         await EnsureUserSubscriptionsAsync(ctx, plans);
         await PromoteConfiguredSuperAdminsAsync(ctx, configuration);
     }
@@ -238,21 +240,29 @@ public static class AccessControlSeeder
         IConfiguration configuration,
         Dictionary<string, Plan> plans,
         IEncryptionService encryption,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        ILogger logger)
     {
         var section = configuration.GetSection("Admin:DefaultSuperAdmin");
         var email = section["Email"]?.Trim();
         var password = section["Password"];
         var name = section["Name"]?.Trim();
 
-        if (string.IsNullOrWhiteSpace(email))
+        // No hardcoded fallback credentials: the default super admin is only seeded when both an
+        // email and a non-placeholder password are explicitly configured (env/secret store).
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
-            email = "superadmin@aurora.com.br";
+            logger.LogInformation(
+                "Admin:DefaultSuperAdmin not fully configured (Email/Password missing); skipping default super admin seed.");
+            return;
         }
 
-        if (string.IsNullOrWhiteSpace(password))
+        if (password.Contains("AuroraAdmin", StringComparison.OrdinalIgnoreCase)
+            || password.Contains("CHANGE_", StringComparison.OrdinalIgnoreCase))
         {
-            password = "AuroraAdmin#2026!";
+            logger.LogWarning(
+                "Refusing to seed default super admin with a known placeholder password. Set a real Admin:DefaultSuperAdmin:Password.");
+            return;
         }
 
         if (string.IsNullOrWhiteSpace(name))

@@ -30,6 +30,7 @@ public class MonthlySummaryHandlerTests
         decimal prevIncome = 0, decimal prevExpense = 0)
     {
         _accRepo.Setup(r => r.GetTotalBalanceAsync("user1")).ReturnsAsync(5000m);
+        _accRepo.Setup(r => r.GetByUserAsync("user1")).ReturnsAsync([]);
         _txRepo.Setup(r => r.SumAsync("user1", 5, 2025, TransactionType.Income, TransactionStatus.Paid)).ReturnsAsync(income);
         _txRepo.Setup(r => r.SumAsync("user1", 5, 2025, TransactionType.Expense, TransactionStatus.Paid)).ReturnsAsync(expense);
         _txRepo.Setup(r => r.SumAsync("user1", 4, 2025, TransactionType.Income, TransactionStatus.Paid)).ReturnsAsync(prevIncome);
@@ -90,7 +91,7 @@ public class MonthlySummaryHandlerTests
     [Fact]
     public async Task Deve_usar_cache_quando_disponivel()
     {
-        var cached = new MonthlySummaryDto(5000m, 3000m, 1000m, 2000m, 0, 0, 5, 2, [], 2500m, 800m, 20m, 25m, 66.67m, []);
+        var cached = new MonthlySummaryDto(5000m, 3000m, 1000m, 2000m, 0, 0, 5, 2, [], 2500m, 800m, 20m, 25m, 66.67m, [], 0m, 0m);
         _cache.Setup(c => c.GetAsync<MonthlySummaryDto>(It.IsAny<string>(), default))
               .ReturnsAsync(cached);
 

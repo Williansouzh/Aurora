@@ -1,0 +1,46 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs cat)",
+      "Bash(dotnet build *)",
+      "Bash(~/.dotnet/dotnet build *)",
+      "Bash(which dotnet *)",
+      "Read(//usr/**)",
+      "Bash(find /usr /snap /opt -name \"dotnet\" -type f 2>/dev/null | head -5; ls /snap/dotnet-sdk/ 2>/dev/null; ls /usr/share/dotnet/ 2>/dev/null)",
+      "Read(//snap/**)",
+      "Bash(node -e ' *)",
+      "Bash(npm run *)",
+      "Bash(node node_modules/vite/bin/vite.js build)",
+      "Bash(node node_modules/typescript/bin/tsc --noEmit)",
+      "Bash(node node_modules/tailwindcss/lib/cli.js -i src/styles.css -o /tmp/claude-1000/-home-willian-Projects-Aurora/1a8eed4c-e55c-4b8a-b23e-82c4ffca36e6/scratchpad/out.css)",
+      "Bash(node node_modules/tailwindcss/lib/cli.js -c tailwind.config.js -i src/styles.css -o /tmp/claude-1000/-home-willian-Projects-Aurora/1a8eed4c-e55c-4b8a-b23e-82c4ffca36e6/scratchpad/out.css)",
+      "Bash(docker compose *)",
+      "Bash(curl -s -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"superadmin@aurora.com.br\",\"password\":\"AuroraAdmin#2026!\"}' -w '\\\\nHTTP=%{http_code}\\\\n')",
+      "Bash(echo \"=== UpcomingDuesQuery/dto ===\"; sed -n '1,40p' src/Aurora.Application/Features/Dashboard/UpcomingDues/UpcomingDuesQuery.cs | grep -iE \"record UpcomingDueDto|public record|UpcomingDueDto\\\\\\(\" ; grep -rn \"record UpcomingDueDto\" src/Aurora.Application; echo \"=== TransactionDto ===\"; grep -rn \"record TransactionDto\" src/Aurora.Application; sed -n '/record TransactionDto/,/\\);/p' src/Aurora.Application/Features/Transactions/Common/*.cs | head -40)",
+      "Bash(grep -nA2 \"HttpPost\" src/Aurora.API/Controllers/CategoriesController.cs)",
+      "Bash(grep -nA2 \"public async Task<IActionResult> Create\" src/Aurora.API/Controllers/TransactionsController.cs)",
+      "Bash(node /tmp/claude-1000/-home-willian-Projects-Aurora/1a8eed4c-e55c-4b8a-b23e-82c4ffca36e6/scratchpad/seed-finance.mjs)",
+      "Bash(node -e 'let d=\"\";process.stdin.on\\(\"data\",c=>d+=c\\);process.stdin.on\\(\"end\",\\(\\)=>console.log\\(JSON.parse\\(d\\).data.map\\(c=>c.categoryName+\":\"+c.percentage+\"%\"\\)\\)\\)')",
+      "Bash(node -e 'let d=\"\";process.stdin.on\\(\"data\",c=>d+=c\\);process.stdin.on\\(\"end\",\\(\\)=>{const s=JSON.parse\\(d\\).data;console.log\\(\"done days:\",\\(s.calendar||[]\\).filter\\(x=>x.status===1\\).map\\(x=>x.date.slice\\(0,10\\)\\)\\);console.log\\(\"currentStreak:\",s.currentStreak,\"doneThisMonth:\",s.doneThisMonth\\)}\\)')",
+      "Bash(git check-ignore *)",
+      "Skill(code-review)",
+      "Skill(code-review:*)",
+      "Bash(SC=/home/willian/.claude/projects/-home-willian-Projects-Aurora/1a8eed4c-e55c-4b8a-b23e-82c4ffca36e6/tool-results/bewf85r30.txt *)",
+      "Bash(node node_modules/vitest/vitest.mjs run)",
+      "Bash(node node_modules/vitest/dist/cli.js run)",
+      "Bash(xargs -I{} basename {})",
+      "Bash(dotnet --version)",
+      "Bash(git checkout *)",
+      "Bash(node_modules/.bin/vite build *)",
+      "Bash(node --input-type=module -e \"import\\('@babel/core'\\).catch\\(\\(\\)=>{}\\)\")",
+      "Bash(npx --no-install esbuild src/pages/EvolutionPage.tsx --loader=tsx --bundle=false)",
+      "Bash(node -e \"const fs=require\\('fs'\\);const s=fs.readFileSync\\('src/pages/EvolutionPage.tsx','utf8'\\);const i=s.indexOf\\('body.data?.key'\\);console.log\\(i>0?'edit present, snippet:':'MISSING'\\);console.log\\(s.slice\\(i-40,i+80\\)\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ],
+    "additionalDirectories": [
+      "/home/willian/Projects/Aurora/src/Aurora.Application/Features/Transactions/Common",
+      "/home/willian/.claude/projects/-home-willian-Projects-Aurora/1a8eed4c-e55c-4b8a-b23e-82c4ffca36e6/tool-results"
+    ]
+  }
+}

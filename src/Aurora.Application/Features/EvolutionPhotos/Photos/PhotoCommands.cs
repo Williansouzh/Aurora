@@ -1,3 +1,4 @@
+using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Features.EvolutionPhotos.Common;
 using Aurora.Domain.Entities;
@@ -76,7 +77,7 @@ public class AddPhotoHandler(
     }
 }
 
-public class DeletePhotoHandler(IEvolutionPhotoRepository repo)
+public class DeletePhotoHandler(IEvolutionPhotoRepository repo, IStorageService storage)
     : IRequestHandler<DeletePhotoCommand>
 {
     public async Task Handle(DeletePhotoCommand cmd, CancellationToken ct)
@@ -84,6 +85,11 @@ public class DeletePhotoHandler(IEvolutionPhotoRepository repo)
         var photo = await repo.GetByIdAsync(cmd.Id, cmd.UserId, ct)
             ?? throw new NotFoundException("Foto não encontrada.");
         await repo.DeleteAsync(photo.Id, cmd.UserId, ct);
+
+        if (!string.IsNullOrWhiteSpace(photo.ImageUrl))
+        {
+            await storage.DeleteAsync(photo.ImageUrl, ct);
+        }
     }
 }
 
