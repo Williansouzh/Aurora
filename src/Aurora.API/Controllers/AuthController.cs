@@ -33,6 +33,12 @@ public class AuthController(
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterUserCommand cmd)
     {
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        if (!await rateLimiter.IsAllowedAsync($"register:{ip}", 5, TimeSpan.FromHours(1)))
+        {
+            return StatusCode(429, new ApiResponse<string>(false, "Muitos cadastros a partir deste dispositivo. Tente novamente mais tarde."));
+        }
+
         var result = await sender.Send(cmd);
         return AuthResponse(result);
     }
