@@ -1,12 +1,15 @@
 import React from 'react';
 
-export class ErrorBoundary extends React.Component {
-  constructor(props) {
+type ErrorBoundaryProps = { children?: React.ReactNode };
+type ErrorBoundaryState = { error: Error | null };
+
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { error: null };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { error };
   }
 

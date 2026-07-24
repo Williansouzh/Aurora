@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { accountTypes, categoryTypes, transactionTypes } from '../constants/financeOptions';
 import { enumLabel, enumValue } from '../utils/enumHelpers';
 import { todayInput } from '../utils/formatters';
-import { Select } from './ui/Select';
+import { OptionSelect } from './ui/OptionSelect';
 
 const steps = ['Conta', 'Categorias', 'Transacao'];
 
@@ -195,7 +195,7 @@ export function Onboarding({ onboarding, onCompleted }) {
             </label>
             <label>
               Tipo
-              <Select value={accountForm.type} options={accountTypes} onChange={(type) => setAccountForm({ ...accountForm, type })} />
+              <OptionSelect value={accountForm.type} options={accountTypes} onChange={(type) => setAccountForm({ ...accountForm, type })} />
             </label>
             {accountForm.type === 'CreditCard' ? (
               <>
@@ -295,7 +295,7 @@ export function Onboarding({ onboarding, onCompleted }) {
             </label>
             <label>
               Tipo
-              <Select
+              <OptionSelect
                 value={transactionForm.type}
                 options={transactionTypes.filter(([type]) => type !== 'Transfer')}
                 onChange={(type) => {
@@ -306,7 +306,7 @@ export function Onboarding({ onboarding, onCompleted }) {
             </label>
             <label>
               Categoria
-              <Select
+              <OptionSelect
                 value={transactionForm.categoryId}
                 options={categoriesForType.map((category) => [category.id, category.name])}
                 onChange={(categoryId) => setTransactionForm({ ...transactionForm, categoryId })}
@@ -314,7 +314,7 @@ export function Onboarding({ onboarding, onCompleted }) {
             </label>
             <label>
               Conta
-              <Select
+              <OptionSelect
                 value={transactionForm.accountId}
                 options={onboarding.accounts.map((account) => [account.id, account.name])}
                 onChange={(accountId) => setTransactionForm({ ...transactionForm, accountId })}
