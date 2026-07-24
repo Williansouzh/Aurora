@@ -1,6 +1,8 @@
 using Aurora.Application.Abstractions.Common;
 using Aurora.Application.Abstractions.Persistence;
+using Aurora.Application.Common;
 using Aurora.Application.Features.Access.Common;
+using Aurora.Domain.Entities;
 using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
 
@@ -12,17 +14,21 @@ public class AccessControlService(
     IPlanRepository plans,
     IUserSubscriptionRepository subscriptions,
     IUserModuleOverrideRepository overrides,
-    ILifeAreaCatalogRepository lifeAreas) : IAccessControlService
+    ILifeAreaCatalogRepository lifeAreas,
+    ICacheService cache) : IAccessControlService
 {
+    // Access checks run on nearly every module-gated request. The per-user context and the module
+    // catalog are cached for a short window so the common path serves from Redis instead of issuing
+    // ~5 Mongo queries; the TTL bounds staleness for catalog/plan changes and the admin write paths
+    // invalidate explicitly for immediate effect.
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(60);
+
     public async Task<AccessSnapshotDto> GetSnapshotAsync(string userId, CancellationToken ct = default)
     {
-        var user = await users.GetByIdAsync(userId)
+        var context = await GetContextAsync(userId, ct)
             ?? throw new UnauthorizedException("Usuario nao encontrado.");
 
-        var allModules = await modules.GetAllAsync(ct);
-        var currentSubscription = await subscriptions.GetActiveByUserAsync(userId, ct);
-        var plan = currentSubscription is null ? null : await plans.GetByIdAsync(currentSubscription.PlanId, ct);
-        var userOverrides = await overrides.GetByUserAsync(userId, ct);
+        var allModules = await GetModulesAsync(ct);
         var areas = await lifeAreas.GetAllAsync(ct);
 
         var moduleDtos = allModules
@@ -30,8 +36,8 @@ public class AccessControlService(
             .ThenBy(x => x.ProductName)
             .Select(module =>
             {
-                var decision = Decide(user.Role, user.Status, module, plan?.ModuleKeys ?? [], userOverrides);
-                var activeOverride = FindActiveOverride(module.Key, userOverrides);
+                var decision = Decide(context.Role, context.Status, module, context.PlanModuleKeys, context.Overrides);
+                var activeOverride = FindActiveOverride(module.Key, context.Overrides);
 
                 return new ModuleAccessDto(
                     module.Key,
@@ -53,17 +59,17 @@ public class AccessControlService(
             .ToList();
 
         return new AccessSnapshotDto(
-            user.Id,
-            user.Role,
-            user.Status,
-            plan?.Key,
-            plan?.Name,
+            userId,
+            context.Role,
+            context.Status,
+            context.PlanKey,
+            context.PlanName,
             moduleDtos,
             areas
                 .OrderBy(x => x.SortOrder)
                 .Select(x => new LifeAreaAccessDto(x.Key, x.Area, x.Name, x.Color, x.Icon, x.Status, x.SortOrder))
                 .ToList(),
-            plan?.Limits ?? [],
+            context.PlanLimits,
             DateTime.UtcNow);
     }
 
@@ -73,23 +79,19 @@ public class AccessControlService(
         string action = "read",
         CancellationToken ct = default)
     {
-        var user = await users.GetByIdAsync(userId);
-        if (user is null)
+        var context = await GetContextAsync(userId, ct);
+        if (context is null)
         {
             return new ModuleAccessDecisionDto(false, false, AccessDecisionReason.UserInactive, moduleKey);
         }
 
-        var module = await modules.GetByKeyAsync(moduleKey, ct);
+        var module = (await GetModulesAsync(ct)).FirstOrDefault(x => x.Key == moduleKey);
         if (module is null)
         {
             return new ModuleAccessDecisionDto(false, false, AccessDecisionReason.ModuleNotFound, moduleKey);
         }
 
-        var subscription = await subscriptions.GetActiveByUserAsync(userId, ct);
-        var plan = subscription is null ? null : await plans.GetByIdAsync(subscription.PlanId, ct);
-        var userOverrides = await overrides.GetByUserAsync(userId, ct);
-
-        var decision = Decide(user.Role, user.Status, module, plan?.ModuleKeys ?? [], userOverrides);
+        var decision = Decide(context.Role, context.Status, module, context.PlanModuleKeys, context.Overrides);
         if (decision.IsReadonly && IsWriteAction(action))
         {
             return decision with { IsAllowed = false, Reason = AccessDecisionReason.Readonly };
@@ -113,16 +115,68 @@ public class AccessControlService(
 
     public async Task<bool> IsInRoleAsync(string userId, UserRole role, CancellationToken ct = default)
     {
+        var context = await GetContextAsync(userId, ct);
+        return context is not null && context.Status == UserStatus.Active && context.Role >= role;
+    }
+
+    public Task InvalidateUserAsync(string userId, CancellationToken ct = default) =>
+        cache.RemoveAsync(CacheKeys.AccessContext(userId), ct);
+
+    public Task InvalidateModuleCatalogAsync(CancellationToken ct = default) =>
+        cache.RemoveAsync(CacheKeys.AccessModuleCatalog(), ct);
+
+    private async Task<List<ModuleCatalogItem>> GetModulesAsync(CancellationToken ct)
+    {
+        var cached = await cache.GetAsync<List<ModuleCatalogItem>>(CacheKeys.AccessModuleCatalog(), ct);
+        if (cached is not null)
+        {
+            return cached;
+        }
+
+        var all = await modules.GetAllAsync(ct);
+        await cache.SetAsync(CacheKeys.AccessModuleCatalog(), all, CacheTtl, ct);
+        return all;
+    }
+
+    private async Task<CachedAccessContext?> GetContextAsync(string userId, CancellationToken ct)
+    {
+        var cached = await cache.GetAsync<CachedAccessContext>(CacheKeys.AccessContext(userId), ct);
+        if (cached is not null)
+        {
+            return cached;
+        }
+
         var user = await users.GetByIdAsync(userId);
-        return user is not null && user.Status == UserStatus.Active && user.Role >= role;
+        if (user is null)
+        {
+            return null;
+        }
+
+        var subscription = await subscriptions.GetActiveByUserAsync(userId, ct);
+        var plan = subscription is null ? null : await plans.GetByIdAsync(subscription.PlanId, ct);
+        var userOverrides = await overrides.GetByUserAsync(userId, ct);
+
+        var context = new CachedAccessContext(
+            user.Role,
+            user.Status,
+            plan?.Key,
+            plan?.Name,
+            plan?.ModuleKeys ?? [],
+            plan?.Limits ?? [],
+            userOverrides
+                .Select(o => new CachedOverride(o.ModuleKey, o.Access, o.ExpiresAt, o.UpdatedAt))
+                .ToList());
+
+        await cache.SetAsync(CacheKeys.AccessContext(userId), context, CacheTtl, ct);
+        return context;
     }
 
     private static ModuleAccessDecisionDto Decide(
         UserRole userRole,
         UserStatus userStatus,
-        Domain.Entities.ModuleCatalogItem module,
+        ModuleCatalogItem module,
         List<string> planModuleKeys,
-        List<Domain.Entities.UserModuleOverride> userOverrides)
+        List<CachedOverride> userOverrides)
     {
         if (userStatus != UserStatus.Active)
         {
@@ -173,9 +227,7 @@ public class AccessControlService(
         return new ModuleAccessDecisionDto(false, false, AccessDecisionReason.UpgradeRequired, module.Key);
     }
 
-    private static Domain.Entities.UserModuleOverride? FindActiveOverride(
-        string moduleKey,
-        List<Domain.Entities.UserModuleOverride> userOverrides) =>
+    private static CachedOverride? FindActiveOverride(string moduleKey, List<CachedOverride> userOverrides) =>
         userOverrides
             .Where(x => x.ModuleKey == moduleKey && (x.ExpiresAt is null || x.ExpiresAt > DateTime.UtcNow))
             .OrderByDescending(x => x.UpdatedAt)
@@ -186,4 +238,19 @@ public class AccessControlService(
         action.Equals("create", StringComparison.OrdinalIgnoreCase) ||
         action.Equals("update", StringComparison.OrdinalIgnoreCase) ||
         action.Equals("delete", StringComparison.OrdinalIgnoreCase);
+
+    private sealed record CachedAccessContext(
+        UserRole Role,
+        UserStatus Status,
+        string? PlanKey,
+        string? PlanName,
+        List<string> PlanModuleKeys,
+        Dictionary<string, int> PlanLimits,
+        List<CachedOverride> Overrides);
+
+    private sealed record CachedOverride(
+        string ModuleKey,
+        ModuleAccess Access,
+        DateTime? ExpiresAt,
+        DateTime UpdatedAt);
 }

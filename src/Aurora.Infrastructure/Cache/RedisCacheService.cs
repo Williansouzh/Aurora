@@ -37,6 +37,9 @@ public class RedisCacheService(IDistributedCache cache, IConnectionMultiplexer? 
         }
     }
 
+    public Task RemoveAsync(string key, CancellationToken ct = default) =>
+        cache.RemoveAsync(key, ct);
+
     public async Task RemoveByPrefixAsync(string prefix, CancellationToken ct = default)
     {
         if (redis is null) return;

@@ -19,4 +19,10 @@ public interface IAccessControlService
         CancellationToken ct = default);
 
     Task<bool> IsInRoleAsync(string userId, UserRole role, CancellationToken ct = default);
+
+    /// <summary>Drops the cached access context for a single user (call after changing their role, plan or overrides).</summary>
+    Task InvalidateUserAsync(string userId, CancellationToken ct = default);
+
+    /// <summary>Drops the cached module catalog (call after changing modules or a plan's module list).</summary>
+    Task InvalidateModuleCatalogAsync(CancellationToken ct = default);
 }

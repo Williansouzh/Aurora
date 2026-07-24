@@ -50,10 +50,11 @@ export function AdminPage({ api }) {
         api.get('/api/admin/plans'),
         api.get('/api/admin/modules'),
       ]);
-      setUsers(nextUsers);
+      const userItems = nextUsers?.items ?? [];
+      setUsers(userItems);
       setPlans(nextPlans);
       setModules(nextModules);
-      if (!selectedUserId && nextUsers[0]) setSelectedUserId(nextUsers[0].userId);
+      if (!selectedUserId && userItems[0]) setSelectedUserId(userItems[0].userId);
     } finally {
       setBusy(false);
     }

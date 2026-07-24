@@ -24,23 +24,34 @@ public class AdminController(
     IAccessControlService access) : ControllerBase
 {
     [HttpGet("users")]
-    public async Task<IActionResult> Users([FromQuery] string? search, CancellationToken ct)
+    public async Task<IActionResult> Users(
+        [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 25,
+        CancellationToken ct = default)
     {
-        var allUsers = await users.GetAllAsync();
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var (pagedUsers, total) = await users.GetPagedAsync(search, page, pageSize, ct);
+        var userIds = pagedUsers.Select(x => x.Id).ToList();
+
+        // Batch the per-user lookups for this page instead of querying inside the loop (N+1).
         var allPlans = await plans.GetAllAsync(ct);
-        var result = new List<AdminUserDto>();
+        var activeSubs = (await subscriptions.GetActiveByUsersAsync(userIds, ct))
+            .GroupBy(x => x.UserId)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(s => s.StartedAt).First());
+        var overrideCounts = (await overrides.GetByUsersAsync(userIds, ct))
+            .GroupBy(x => x.UserId)
+            .ToDictionary(g => g.Key, g => g.Count());
 
-        foreach (var user in allUsers
-            .Where(x => string.IsNullOrWhiteSpace(search) ||
-                x.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                x.Email.Contains(search, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(x => x.Name))
+        var items = pagedUsers.Select(user =>
         {
-            var sub = await subscriptions.GetActiveByUserAsync(user.Id, ct);
-            var plan = sub is null ? null : allPlans.FirstOrDefault(x => x.Id == sub.PlanId);
-            var userOverrides = await overrides.GetByUserAsync(user.Id, ct);
+            var plan = activeSubs.TryGetValue(user.Id, out var sub)
+                ? allPlans.FirstOrDefault(x => x.Id == sub.PlanId)
+                : null;
 
-            result.Add(new AdminUserDto(
+            return new AdminUserDto(
                 user.Id,
                 user.Name,
                 user.Email,
@@ -48,12 +59,14 @@ public class AdminController(
                 user.Status,
                 plan?.Key,
                 plan?.Name,
-                userOverrides.Count,
+                overrideCounts.GetValueOrDefault(user.Id),
                 user.CreatedAt,
-                user.UpdatedAt));
-        }
+                user.UpdatedAt);
+        }).ToList();
 
-        return Ok(new ApiResponse<List<AdminUserDto>>(true, result));
+        var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+        return Ok(new ApiResponse<PagedResultDto<AdminUserDto>>(true,
+            new PagedResultDto<AdminUserDto>(items, (int)total, page, pageSize, totalPages)));
     }
 
     [HttpGet("users/{userId}")]
@@ -98,6 +111,7 @@ public class AdminController(
         user.Role = req.Role;
         user.Status = req.Status;
         await users.UpdateAsync(user);
+        await access.InvalidateUserAsync(userId, ct);
         await AddAuditAsync("user.role.updated", "User", user.Id, before, new { user.Role, user.Status }, req.Reason, ct);
 
         return Ok(new ApiResponse<string>(true, "updated"));
@@ -118,6 +132,7 @@ public class AdminController(
             StartedAt = DateTime.UtcNow
         }, ct);
 
+        await access.InvalidateUserAsync(userId, ct);
         await AddAuditAsync("user.plan.updated", "UserSubscription", userId, before, new { req.PlanKey, req.Status }, req.Reason, ct);
         return Ok(new ApiResponse<string>(true, "updated"));
     }
@@ -144,6 +159,7 @@ public class AdminController(
         };
 
         await overrides.UpsertAsync(item, ct);
+        await access.InvalidateUserAsync(userId, ct);
         await AddAuditAsync("user.module.override.upserted", "UserModuleOverride", userId, before, item, req.Reason, ct);
 
         return Ok(new ApiResponse<string>(true, "updated"));
@@ -154,6 +170,7 @@ public class AdminController(
     {
         var before = await overrides.GetByUserAndModuleAsync(userId, moduleKey, ct);
         await overrides.DeleteAsync(userId, moduleKey, ct);
+        await access.InvalidateUserAsync(userId, ct);
         await AddAuditAsync("user.module.override.deleted", "UserModuleOverride", userId, before, null, null, ct);
         return Ok(new ApiResponse<string>(true, "deleted"));
     }
@@ -171,6 +188,8 @@ public class AdminController(
         var before = plan.ModuleKeys.ToList();
         plan.ModuleKeys = req.ModuleKeys.Distinct().OrderBy(x => x).ToList();
         await plans.UpdateAsync(plan, ct);
+        // A plan's module list lives in each subscriber's cached access context; there is no cheap
+        // per-plan fan-out, so this change propagates to affected users within the access cache TTL.
         await AddAuditAsync("plan.modules.updated", "Plan", plan.Id, before, plan.ModuleKeys, req.Reason, ct);
         return Ok(new ApiResponse<Plan>(true, plan));
     }
@@ -190,6 +209,7 @@ public class AdminController(
         module.ReleaseStage = req.ReleaseStage;
         module.ShowInNavigation = req.ShowInNavigation;
         await modules.UpsertAsync(module, ct);
+        await access.InvalidateModuleCatalogAsync(ct);
         await AddAuditAsync("module.updated", "ModuleCatalogItem", module.Id, before,
             new { module.Status, module.ReleaseStage, module.ShowInNavigation }, req.Reason, ct);
 

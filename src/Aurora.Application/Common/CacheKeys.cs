@@ -20,4 +20,10 @@ public static class CacheKeys
 
     public static string FinancingSummary(string userId) =>
         $"{DashboardPrefix(userId)}:financing-summary:v1";
+
+    // Access-control caches. Kept short-lived so plan/module catalog changes propagate quickly,
+    // and invalidated explicitly on the admin write paths that affect a user.
+    public static string AccessContext(string userId) => $"{Root}:access:ctx:{userId}:v1";
+
+    public static string AccessModuleCatalog() => $"{Root}:access:modules:v1";
 }

@@ -11,6 +11,12 @@ public class UserModuleOverrideRepository(MongoContext context) : IUserModuleOve
     public Task<List<UserModuleOverride>> GetByUserAsync(string userId, CancellationToken ct = default) =>
         context.UserModuleOverrides.Find(x => x.UserId == userId).ToListAsync(ct);
 
+    public Task<List<UserModuleOverride>> GetByUsersAsync(IEnumerable<string> userIds, CancellationToken ct = default)
+    {
+        var ids = userIds.Distinct().ToArray();
+        return context.UserModuleOverrides.Find(x => ids.Contains(x.UserId)).ToListAsync(ct);
+    }
+
     public Task<UserModuleOverride?> GetByUserAndModuleAsync(string userId, string moduleKey, CancellationToken ct = default) =>
         context.UserModuleOverrides.Find(x => x.UserId == userId && x.ModuleKey == moduleKey).FirstOrDefaultAsync(ct)!;
 

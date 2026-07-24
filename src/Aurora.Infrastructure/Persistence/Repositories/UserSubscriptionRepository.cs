@@ -22,6 +22,14 @@ public class UserSubscriptionRepository(MongoContext context) : IUserSubscriptio
             .SortByDescending(x => x.StartedAt)
             .FirstOrDefaultAsync(ct)!;
 
+    public Task<List<UserSubscription>> GetActiveByUsersAsync(IEnumerable<string> userIds, CancellationToken ct = default)
+    {
+        var ids = userIds.Distinct().ToArray();
+        return context.UserSubscriptions
+            .Find(x => ids.Contains(x.UserId) && ActiveStatuses.Contains(x.Status))
+            .ToListAsync(ct);
+    }
+
     public Task<List<UserSubscription>> GetByUserAsync(string userId, CancellationToken ct = default) =>
         context.UserSubscriptions.Find(x => x.UserId == userId).ToListAsync(ct);
 

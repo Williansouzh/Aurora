@@ -27,6 +27,30 @@ public class UserRepository(MongoContext context) : IUserRepository
     public Task<List<User>> GetAllAsync() =>
         context.Users.Find(x => x.DeletedAt == null).ToListAsync();
 
+    public async Task<(List<User> Items, long Total)> GetPagedAsync(string? search, int page, int pageSize, CancellationToken ct = default)
+    {
+        var builder = Builders<User>.Filter;
+        var filter = builder.Eq(x => x.DeletedAt, null);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = new MongoDB.Bson.BsonRegularExpression(
+                System.Text.RegularExpressions.Regex.Escape(search.Trim()), "i");
+            filter &= builder.Or(
+                builder.Regex(x => x.Name, term),
+                builder.Regex(x => x.Email, term));
+        }
+
+        var total = await context.Users.CountDocumentsAsync(filter, cancellationToken: ct);
+        var items = await context.Users.Find(filter)
+            .SortBy(x => x.Name)
+            .Skip((page - 1) * pageSize)
+            .Limit(pageSize)
+            .ToListAsync(ct);
+
+        return (items, total);
+    }
+
     public Task<List<User>> GetHabitReminderCandidatesAsync(int hour) =>
         context.Users.Find(x =>
             x.DeletedAt == null &&
