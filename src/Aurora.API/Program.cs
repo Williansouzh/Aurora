@@ -27,6 +27,7 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 builder.Services.AddControllers(options =>
 {
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+    options.Conventions.Add(new Aurora.API.Versioning.ApiVersionRouteConvention());
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, UserContext>();
@@ -169,6 +170,7 @@ app.Use(async (ctx, next) =>
     ctx.Response.Headers.TryAdd("X-Content-Type-Options", "nosniff");
     ctx.Response.Headers.TryAdd("X-Frame-Options", "DENY");
     ctx.Response.Headers.TryAdd("Referrer-Policy", "no-referrer");
+    ctx.Response.Headers.TryAdd("X-Api-Version", "1.0");
     await next();
 });
 
