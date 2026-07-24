@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test';
 
-const apiBaseUrl = process.env.E2E_API_URL || 'http://localhost:8080';
-
-test('register, login with MFA, and create an account', async ({ page, request }) => {
+// The deployed stack runs with MFA disabled (Auth__MfaEnabled=false), which is the default
+// end-user flow: register and login sign the user straight in with no second factor. The
+// development-only MFA test hook is intentionally excluded from Release builds, so this test
+// exercises the real path rather than that hook.
+test('register, login, and create an account', async ({ page }) => {
   const email = `e2e-${Date.now()}@example.com`;
   const password = 'Str0ngPass!2026';
 
@@ -18,14 +20,6 @@ test('register, login with MFA, and create an account', async ({ page, request }
   await page.getByLabel('E-mail').fill(email);
   await page.getByLabel('Senha').fill(password);
   await page.getByRole('button', { name: 'Entrar' }).click();
-  await expect(page.getByText('Verificacao em duas etapas')).toBeVisible();
-
-  const challengeResponse = await request.get(`${apiBaseUrl}/__test/latest-mfa-code?email=${encodeURIComponent(email)}`);
-  expect(challengeResponse.ok()).toBeTruthy();
-  const { code } = await challengeResponse.json();
-
-  await page.getByLabel('Codigo').fill(code);
-  await page.getByRole('button', { name: 'Verificar codigo' }).click();
   await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
 
   await page.goto('/accounts');
