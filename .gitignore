@@ -8,3 +8,6 @@ client/dist/
 
 # Transient Claude settings temp files (atomic-write artifacts)
 .claude/settings.local.json.tmp.*
+
+# Build/publish output
+.tmp/

@@ -1,53 +1,55 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
-import { setupServer } from 'msw/node';
 import { MemoryRouter } from 'react-router-dom';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DashboardPage } from '../pages/DashboardPage';
 import { ToastProvider } from '../hooks/useToast';
 
-const BASE = 'http://localhost:8080';
-
-const emptySummary = {
-  totalBalance: 0, monthlyIncome: 0, monthlyExpense: 0, monthlyResult: 0,
-  pendingIncome: 0, pendingExpense: 0, paidTransactionsCount: 0,
-  pendingTransactionsCount: 0, recentTransactions: [],
-  previousMonthIncome: 0, previousMonthExpense: 0,
-  incomeVariation: 0, expenseVariation: 0, savingsRate: 0, upcomingDueTransactions: [],
+// Shape of the /api/home HomeDto the dashboard consumes. All collections empty and counters at
+// zero by default so the overview renders its empty states without crashing.
+const emptyHome = {
+  pendingTasksCount: 0,
+  completedTasksCount: 0,
+  topPendingTasks: [],
+  todayHabits: [],
+  featuredGoals: [],
+  recentEvents: [],
+  todayMood: null,
+  moodHistory: [],
+  totalBalance: 0,
+  monthlyIncome: 0,
+  monthlyExpense: 0,
+  totalXp: 0,
+  level: 1,
+  levelName: 'Iniciante',
+  xpToNextLevel: 100,
+  achievements: [],
+  weeklyActivity: [],
 };
 
-const filledSummary = {
-  ...emptySummary,
+const filledHome = {
+  ...emptyHome,
   totalBalance: 5000,
   monthlyIncome: 3000,
   monthlyExpense: 1200,
-  monthlyResult: 1800,
 };
 
-function apiResponse(data) {
-  return HttpResponse.json({ success: true, data });
+// DashboardPage consumes an injected `api` client, so we stub it directly instead of routing
+// through global fetch — this keeps the test deterministic and free of the jsdom/undici fetch
+// interception issues that MSW hits under Vitest.
+function makeApi(home) {
+  return {
+    get: vi.fn((path) => {
+      if (path.startsWith('/api/home')) return Promise.resolve(home);
+      return Promise.resolve(null);
+    }),
+  };
 }
 
-const server = setupServer(
-  http.get(`${BASE}/api/dashboard/monthly-summary`, () => apiResponse(emptySummary)),
-  http.get(`${BASE}/api/dashboard/category-expenses`, () => apiResponse([])),
-  http.get(`${BASE}/api/budgets`, () => apiResponse([])),
-  http.get(`${BASE}/api/dashboard/cash-flow`, () => apiResponse([])),
-);
-
-beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }));
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
-
-const mockApi = {
-  get: (path) => fetch(`${BASE}${path}`).then((r) => r.json()).then((b) => b.data),
-};
-
-function renderDashboard() {
+function renderDashboard(home = emptyHome) {
   return render(
     <MemoryRouter>
       <ToastProvider>
-        <DashboardPage api={mockApi} />
+        <DashboardPage api={makeApi(home)} />
       </ToastProvider>
     </MemoryRouter>,
   );
@@ -60,24 +62,20 @@ describe('DashboardPage', () => {
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
-  it('deve exibir empty state quando não há transações', async () => {
+  it('deve exibir empty state quando não há dados', async () => {
     renderDashboard();
     await waitFor(() => {
-      expect(screen.queryAllByRole('generic', { name: /skeleton/i })).toHaveLength(0);
+      expect(document.querySelectorAll('.skeleton')).toHaveLength(0);
     });
-    expect(screen.getAllByText(/sem dados/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/sem atividade registrada ainda/i)).toBeInTheDocument();
   });
 
-  it('deve exibir os valores corretos após carregar dados', async () => {
-    server.use(
-      http.get(`${BASE}/api/dashboard/monthly-summary`, () => apiResponse(filledSummary)),
-    );
-
-    renderDashboard();
+  it('deve exibir os valores financeiros após carregar dados', async () => {
+    renderDashboard(filledHome);
 
     await waitFor(() => {
-      expect(screen.getByText(/3\.000/)).toBeInTheDocument();
+      expect(screen.getAllByText(/3\.000/).length).toBeGreaterThan(0);
     });
-    expect(screen.getByText(/1\.200/)).toBeInTheDocument();
+    expect(screen.getAllByText(/1\.200/).length).toBeGreaterThan(0);
   });
 });
