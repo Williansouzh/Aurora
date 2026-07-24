@@ -11,13 +11,28 @@ namespace Aurora.Infrastructure.Persistence.Repositories;
 public class TransactionRepository(MongoContext context, UnitOfWork.MongoUnitOfWork unitOfWork)
     : MongoRepositoryBase<Transaction>(context.Transactions, unitOfWork), ITransactionRepository
 {
-    public Task<Transaction?> GetByIdAsync(string id, string userId) => base.GetByIdAsync(id, userId);
+    // Transactions are a financial ledger: deletes are soft (DeletedAt is set) so the record is
+    // retained for audit, and every read below excludes soft-deleted rows.
+    private static readonly FilterDefinition<Transaction> NotDeleted =
+        Builders<Transaction>.Filter.Eq(x => x.DeletedAt, null);
+
+    public async Task<Transaction?> GetByIdAsync(string id, string userId)
+    {
+        var tx = await base.GetByIdAsync(id, userId);
+        return tx?.DeletedAt is null ? tx : null;
+    }
 
     public Task AddAsync(Transaction tx) => base.AddAsync(tx);
 
     public Task UpdateAsync(Transaction tx) => base.UpdateAsync(tx);
 
-    public Task DeleteAsync(string id, string userId) => base.DeleteAsync(id, userId);
+    public async Task DeleteAsync(string id, string userId)
+    {
+        var tx = await GetByIdAsync(id, userId);
+        if (tx is null) return;
+        tx.DeletedAt = DateTime.UtcNow;
+        await base.UpdateAsync(tx);
+    }
 
     public async Task<List<Transaction>> GetByFilterAsync(
         string userId,
@@ -46,10 +61,10 @@ public class TransactionRepository(MongoContext context, UnitOfWork.MongoUnitOfW
     }
 
     public Task<bool> ExistsByAccountIdAsync(string accountId, string userId) =>
-        Collection.Find(x => x.AccountId == accountId && x.UserId == userId).AnyAsync();
+        Collection.Find(x => x.AccountId == accountId && x.UserId == userId && x.DeletedAt == null).AnyAsync();
 
     public Task<bool> ExistsByCategoryIdAsync(string categoryId, string userId) =>
-        Collection.Find(x => x.CategoryId == categoryId && x.UserId == userId).AnyAsync();
+        Collection.Find(x => x.CategoryId == categoryId && x.UserId == userId && x.DeletedAt == null).AnyAsync();
 
     public async Task<decimal> SumAsync(string userId, int month, int year, TransactionType type, TransactionStatus status)
     {
@@ -59,7 +74,8 @@ public class TransactionRepository(MongoContext context, UnitOfWork.MongoUnitOfW
               & Builders<Transaction>.Filter.Gte(x => x.Date, start)
               & Builders<Transaction>.Filter.Lt(x => x.Date, end)
               & Builders<Transaction>.Filter.Eq(x => x.Type, type)
-              & Builders<Transaction>.Filter.Eq(x => x.Status, status);
+              & Builders<Transaction>.Filter.Eq(x => x.Status, status)
+              & NotDeleted;
         var result = await Collection.Aggregate()
             .Match(f)
             .Group(_ => 1, g => new { Total = g.Sum(x => x.Amount) })
@@ -74,12 +90,13 @@ public class TransactionRepository(MongoContext context, UnitOfWork.MongoUnitOfW
         var f = Builders<Transaction>.Filter.Eq(x => x.UserId, userId)
               & Builders<Transaction>.Filter.Gte(x => x.Date, start)
               & Builders<Transaction>.Filter.Lt(x => x.Date, end)
-              & Builders<Transaction>.Filter.Eq(x => x.Status, status);
+              & Builders<Transaction>.Filter.Eq(x => x.Status, status)
+              & NotDeleted;
         return (int)await Collection.CountDocumentsAsync(f);
     }
 
     public Task<List<Transaction>> RecentAsync(string userId, int limit = 5) =>
-        Collection.Find(x => x.UserId == userId)
+        Collection.Find(x => x.UserId == userId && x.DeletedAt == null)
             .SortByDescending(x => x.Date)
             .Limit(limit)
             .ToListAsync();
@@ -110,24 +127,25 @@ public class TransactionRepository(MongoContext context, UnitOfWork.MongoUnitOfW
         var f = Builders<Transaction>.Filter.Eq(x => x.UserId, userId)
               & Builders<Transaction>.Filter.Ne(x => x.DueDate, null)
               & Builders<Transaction>.Filter.Lte(x => x.DueDate, end)
-              & Builders<Transaction>.Filter.In(x => x.Status, statuses);
+              & Builders<Transaction>.Filter.In(x => x.Status, statuses)
+              & NotDeleted;
         return Collection.Find(f).SortBy(x => x.DueDate).ToListAsync();
     }
 
     public Task<List<Transaction>> GetByInvoiceIdAsync(string invoiceId, string userId) =>
-        Collection.Find(x => x.UserId == userId && x.CreditCardInvoiceId == invoiceId)
+        Collection.Find(x => x.UserId == userId && x.CreditCardInvoiceId == invoiceId && x.DeletedAt == null)
             .SortByDescending(x => x.Date)
             .ToListAsync();
 
     public Task<List<Transaction>> GetByRecurrenceGroupAsync(Guid groupId, string userId) =>
-        Collection.Find(x => x.UserId == userId && x.RecurrenceGroupId == groupId)
+        Collection.Find(x => x.UserId == userId && x.RecurrenceGroupId == groupId && x.DeletedAt == null)
             .SortBy(x => x.Date)
             .ToListAsync();
 
     private static FilterDefinition<Transaction> BuildFilter(TransactionFilter q)
     {
         var b = Builders<Transaction>.Filter;
-        var f = b.Eq(x => x.UserId, q.UserId);
+        var f = b.Eq(x => x.UserId, q.UserId) & NotDeleted;
 
         if (q.DateFrom.HasValue || q.DateTo.HasValue)
         {

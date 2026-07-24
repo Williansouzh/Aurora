@@ -19,6 +19,9 @@ public class Transaction : EntityBase, IUserOwned
     public string? Notes { get; set; }
     public string? CreditCardInvoiceId { get; set; }
 
+    /// <summary>Set when the transaction is soft-deleted; such records are excluded from all reads and totals.</summary>
+    public DateTime? DeletedAt { get; set; }
+
     public bool IsRecurring { get; set; }
     public RecurrenceType? RecurrenceType { get; set; }
     public int RecurrenceInterval { get; set; } = 1;

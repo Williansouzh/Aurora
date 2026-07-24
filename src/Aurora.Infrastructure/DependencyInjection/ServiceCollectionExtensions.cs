@@ -17,7 +17,9 @@ using Aurora.Infrastructure.Time;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using StackExchange.Redis;
 
@@ -116,6 +118,13 @@ public static class ServiceCollectionExtensions
         {
             // Serializer may already be registered in test hosts.
         }
+
+        // Pin money (decimal) to Decimal128 — the driver's current default and how existing data is
+        // already stored — so a future driver default change can't silently switch representation and
+        // reintroduce precision/query bugs. TryRegister no-ops if a serializer is already registered.
+        BsonSerializer.TryRegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
+        BsonSerializer.TryRegisterSerializer(
+            new NullableSerializer<decimal>(new DecimalSerializer(BsonType.Decimal128)));
     }
 
     public static async Task EnsureIndexesAsync(this IServiceProvider sp)
