@@ -22,10 +22,15 @@ test('register, login, and create an account', async ({ page }) => {
   await page.getByRole('button', { name: 'Entrar' }).click();
   await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
 
-  await page.goto('/accounts');
+  // Navigate within the SPA (the access token lives in memory, so a full page reload would drop it).
+  await page.getByRole('link', { name: 'Contas' }).click();
+  await expect(page).toHaveURL(/\/accounts$/, { timeout: 30_000 });
   await page.getByRole('button', { name: /nova conta/i }).first().click();
-  await page.getByLabel(/nome/i).fill('Conta E2E');
-  await page.getByLabel(/saldo/i).fill('1000');
-  await page.getByRole('button', { name: /salvar|criar/i }).click();
-  await expect(page.getByText('Conta E2E')).toBeVisible();
+
+  // Scope to the open dialog so the fields don't collide with the page's inline account form.
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Nome', { exact: true }).fill('Conta E2E');
+  await dialog.getByLabel(/saldo/i).fill('1000');
+  await dialog.getByRole('button', { name: /criar conta|salvar/i }).click();
+  await expect(page.getByText('Conta E2E').first()).toBeVisible();
 });

@@ -4,6 +4,7 @@ using Aurora.Application.Abstractions.Persistence;
 using Aurora.Application.Abstractions.Security;
 using Aurora.Application.Features.Auth.Common;
 using Aurora.Domain.Entities;
+using Aurora.Domain.Enums;
 using Aurora.Domain.Exceptions;
 using FluentValidation;
 using MediatR;
@@ -32,8 +33,14 @@ public class RegisterUserHandler(
     IEncryptionService encryption,
     IAuthChallengeRepository challenges,
     IEmailSender emailSender,
-    IMfaCodeGenerator codeGenerator) : IRequestHandler<RegisterUserCommand, AuthResult>
+    IMfaCodeGenerator codeGenerator,
+    IPlanRepository plans,
+    IUserSubscriptionRepository subscriptions) : IRequestHandler<RegisterUserCommand, AuthResult>
 {
+    // Plan new users are placed on so they have module access immediately after signing up, instead
+    // of being locked out of every module until the startup seeder next runs.
+    private const string DefaultPlanKey = "early-access";
+
     public async Task<AuthResult> Handle(RegisterUserCommand command, CancellationToken ct)
     {
         var normalizedEmail = UserSecurityMapper.NormalizeEmail(command.Email);
@@ -54,9 +61,27 @@ public class RegisterUserHandler(
 
         await users.AddAsync(user);
         await categories.SeedDefaultsAsync(user.Id);
+        await AssignDefaultSubscriptionAsync(user.Id, ct);
         await SendEmailConfirmationAsync(user, normalizedEmail, ct);
 
         return await TokenHelper.IssueTokens(user, jwt, refreshTokens, clock, encryption);
+    }
+
+    private async Task AssignDefaultSubscriptionAsync(string userId, CancellationToken ct)
+    {
+        var plan = await plans.GetByKeyAsync(DefaultPlanKey, ct);
+        if (plan is null)
+        {
+            return;
+        }
+
+        await subscriptions.UpsertCurrentAsync(new UserSubscription
+        {
+            UserId = userId,
+            PlanId = plan.Id,
+            Status = SubscriptionStatus.Active,
+            StartedAt = clock.UtcNow
+        }, ct);
     }
 
     private async Task SendEmailConfirmationAsync(User user, string email, CancellationToken ct)
